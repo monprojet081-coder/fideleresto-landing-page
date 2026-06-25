@@ -4,23 +4,23 @@ const testimonials = [
   {
     quote:
       "En trois mois, on est passés de 80 à plus de 300 avis Google. Notre note est montée à 4,8 et on voit clairement la différence sur les réservations.",
-    name: "Camille Laurent",
-    role: "Gérante, Bistrot du Marché",
-    initials: "CL",
+    name: "Marc D.",
+    role: "Gérant, La Bella Vita",
+    initials: "MD",
   },
   {
     quote:
       "La roue de la fidélité fait un carton auprès des clients. Ils reviennent pour leur café offert et finissent par commander bien plus. Simple et efficace.",
-    name: "Mehdi Benali",
-    role: "Propriétaire, Le Comptoir d'Orient",
-    initials: "MB",
+    name: "Sophie L.",
+    role: "Propriétaire, Le Petit Zinc",
+    initials: "SL",
   },
   {
     quote:
       "Les alertes insatisfaction m'ont sauvé plusieurs fois. Je peux régler un problème en salle avant qu'un mauvais avis ne soit publié. Indispensable.",
-    name: "Sophie Renard",
-    role: "Cheffe, Table de Sophie",
-    initials: "SR",
+    name: "Karim B.",
+    role: "Propriétaire, O'Tacos du Marché",
+    initials: "KB",
   },
 ]
 
