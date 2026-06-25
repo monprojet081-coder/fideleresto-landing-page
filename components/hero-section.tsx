@@ -29,7 +29,7 @@ export function HeroSection() {
               nativeButton={false}
               render={<a href="#tarifs" />}
             >
-              Commencer gratuitement
+              Commencer
               <ArrowRight className="size-4" aria-hidden="true" />
             </Button>
             <Button
