@@ -1,8 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabase"
 
 export function SignupForm() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
   const [formData, setFormData] = useState({
     nomRestaurant: "",
     typeCuisine: "",
@@ -14,9 +19,42 @@ export function SignupForm() {
     conditions: false,
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log(formData)
+    setError("")
+
+    if (formData.motDePasse !== formData.confirmerMotDePasse) {
+      setError("Les mots de passe ne correspondent pas.")
+      return
+    }
+
+    if (!formData.conditions) {
+      setError("Veuillez accepter les conditions générales.")
+      return
+    }
+
+    setLoading(true)
+
+    const { error } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.motDePasse,
+      options: {
+        data: {
+          nom_restaurant: formData.nomRestaurant,
+          type_cuisine: formData.typeCuisine,
+          ville: formData.ville,
+          telephone: formData.telephone,
+        }
+      }
+    })
+
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+      return
+    }
+
+    router.push("/dashboard")
   }
 
   return (
@@ -40,6 +78,7 @@ export function SignupForm() {
             <input
               type="text"
               placeholder="Chez Marco"
+              required
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={formData.nomRestaurant}
               onChange={(e) => setFormData({ ...formData, nomRestaurant: e.target.value })}
@@ -51,6 +90,7 @@ export function SignupForm() {
               Type de cuisine
             </label>
             <select
+              required
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               value={formData.typeCuisine}
               onChange={(e) => setFormData({ ...formData, typeCuisine: e.target.value })}
@@ -74,6 +114,7 @@ export function SignupForm() {
               <input
                 type="text"
                 placeholder="Paris"
+                required
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.ville}
                 onChange={(e) => setFormData({ ...formData, ville: e.target.value })}
@@ -100,6 +141,7 @@ export function SignupForm() {
             <input
               type="email"
               placeholder="contact@monresto.fr"
+              required
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -114,6 +156,7 @@ export function SignupForm() {
               <input
                 type="password"
                 placeholder="••••••••"
+                required
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.motDePasse}
                 onChange={(e) => setFormData({ ...formData, motDePasse: e.target.value })}
@@ -126,6 +169,7 @@ export function SignupForm() {
               <input
                 type="password"
                 placeholder="••••••••"
+                required
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.confirmerMotDePasse}
                 onChange={(e) => setFormData({ ...formData, confirmerMotDePasse: e.target.value })}
@@ -153,11 +197,16 @@ export function SignupForm() {
             </label>
           </div>
 
+          {error && (
+            <p className="text-red-500 text-sm text-center">{error}</p>
+          )}
+
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-3 rounded-lg transition-colors"
           >
-            Créer mon compte
+            {loading ? "Création en cours..." : "Créer mon compte"}
           </button>
 
           <p className="text-center text-sm text-gray-500">
