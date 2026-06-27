@@ -171,7 +171,7 @@ export default function DashboardPage() {
                 <canvas id="qr-canvas" className="rounded-xl" />
               </div>
               <p className="text-center text-sm text-gray-500 mb-6">
-                URL de votre roue : <span className="text-blue-600 font-medium">fideleresto.vercel.app/r/{user?.id?.slice(0, 8)}</span>
+                URL de votre roue : <span className="text-blue-600 font-medium">fideleresto-landing-page-9dhz.vercel.app/r/{user?.id?.slice(0, 8)}</span>
               </p>
               <button
                 onClick={() => {
