@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { supabase } from "@/lib/supabase"
 
 type Step = "form" | "wheel" | "win" | "lose"
@@ -22,7 +22,8 @@ function getResult() {
   return REWARDS[REWARDS.length - 1]
 }
 
-export default function WheelPage({ params }: { params: { slug: string } }) {
+export default function WheelPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = React.use(params)
   const [step, setStep] = useState<Step>("form")
   const [prenom, setPrenom] = useState("")
   const [email, setEmail] = useState("")
@@ -39,10 +40,10 @@ export default function WheelPage({ params }: { params: { slug: string } }) {
 
     const { error } = await supabase
       .from("clients")
-      .insert([{ prenom, email, restaurant_slug: params.slug }])
+      .insert([{ prenom, email, restaurant_slug: slug }])
 
-    if (error && !error.message.includes("duplicate")) {
-      setError("Une erreur est survenue, réessayez.")
+    if (error) {
+      setError(error.message)
       setLoading(false)
       return
     }
@@ -75,7 +76,6 @@ export default function WheelPage({ params }: { params: { slug: string } }) {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-8">
 
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
             <span className="text-2xl">🎡</span>
@@ -84,7 +84,6 @@ export default function WheelPage({ params }: { params: { slug: string } }) {
           <p className="text-gray-500 text-sm mt-2">Remplissez vos infos et tournez la roue pour gagner une récompense</p>
         </div>
 
-        {/* Étape 1 — Formulaire */}
         {step === "form" && (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -126,25 +125,22 @@ export default function WheelPage({ params }: { params: { slug: string } }) {
           </form>
         )}
 
-        {/* Étape 2 — La roue */}
         {step === "wheel" && (
           <div className="text-center">
             <div className="relative w-48 h-48 mx-auto mb-8">
               <div
-                className="w-full h-full rounded-full border-8 border-blue-600 flex items-center justify-center text-4xl transition-transform"
+                className="w-full h-full rounded-full border-8 border-blue-600 flex items-center justify-center transition-transform"
                 style={{
                   transform: `rotate(${rotation}deg)`,
                   transitionDuration: spinning ? "4000ms" : "0ms",
                   transitionTimingFunction: "cubic-bezier(0.17, 0.67, 0.12, 0.99)",
                   background: "conic-gradient(#3b82f6 0deg 90deg, #10b981 90deg 180deg, #f59e0b 180deg 270deg, #ef4444 270deg 360deg)"
                 }}
-              >
-              </div>
+              />
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-white font-bold text-sm bg-blue-600 rounded-full w-12 h-12 flex items-center justify-center">GO</span>
               </div>
             </div>
-
             <button
               onClick={handleSpin}
               disabled={spinning}
@@ -155,7 +151,6 @@ export default function WheelPage({ params }: { params: { slug: string } }) {
           </div>
         )}
 
-        {/* Étape 3 — Gagné */}
         {step === "win" && result && (
           <div className="text-center">
             <div className="text-6xl mb-4">🎉</div>
@@ -170,7 +165,6 @@ export default function WheelPage({ params }: { params: { slug: string } }) {
           </div>
         )}
 
-        {/* Étape 4 — Perdu */}
         {step === "lose" && (
           <div className="text-center">
             <div className="text-6xl mb-4">😢</div>
