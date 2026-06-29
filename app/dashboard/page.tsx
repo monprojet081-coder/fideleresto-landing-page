@@ -27,10 +27,11 @@ export default function DashboardPage() {
         router.push("/inscription")
       } else {
         setUser(user)
+        const slug = user.id.slice(0, 8)
         const { data } = await supabase
           .from("roue_config")
           .select("*")
-          .eq("restaurant_id", user.id)
+          .eq("restaurant_id", slug)
         if (data && data.length > 0) {
           setRewards(data.map((r: any) => ({
             label: r.label,
@@ -64,10 +65,25 @@ export default function DashboardPage() {
   const saveRewards = async () => {
     setSaving(true)
     const slug = user.id.slice(0, 8)
-await supabase.from("roue_config").delete().eq("restaurant_id", slug)
-await supabase.from("roue_config").insert(
-  rewards.map(r => ({ ...r, restaurant_id: slug }))
-)
+    const { error: deleteError } = await supabase
+      .from("roue_config")
+      .delete()
+      .eq("restaurant_id", slug)
+    if (deleteError) {
+      console.error("Erreur delete:", deleteError)
+      alert("Erreur lors de la sauvegarde : " + deleteError.message)
+      setSaving(false)
+      return
+    }
+    const { error: insertError } = await supabase
+      .from("roue_config")
+      .insert(rewards.map(r => ({ ...r, restaurant_id: slug })))
+    if (insertError) {
+      console.error("Erreur insert:", insertError)
+      alert("Erreur lors de la sauvegarde : " + insertError.message)
+      setSaving(false)
+      return
+    }
     setSaving(false)
     alert("Roue sauvegardée !")
   }
