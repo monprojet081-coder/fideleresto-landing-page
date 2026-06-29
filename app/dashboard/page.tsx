@@ -63,10 +63,11 @@ export default function DashboardPage() {
 
   const saveRewards = async () => {
     setSaving(true)
-    await supabase.from("roue_config").delete().eq("restaurant_id", user.id)
-    await supabase.from("roue_config").insert(
-      rewards.map(r => ({ ...r, restaurant_id: user.id }))
-    )
+    const slug = user.id.slice(0, 8)
+await supabase.from("roue_config").delete().eq("restaurant_id", slug)
+await supabase.from("roue_config").insert(
+  rewards.map(r => ({ ...r, restaurant_id: slug }))
+)
     setSaving(false)
     alert("Roue sauvegardée !")
   }
