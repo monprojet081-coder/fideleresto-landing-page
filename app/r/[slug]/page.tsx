@@ -65,7 +65,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
     const { data: roueData } = await supabase
       .from("roue_config")
       .select("label, probabilite, couleur")
-      .eq("restaurant_id", slug)
+      .filter("restaurant_id", "like", `${slug}%`)
 
     const rewardsList = roueData && roueData.length > 0 ? roueData : [
       { label: "Boisson offerte 🥤", probabilite: 25, couleur: "#3b82f6" },
