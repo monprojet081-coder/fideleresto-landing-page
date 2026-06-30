@@ -19,6 +19,8 @@ export default function DashboardPage() {
   ])
   const [newLabel, setNewLabel] = useState("")
   const [saving, setSaving] = useState(false)
+  const [clients, setClients] = useState<any[]>([])
+  const [clientsLoading, setClientsLoading] = useState(true)
 
   useEffect(() => {
     const getUser = async () => {
@@ -39,6 +41,16 @@ export default function DashboardPage() {
             couleur: r.couleur,
           })))
         }
+
+        const { data: clientsData } = await supabase
+          .from("clients")
+          .select("*")
+          .eq("restaurant_slug", slug)
+          .order("created_at", { ascending: false })
+        if (clientsData) {
+          setClients(clientsData)
+        }
+        setClientsLoading(false)
       }
       setLoading(false)
     }
@@ -243,9 +255,56 @@ export default function DashboardPage() {
               <p className="text-gray-500 mt-1">Liste des clients collectés via votre QR code</p>
             </div>
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-              <div className="p-6">
-                <p className="text-sm text-gray-500">Aucun client pour le moment. Partagez votre QR code pour commencer à collecter des contacts !</p>
-              </div>
+              {clientsLoading ? (
+                <div className="p-6 text-center">
+                  <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                </div>
+              ) : clients.length === 0 ? (
+                <div className="p-6">
+                  <p className="text-sm text-gray-500">Aucun client pour le moment. Partagez votre QR code pour commencer à collecter des contacts !</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 text-left text-gray-500">
+                        <th className="px-6 py-3 font-medium">Prénom</th>
+                        <th className="px-6 py-3 font-medium">Email</th>
+                        <th className="px-6 py-3 font-medium">Date</th>
+                        <th className="px-6 py-3 font-medium">Résultat</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clients.map((client) => (
+                        <tr key={client.id} className="border-b border-gray-50 last:border-0">
+                          <td className="px-6 py-3 text-gray-900 font-medium">{client.prenom}</td>
+                          <td className="px-6 py-3 text-gray-600">{client.email}</td>
+                          <td className="px-6 py-3 text-gray-600">
+                            {new Date(client.created_at).toLocaleDateString("fr-FR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </td>
+                          <td className="px-6 py-3">
+                            {client.a_gagne ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                                {client.recompense}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                                Perdu
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         )}
