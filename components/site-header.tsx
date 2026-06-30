@@ -66,7 +66,7 @@ export function SiteHeader() {
         <div className="border-t border-border bg-background md:hidden">
           <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-4" aria-label="Navigation mobile">
             {navLinks.map((link) => (
-              
+              <a
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}

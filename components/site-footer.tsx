@@ -24,7 +24,7 @@ export function SiteFooter() {
 
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2" aria-label="Liens légaux">
             {legalLinks.map((link) => (
-              
+              <a
                 key={link.label}
                 href={link.href}
                 className="text-sm text-muted-foreground transition-colors hover:text-foreground"
