@@ -56,7 +56,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
       .eq("restaurant_slug", slug)
       .gte("created_at", since)
 
-    if (existing && existing.length > 0 && email !== "cokillage67@gmail.com" && email !== "tonadresse.resend@gmail.com") {
+    if (existing && existing.length > 0 && email !== "cokillage67@gmail.com" && email !== "monprojet081@gmail.com") {
       setStep("already_played")
       setLoading(false)
       return
