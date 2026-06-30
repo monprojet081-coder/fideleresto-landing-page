@@ -56,7 +56,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
       .eq("restaurant_slug", slug)
       .gte("created_at", since)
 
-    if (existing && existing.length > 0 && email !== "cokillage67@gmail.com") {
+    if (existing && existing.length > 0 && email !== "cokillage67@gmail.com" && email !== "tonadresse.resend@gmail.com") {
       setStep("already_played")
       setLoading(false)
       return
@@ -250,7 +250,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
               <p className="text-xl font-bold text-blue-600">{result.label}</p>
             </div>
-            <p className="text-sm text-gray-500">Montrez cet écran au comptoir pour profiter de votre récompense !</p>
+            <p className="text-sm text-gray-500">Un email avec votre récompense vient de vous être envoyé. Montrez-le au comptoir pour en profiter !</p>
           </div>
         )}
 
