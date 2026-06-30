@@ -38,7 +38,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Button variant="ghost" size="lg" nativeButton={false} render={<a href="/inscription" />}>
+          <Button variant="ghost" size="lg" nativeButton={false} render={<a href="/connexion" />}>
             Se connecter
           </Button>
           <Button size="lg" nativeButton={false} render={<a href="/inscription" />}>
