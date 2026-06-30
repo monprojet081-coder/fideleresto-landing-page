@@ -23,10 +23,15 @@ const steps = [
 
 export function HowItWorksSection() {
   return (
-    <section id="comment-ca-marche" className="border-t border-border bg-muted/40 py-20 sm:py-28">
+    <section id="comment-ca-marche" className="relative overflow-hidden border-t border-border bg-muted/40 py-20 sm:py-28">
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full bg-violet-400/10 blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-blue-400/10 blur-3xl" />
+      </div>
+
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="text-sm font-semibold uppercase tracking-wide text-primary">
+          <span className="text-sm font-semibold uppercase tracking-wide bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
             Comment ça marche
           </span>
           <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
@@ -40,7 +45,10 @@ export function HowItWorksSection() {
         <div className="mt-14 grid gap-8 md:grid-cols-3">
           {steps.map((step, index) => (
             <div key={step.title} className="relative flex flex-col items-center text-center">
-              <div className="relative flex size-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+              {index < steps.length - 1 && (
+                <div className="absolute left-1/2 top-8 hidden h-px w-full translate-x-8 bg-gradient-to-r from-blue-300 to-violet-300 md:block" />
+              )}
+              <div className="relative flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 text-white shadow-lg shadow-blue-500/25">
                 <step.icon className="size-7" aria-hidden="true" />
                 <span className="absolute -right-2 -top-2 flex size-7 items-center justify-center rounded-full border-2 border-background bg-foreground text-xs font-bold text-background">
                   {index + 1}

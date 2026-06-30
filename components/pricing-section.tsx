@@ -14,10 +14,14 @@ const included = [
 
 export function PricingSection() {
   return (
-    <section id="tarifs" className="border-t border-border bg-muted/40 py-20 sm:py-28">
+    <section id="tarifs" className="relative overflow-hidden border-t border-border bg-muted/40 py-20 sm:py-28">
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute top-0 left-1/2 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-br from-blue-400/10 via-violet-400/10 to-transparent blur-3xl" />
+      </div>
+
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="text-sm font-semibold uppercase tracking-wide text-primary">
+          <span className="text-sm font-semibold uppercase tracking-wide bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
             Tarifs
           </span>
           <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
@@ -29,8 +33,8 @@ export function PricingSection() {
         </div>
 
         <div className="mx-auto mt-14 max-w-lg">
-          <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-xl shadow-primary/5">
-            <div className="bg-primary px-8 py-8 text-center text-primary-foreground">
+          <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-xl shadow-blue-500/10">
+            <div className="bg-gradient-to-br from-blue-600 to-violet-600 px-8 py-8 text-center text-white">
               <p className="text-sm font-medium uppercase tracking-wide opacity-90">
                 Formule unique
               </p>
@@ -45,7 +49,7 @@ export function PricingSection() {
               <ul className="flex flex-col gap-3">
                 {included.map((item) => (
                   <li key={item} className="flex items-start gap-3">
-                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
+                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-violet-100 text-blue-600">
                       <Check className="size-3.5" aria-hidden="true" />
                     </span>
                     <span className="text-sm leading-relaxed text-foreground">{item}</span>
@@ -55,9 +59,9 @@ export function PricingSection() {
 
               <Button
                 size="lg"
-                className="mt-8 h-11 w-full text-base"
+                className="mt-8 h-11 w-full bg-gradient-to-r from-blue-600 to-violet-600 text-base text-white shadow-md shadow-blue-500/25 hover:from-blue-700 hover:to-violet-700"
                 nativeButton={false}
-                render={<a href="#" />}
+                render={<a href="/inscription" />}
               >
                 Commencer gratuitement
               </Button>

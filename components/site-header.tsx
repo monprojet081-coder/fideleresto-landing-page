@@ -17,17 +17,17 @@ export function SiteHeader() {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border/70 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <a href="#" className="flex items-center gap-2" aria-label="FidèleResto, accueil">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <span className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-violet-600 text-white shadow-md shadow-blue-500/25">
             <UtensilsCrossed className="size-5" aria-hidden="true" />
           </span>
           <span className="text-lg font-semibold tracking-tight text-foreground">
-            Fidèle<span className="text-primary">Resto</span>
+            Fidèle<span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">Resto</span>
           </span>
         </a>
 
         <nav className="hidden items-center gap-8 md:flex" aria-label="Navigation principale">
           {navLinks.map((link) => (
-            <a
+            
               key={link.href}
               href={link.href}
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -41,7 +41,12 @@ export function SiteHeader() {
           <Button variant="ghost" size="lg" nativeButton={false} render={<a href="/connexion" />}>
             Se connecter
           </Button>
-          <Button size="lg" nativeButton={false} render={<a href="/inscription" />}>
+          <Button
+            size="lg"
+            className="bg-gradient-to-r from-blue-600 to-violet-600 text-white shadow-md shadow-blue-500/25 hover:from-blue-700 hover:to-violet-700"
+            nativeButton={false}
+            render={<a href="/inscription" />}
+          >
             Commencer gratuitement
           </Button>
         </div>
@@ -61,7 +66,7 @@ export function SiteHeader() {
         <div className="border-t border-border bg-background md:hidden">
           <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-4" aria-label="Navigation mobile">
             {navLinks.map((link) => (
-              <a
+              
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
@@ -71,10 +76,15 @@ export function SiteHeader() {
               </a>
             ))}
             <div className="mt-3 flex flex-col gap-2">
-              <Button variant="outline" size="lg" nativeButton={false} render={<a href="/inscription" />}>
+              <Button variant="outline" size="lg" nativeButton={false} render={<a href="/connexion" />}>
                 Se connecter
               </Button>
-              <Button size="lg" nativeButton={false} render={<a href="/inscription" />}>
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-blue-600 to-violet-600 text-white"
+                nativeButton={false}
+                render={<a href="/inscription" />}
+              >
                 Commencer gratuitement
               </Button>
             </div>

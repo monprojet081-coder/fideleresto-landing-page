@@ -14,17 +14,17 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           <a href="#" className="flex items-center gap-2" aria-label="FidèleResto, accueil">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-violet-600 text-white">
               <UtensilsCrossed className="size-4" aria-hidden="true" />
             </span>
             <span className="text-base font-semibold tracking-tight text-foreground">
-              Fidèle<span className="text-primary">Resto</span>
+              Fidèle<span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">Resto</span>
             </span>
           </a>
 
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2" aria-label="Liens légaux">
             {legalLinks.map((link) => (
-              <a
+              
                 key={link.label}
                 href={link.href}
                 className="text-sm text-muted-foreground transition-colors hover:text-foreground"

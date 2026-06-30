@@ -26,10 +26,14 @@ const testimonials = [
 
 export function TestimonialsSection() {
   return (
-    <section className="py-20 sm:py-28">
+    <section className="relative overflow-hidden py-20 sm:py-28">
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-violet-400/10 blur-3xl" />
+      </div>
+
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="text-sm font-semibold uppercase tracking-wide text-primary">
+          <span className="text-sm font-semibold uppercase tracking-wide bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
             Témoignages
           </span>
           <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
@@ -44,18 +48,18 @@ export function TestimonialsSection() {
           {testimonials.map((t) => (
             <figure
               key={t.name}
-              className="flex flex-col rounded-2xl border border-border bg-card p-6"
+              className="flex flex-col rounded-2xl border border-border bg-card p-6 transition-all hover:shadow-lg hover:shadow-blue-500/5"
             >
               <div className="flex gap-0.5" aria-hidden="true">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="size-4 fill-primary text-primary" />
+                  <Star key={i} className="size-4 fill-blue-500 text-blue-500" />
                 ))}
               </div>
               <blockquote className="mt-4 flex-1 text-pretty leading-relaxed text-foreground">
                 &ldquo;{t.quote}&rdquo;
               </blockquote>
               <figcaption className="mt-6 flex items-center gap-3">
-                <span className="flex size-10 items-center justify-center rounded-full bg-accent text-sm font-semibold text-primary">
+                <span className="flex size-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-violet-600 text-sm font-semibold text-white">
                   {t.initials}
                 </span>
                 <span>
