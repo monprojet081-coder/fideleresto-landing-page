@@ -21,6 +21,9 @@ export default function DashboardPage() {
   const [saving, setSaving] = useState(false)
   const [clients, setClients] = useState<any[]>([])
   const [clientsLoading, setClientsLoading] = useState(true)
+  const [restaurant, setRestaurant] = useState<any>(null)
+  const [googleAvisUrl, setGoogleAvisUrl] = useState("")
+  const [savingParams, setSavingParams] = useState(false)
 
   useEffect(() => {
     const getUser = async () => {
@@ -30,6 +33,7 @@ export default function DashboardPage() {
       } else {
         setUser(user)
         const slug = user.id.slice(0, 8)
+
         const { data } = await supabase
           .from("roue_config")
           .select("*")
@@ -51,6 +55,29 @@ export default function DashboardPage() {
           setClients(clientsData)
         }
         setClientsLoading(false)
+
+        const { data: restoData } = await supabase
+          .from("restaurants")
+          .select("*")
+          .eq("slug", slug)
+          .maybeSingle()
+
+        if (restoData) {
+          setRestaurant(restoData)
+          setGoogleAvisUrl(restoData.google_avis_url || "")
+        } else {
+          const { data: newResto } = await supabase
+            .from("restaurants")
+            .insert([{
+              user_id: user.id,
+              slug,
+              nom_restaurant: user.user_metadata?.nom_restaurant || "Mon Restaurant",
+              scan_qr: 0,
+            }])
+            .select()
+            .single()
+          if (newResto) setRestaurant(newResto)
+        }
       }
       setLoading(false)
     }
@@ -100,6 +127,21 @@ export default function DashboardPage() {
     alert("Roue sauvegardée !")
   }
 
+  const saveParametres = async () => {
+    setSavingParams(true)
+    const slug = user.id.slice(0, 8)
+    const { error } = await supabase
+      .from("restaurants")
+      .update({ google_avis_url: googleAvisUrl })
+      .eq("slug", slug)
+    if (error) {
+      alert("Erreur lors de la sauvegarde : " + error.message)
+    } else {
+      alert("Paramètres sauvegardés !")
+    }
+    setSavingParams(false)
+  }
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
@@ -113,7 +155,7 @@ export default function DashboardPage() {
   const totalProba = rewards.reduce((a, r) => a + r.probabilite, 0)
 
   const kpis = [
-    { label: "Scans QR", value: "0", icon: QrCode, color: "bg-blue-50 text-blue-600" },
+    { label: "Scans QR", value: restaurant?.scan_qr?.toString() || "0", icon: QrCode, color: "bg-blue-50 text-blue-600" },
     { label: "Clients collectés", value: "0", icon: Users, color: "bg-green-50 text-green-600" },
     { label: "Récompenses distribuées", value: "0", icon: Gift, color: "bg-purple-50 text-purple-600" },
     { label: "Avis Google", value: "0", icon: Star, color: "bg-yellow-50 text-yellow-600" },
@@ -430,8 +472,23 @@ export default function DashboardPage() {
                     className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm bg-gray-50 text-gray-400"
                   />
                 </div>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg transition-colors text-sm">
-                  Sauvegarder
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Lien de votre fiche Google Avis</label>
+                  <input
+                    type="url"
+                    placeholder="https://g.page/r/..."
+                    value={googleAvisUrl}
+                    onChange={e => setGoogleAvisUrl(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-400">Vos clients seront redirigés ici après avoir gagné à la roue</p>
+                </div>
+                <button
+                  onClick={saveParametres}
+                  disabled={savingParams}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-2.5 px-6 rounded-lg transition-colors text-sm"
+                >
+                  {savingParams ? "Sauvegarde..." : "Sauvegarder"}
                 </button>
               </div>
             </div>
