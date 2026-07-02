@@ -473,16 +473,16 @@ export default function DashboardPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Lien de votre fiche Google Avis</label>
-                  <input
-                    type="url"
-                    placeholder="https://g.page/r/..."
-                    value={googleAvisUrl}
-                    onChange={e => setGoogleAvisUrl(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <p className="mt-1 text-xs text-gray-400">Vos clients seront redirigés ici après avoir gagné à la roue</p>
-                </div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">Nom exact de votre restaurant sur Google</label>
+  <input
+    type="text"
+    placeholder="Ex : La Bella Vita Strasbourg"
+    value={googleAvisUrl}
+    onChange={e => setGoogleAvisUrl(e.target.value)}
+    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+  <p className="mt-1 text-xs text-gray-400">Écrivez le nom comme il apparaît sur Google Maps, avec la ville. Vos clients seront redirigés vers votre page d'avis après avoir gagné.</p>
+</div>
                 <button
                   onClick={saveParametres}
                   disabled={savingParams}

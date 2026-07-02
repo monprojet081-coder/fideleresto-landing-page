@@ -17,6 +17,15 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [error, setError] = useState("")
   const [rewards, setRewards] = useState<{ label: string; probabilite: number; couleur: string }[]>([])
 
+  // Enregistre le scan du QR code dès l'arrivée sur la page
+  React.useEffect(() => {
+    fetch("/api/track-scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug }),
+    })
+  }, [])
+
   const getResult = (rewardsList: { label: string; probabilite: number; couleur: string }[]) => {
     const rand = Math.random() * 100
     let cumulative = 0
@@ -34,11 +43,8 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   ) => {
     const index = rewardsList.findIndex(r => r.label === wonReward.label)
     const arcDeg = 360 / rewardsList.length
-    // Centre de la case gagnante (la roue démarre à -90°, donc on compense)
     const caseCenterDeg = index * arcDeg + arcDeg / 2
-    // On veut que cette case soit en haut (0°), donc on tourne de l'inverse
-    // + plusieurs tours pour l'effet visuel + un peu d'aléatoire dans la case
-    const randomOffset = (Math.random() - 0.5) * (arcDeg * 0.6) // reste dans la case
+    const randomOffset = (Math.random() - 0.5) * (arcDeg * 0.6)
     const extraSpins = 5 * 360
     return extraSpins + (360 - caseCenterDeg + randomOffset)
   }
@@ -107,7 +113,6 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
     setTimeout(() => {
       setSpinning(true)
-      // ✅ CORRIGÉ : on calcule l'angle exact pour pointer sur la bonne case
       const targetAngle = getTargetRotation(rewardsList, reward)
       setRotation(targetAngle)
 
@@ -250,7 +255,8 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
               <p className="text-xl font-bold text-blue-600">{result.label}</p>
             </div>
-            <p className="text-sm text-gray-500">Un email avec votre récompense vient de vous être envoyé. Montrez-le au comptoir pour en profiter !</p>
+            <p className="text-sm text-gray-500 mb-4">Un email avec votre récompense vient de vous être envoyé. Montrez-le au comptoir pour en profiter !</p>
+            <GoogleReviewButton slug={slug} />
           </div>
         )}
 
@@ -278,5 +284,36 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
       </div>
     </div>
+  )
+}
+
+function GoogleReviewButton({ slug }: { slug: string }) {
+  const [googleUrl, setGoogleUrl] = useState<string | null>(null)
+
+  React.useEffect(() => {
+    supabase
+      .from("restaurants")
+      .select("google_avis_url")
+      .eq("slug", slug)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.google_avis_url) {
+          const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(data.google_avis_url)}#lrd=1`
+          setGoogleUrl(searchUrl)
+        }
+      })
+  }, [slug])
+
+  if (!googleUrl) return null
+
+  return (
+    
+      href={googleUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-block bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm font-medium px-4 py-2 rounded-lg hover:bg-yellow-100 transition-colors"
+    >
+      ⭐ Laisser un avis Google
+    </a>
   )
 }
