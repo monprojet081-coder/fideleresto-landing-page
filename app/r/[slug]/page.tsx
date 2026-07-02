@@ -3,11 +3,11 @@
 import React, { useState } from "react"
 import { supabase } from "@/lib/supabase"
 
-type Step = "form" | "wheel" | "win" | "lose" | "already_played"
+type Step = "checking" | "not_found" | "form" | "wheel" | "win" | "lose" | "already_played"
 
 export default function WheelPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = React.use(params)
-  const [step, setStep] = useState<Step>("form")
+  const [step, setStep] = useState<Step>("checking")
   const [prenom, setPrenom] = useState("")
   const [email, setEmail] = useState("")
   const [spinning, setSpinning] = useState(false)
@@ -17,14 +17,28 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [error, setError] = useState("")
   const [rewards, setRewards] = useState<{ label: string; probabilite: number; couleur: string }[]>([])
 
-  // Enregistre le scan du QR code dès l'arrivée sur la page
+  // Vérifie que le restaurant existe vraiment avant d'afficher quoi que ce soit.
+  // Empêche de contourner l'anti-fraude en modifiant le slug dans l'URL.
   React.useEffect(() => {
-    fetch("/api/track-scan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug }),
-    })
-  }, [])
+    supabase
+      .from("restaurants")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setStep("form")
+          // Le scan ne compte que si le restaurant existe réellement
+          fetch("/api/track-scan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ slug }),
+          })
+        } else {
+          setStep("not_found")
+        }
+      })
+  }, [slug])
 
   const getResult = (rewardsList: { label: string; probabilite: number; couleur: string }[]) => {
     const rand = Math.random() * 100
@@ -125,6 +139,26 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         }
       }, 4000)
     }, 500)
+  }
+
+  if (step === "checking") {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <p className="text-gray-400 text-sm">Chargement...</p>
+      </div>
+    )
+  }
+
+  if (step === "not_found") {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-8 text-center">
+          <div className="text-6xl mb-4">🔍</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Roue introuvable</h1>
+          <p className="text-gray-500 text-sm">Ce lien ne correspond à aucun restaurant. Vérifiez le QR code ou le lien utilisé.</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -298,8 +332,7 @@ function GoogleReviewButton({ slug }: { slug: string }) {
       .maybeSingle()
       .then(({ data }) => {
         if (data?.google_avis_url) {
-          const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(data.google_avis_url)}#lrd=1`
-          setGoogleUrl(searchUrl)
+          setGoogleUrl(data.google_avis_url)
         }
       })
   }, [slug])
