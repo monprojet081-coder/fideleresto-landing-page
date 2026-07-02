@@ -307,7 +307,7 @@ function GoogleReviewButton({ slug }: { slug: string }) {
   if (!googleUrl) return null
 
   return (
-    
+    <a
       href={googleUrl}
       target="_blank"
       rel="noopener noreferrer"
