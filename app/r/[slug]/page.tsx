@@ -29,7 +29,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         if (data) {
           setStep("form")
           // Le scan ne compte que si le restaurant existe réellement
-          fetch("/api/track-scan", {
+          fetch("/api/send-reward-email/track-scan", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ slug }),
