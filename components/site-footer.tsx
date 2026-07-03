@@ -10,15 +10,15 @@ const legalLinks = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-background">
+    <footer className="border-t border-wine/10 bg-ivory">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           <a href="#" className="flex items-center gap-2" aria-label="FidèleResto, accueil">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-violet-600 text-white">
+            <span className="flex size-8 items-center justify-center rounded-full bg-wine text-gold-light">
               <UtensilsCrossed className="size-4" aria-hidden="true" />
             </span>
-            <span className="text-base font-semibold tracking-tight text-foreground">
-              Fidèle<span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">Resto</span>
+            <span className="font-display text-base font-semibold tracking-tight text-ink">
+              Fidèle<span className="text-wine">Resto</span>
             </span>
           </a>
 
@@ -27,7 +27,7 @@ export function SiteFooter() {
               <a
                 key={link.label}
                 href={link.href}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="text-sm text-ink/55 transition-colors hover:text-wine"
               >
                 {link.label}
               </a>
@@ -35,7 +35,7 @@ export function SiteFooter() {
           </nav>
         </div>
 
-        <div className="mt-8 border-t border-border pt-6 text-center text-sm text-muted-foreground">
+        <div className="mt-8 border-t border-wine/10 pt-6 text-center text-sm text-ink/50">
           © {new Date().getFullYear()} FidèleResto. Tous droits réservés.
         </div>
       </div>

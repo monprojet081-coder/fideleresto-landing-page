@@ -41,20 +41,16 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="fonctionnalites" className="relative overflow-hidden py-20 sm:py-28">
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-blue-400/5 via-violet-400/5 to-transparent blur-3xl" />
-      </div>
-
+    <section id="fonctionnalites" className="relative overflow-hidden bg-ivory py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="text-sm font-semibold uppercase tracking-wide bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
+          <span className="text-sm font-semibold uppercase tracking-wide text-wine">
             Fonctionnalités
           </span>
-          <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <h2 className="mt-3 text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
             Tout ce qu&apos;il faut pour fidéliser
           </h2>
-          <p className="mt-4 text-pretty text-lg leading-relaxed text-muted-foreground">
+          <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/65">
             Une plateforme complète qui combine fidélisation, collecte de données et gestion de votre e-réputation.
           </p>
         </div>
@@ -63,14 +59,13 @@ export function FeaturesSection() {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="group relative rounded-2xl border border-border bg-card p-6 transition-all hover:border-transparent hover:shadow-xl hover:shadow-blue-500/10"
+              className="group relative rounded-2xl border border-wine/12 bg-card p-6 transition-all hover:border-gold/40 hover:shadow-xl hover:shadow-wine/5"
             >
-              <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-blue-50 to-violet-50 opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-violet-100 text-blue-600 transition-all group-hover:bg-gradient-to-br group-hover:from-blue-600 group-hover:to-violet-600 group-hover:text-white">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-wine/8 text-wine transition-all group-hover:bg-wine group-hover:text-gold-light">
                 <feature.icon className="size-6" aria-hidden="true" />
               </div>
-              <h3 className="mt-5 text-lg font-semibold text-foreground">{feature.title}</h3>
-              <p className="mt-2 text-pretty leading-relaxed text-muted-foreground">
+              <h3 className="mt-5 font-display text-lg font-semibold text-ink">{feature.title}</h3>
+              <p className="mt-2 text-pretty leading-relaxed text-ink/65">
                 {feature.description}
               </p>
             </div>
