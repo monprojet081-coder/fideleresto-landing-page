@@ -160,8 +160,8 @@ if (newResto) {
 
   const kpis = [
     { label: "Scans QR", value: restaurant?.scan_qr?.toString() || "0", icon: QrCode, color: "bg-blue-50 text-blue-600" },
-    { label: "Clients collectés", value: "0", icon: Users, color: "bg-green-50 text-green-600" },
-    { label: "Récompenses distribuées", value: "0", icon: Gift, color: "bg-purple-50 text-purple-600" },
+    { label: "Clients collectés", value: clients.length.toString(), icon: Users, color: "bg-green-50 text-green-600" },
+    { label: "Récompenses distribuées", value: clients.filter((c) => c.a_gagne).length.toString(), icon: Gift, color: "bg-purple-50 text-purple-600" },
     { label: "Avis Google", value: "0", icon: Star, color: "bg-yellow-50 text-yellow-600" },
   ]
 
