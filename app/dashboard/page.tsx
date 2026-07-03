@@ -72,11 +72,15 @@ export default function DashboardPage() {
               user_id: user.id,
               slug,
               nom_restaurant: user.user_metadata?.nom_restaurant || "Mon Restaurant",
-              scan_qr: 0,
-            }])
-            .select()
-            .single()
-          if (newResto) setRestaurant(newResto)
+google_avis_url: user.user_metadata?.google_avis_url || null,
+scan_qr: 0,
+}])
+.select()
+.single()
+if (newResto) {
+  setRestaurant(newResto)
+  setGoogleAvisUrl(newResto.google_avis_url || "")
+}
         }
       }
       setLoading(false)

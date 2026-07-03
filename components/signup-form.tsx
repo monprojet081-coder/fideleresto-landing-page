@@ -13,6 +13,7 @@ export function SignupForm() {
     typeCuisine: "",
     ville: "",
     telephone: "",
+    googleAvisUrl: "",
     email: "",
     motDePasse: "",
     confirmerMotDePasse: "",
@@ -44,6 +45,7 @@ export function SignupForm() {
           type_cuisine: formData.typeCuisine,
           ville: formData.ville,
           telephone: formData.telephone,
+          google_avis_url: formData.googleAvisUrl,
         }
       }
     })
@@ -133,7 +135,21 @@ export function SignupForm() {
               />
             </div>
           </div>
-
+          <div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Lien pour laisser un avis Google (optionnel)
+  </label>
+  <input
+    type="text"
+    placeholder="Ex : https://g.page/r/XXXXXXXXXXXX/review"
+    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    value={formData.googleAvisUrl}
+    onChange={(e) => setFormData({ ...formData, googleAvisUrl: e.target.value })}
+  />
+  <p className="mt-1 text-xs text-gray-400">
+    Sur votre fiche Google Business Profile, cliquez sur "Demander des avis" puis "Copier le lien". Vous pourrez aussi l'ajouter plus tard dans Paramètres.
+  </p>
+</div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email professionnel
