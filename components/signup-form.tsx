@@ -137,7 +137,7 @@ export function SignupForm() {
           </div>
           <div>
   <label className="block text-sm font-medium text-gray-700 mb-1">
-    Lien pour laisser un avis Google (optionnel)
+    Lien de votre page avis Google
   </label>
   <input
     type="text"
@@ -147,7 +147,7 @@ export function SignupForm() {
     onChange={(e) => setFormData({ ...formData, googleAvisUrl: e.target.value })}
   />
   <p className="mt-1 text-xs text-gray-400">
-    Sur votre fiche Google Business Profile, cliquez sur "Demander des avis" puis "Copier le lien". Vous pourrez aussi l'ajouter plus tard dans Paramètres.
+    Vous pouvez le laisser vide pour l'instant, mais pensez à l'ajouter dans Paramètres avant de commencer à utiliser la roue, sinon vos clients ne pourront pas laisser d'avis après avoir gagné.
   </p>
 </div>
           <div>
