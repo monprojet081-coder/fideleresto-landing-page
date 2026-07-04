@@ -25,7 +25,7 @@ const plans = [
       "Tout ce qui est inclus dans Standard",
       "Menu digital en ligne",
       "Carte de fidélité digitale",
-      "Création de votre site web",
+      "Création de votre site web (+399€ à la souscription)",
       "Accompagnement prioritaire",
     ],
   },
