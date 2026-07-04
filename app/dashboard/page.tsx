@@ -1,12 +1,21 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useState, useRef, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight } from "lucide-react"
+import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check } from "lucide-react"
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={null}>
+      <DashboardContent />
+    </Suspense>
+  )
+}
+
+function DashboardContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState("accueil")
@@ -24,6 +33,9 @@ export default function DashboardPage() {
   const [restaurant, setRestaurant] = useState<any>(null)
   const [googleAvisUrl, setGoogleAvisUrl] = useState("")
   const [savingParams, setSavingParams] = useState(false)
+  const [billingPeriod, setBillingPeriod] = useState<"mensuel" | "annuel">("mensuel")
+  const [subscribing, setSubscribing] = useState<string | null>(null)
+  const [abonnementMessage, setAbonnementMessage] = useState<string | null>(null)
 
   useEffect(() => {
     const getUser = async () => {
@@ -105,6 +117,38 @@ export default function DashboardPage() {
     }
   }, [activeSection, user])
 
+  useEffect(() => {
+    const statut = searchParams.get("abonnement")
+    if (statut === "succes") {
+      setAbonnementMessage("Paiement confirmé, merci ! Votre abonnement est en cours d'activation (quelques secondes).")
+      setActiveSection("abonnement")
+    } else if (statut === "annule") {
+      setAbonnementMessage("Le paiement a été annulé, aucun montant n'a été prélevé.")
+      setActiveSection("abonnement")
+    }
+  }, [searchParams])
+
+  const handleSubscribe = async (planKey: string) => {
+    setSubscribing(planKey)
+    try {
+      const res = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, plan: planKey }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert("Erreur : " + (data.error || "impossible de démarrer le paiement"))
+        setSubscribing(null)
+      }
+    } catch (err) {
+      alert("Erreur lors de la connexion au paiement")
+      setSubscribing(null)
+    }
+  }
+
   const saveRewards = async () => {
     setSaving(true)
     const slug = user.id.slice(0, 8)
@@ -170,6 +214,7 @@ export default function DashboardPage() {
     { id: "qrcode", label: "Mon QR code", icon: QrCode },
     { id: "clients", label: "Mes clients", icon: Users },
     { id: "roue", label: "Ma roue", icon: Sliders },
+    { id: "abonnement", label: "Abonnement", icon: CreditCard },
     { id: "parametres", label: "Paramètres", icon: Settings },
   ]
 
@@ -466,6 +511,136 @@ export default function DashboardPage() {
               >
                 {saving ? "Sauvegarde..." : "Sauvegarder ma roue"}
               </button>
+            </div>
+          </div>
+        )}
+
+        {activeSection === "abonnement" && (
+          <div>
+            <div className="mb-8">
+              <h1 className="text-2xl font-display font-semibold text-ink">Abonnement</h1>
+              <p className="text-ink/55 mt-1">Choisissez le plan adapté à votre restaurant</p>
+            </div>
+
+            {abonnementMessage && (
+              <div className="mb-6 max-w-2xl rounded-lg border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-wine-dark">
+                {abonnementMessage}
+              </div>
+            )}
+
+            {restaurant?.plan && (
+              <div className="mb-6 max-w-2xl flex items-center justify-between rounded-xl border border-wine/10 bg-card px-5 py-4 shadow-sm">
+                <div>
+                  <p className="text-sm text-ink/55">Votre plan actuel</p>
+                  <p className="font-display text-lg font-semibold text-ink capitalize">{restaurant.plan}</p>
+                </div>
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                  restaurant.statut_abonnement === "actif" ? "bg-sage/12 text-sage" :
+                  restaurant.statut_abonnement === "impaye" ? "bg-wine/10 text-wine" :
+                  "bg-secondary text-ink/50"
+                }`}>
+                  {restaurant.statut_abonnement === "actif" ? "Actif" :
+                   restaurant.statut_abonnement === "impaye" ? "Paiement en échec" :
+                   "Annulé"}
+                </span>
+              </div>
+            )}
+
+            {/* Bascule mensuel / annuel */}
+            <div className="mb-8 inline-flex items-center rounded-full border border-wine/15 bg-card p-1">
+              <button
+                onClick={() => setBillingPeriod("mensuel")}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  billingPeriod === "mensuel" ? "bg-wine text-gold-light" : "text-ink/60"
+                }`}
+              >
+                Mensuel
+              </button>
+              <button
+                onClick={() => setBillingPeriod("annuel")}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  billingPeriod === "annuel" ? "bg-wine text-gold-light" : "text-ink/60"
+                }`}
+              >
+                Annuel <span className="opacity-75">(2 mois offerts)</span>
+              </button>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2 max-w-3xl">
+              {[
+                {
+                  key: "standard",
+                  nom: "Standard",
+                  prixMensuel: 99,
+                  prixAnnuel: 990,
+                  features: [
+                    "QR code personnalisé illimité",
+                    "Roue de la fidélité personnalisable",
+                    "Collecte automatique des clients",
+                    "Boost des avis Google",
+                    "Emails automatiques de récompense",
+                    "Tableau de bord complet",
+                  ],
+                },
+                {
+                  key: "premium",
+                  nom: "Premium",
+                  prixMensuel: 149,
+                  prixAnnuel: 1490,
+                  features: [
+                    "Tout ce qui est inclus dans Standard",
+                    "Menu digital en ligne",
+                    "Carte de fidélité digitale",
+                    "Création de votre site web",
+                    "Accompagnement prioritaire",
+                  ],
+                },
+              ].map((offre) => {
+                const planKey = `${offre.key}_${billingPeriod === "mensuel" ? "mensuel" : "annuel"}`
+                const estPlanActuel = restaurant?.plan === offre.key && restaurant?.statut_abonnement === "actif"
+                return (
+                  <div
+                    key={offre.key}
+                    className={`relative rounded-2xl border bg-card p-6 shadow-sm ${
+                      offre.key === "premium" ? "border-gold/50" : "border-wine/10"
+                    }`}
+                  >
+                    {offre.key === "premium" && (
+                      <span className="absolute -top-3 left-6 rounded-full bg-gold px-3 py-1 text-xs font-semibold text-wine-dark">
+                        Le plus complet
+                      </span>
+                    )}
+                    <h3 className="font-display text-xl font-semibold text-ink">{offre.nom}</h3>
+                    <div className="mt-2 flex items-end gap-1">
+                      <span className="font-display text-3xl font-semibold text-wine">
+                        {billingPeriod === "mensuel" ? offre.prixMensuel : offre.prixAnnuel}€
+                      </span>
+                      <span className="text-sm text-ink/50 mb-1">
+                        /{billingPeriod === "mensuel" ? "mois" : "an"}
+                      </span>
+                    </div>
+                    <ul className="mt-5 space-y-2.5">
+                      {offre.features.map((f) => (
+                        <li key={f} className="flex items-start gap-2 text-sm text-ink/75">
+                          <Check className="size-4 mt-0.5 text-sage flex-shrink-0" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      onClick={() => handleSubscribe(planKey)}
+                      disabled={estPlanActuel || subscribing !== null}
+                      className={`mt-6 w-full py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-60 ${
+                        offre.key === "premium"
+                          ? "bg-wine text-gold-light hover:bg-wine-dark"
+                          : "bg-secondary text-ink hover:bg-secondary/70"
+                      }`}
+                    >
+                      {estPlanActuel ? "Plan actuel" : subscribing === planKey ? "Redirection..." : "Choisir ce plan"}
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
