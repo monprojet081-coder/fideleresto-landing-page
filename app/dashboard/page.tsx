@@ -34,6 +34,7 @@ function DashboardContent() {
   const [googleAvisUrl, setGoogleAvisUrl] = useState("")
   const [savingParams, setSavingParams] = useState(false)
   const [billingPeriod, setBillingPeriod] = useState<"mensuel" | "annuel">("mensuel")
+  const [avecCreationSite, setAvecCreationSite] = useState(false)
   const [subscribing, setSubscribing] = useState<string | null>(null)
   const [abonnementMessage, setAbonnementMessage] = useState<string | null>(null)
 
@@ -134,7 +135,11 @@ function DashboardContent() {
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, plan: planKey }),
+        body: JSON.stringify({
+          userId: user.id,
+          plan: planKey,
+          avecCreationSite: planKey.startsWith("premium") ? avecCreationSite : false,
+        }),
       })
       const data = await res.json()
       if (data.url) {
@@ -591,7 +596,7 @@ function DashboardContent() {
                     "Tout ce qui est inclus dans Standard",
                     "Menu digital en ligne",
                     "Carte de fidélité digitale",
-                    "Création de votre site web (+399€ à la souscription)",
+                    "Création de votre site web (+499€, optionnel)",
                     "Accompagnement prioritaire",
                   ],
                 },
@@ -627,6 +632,22 @@ function DashboardContent() {
                         </li>
                       ))}
                     </ul>
+
+                    {offre.key === "premium" && !estPlanActuel && (
+                      <label className="mt-4 flex items-start gap-2.5 rounded-lg bg-secondary/50 p-3 text-sm text-ink/75 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={avecCreationSite}
+                          onChange={(e) => setAvecCreationSite(e.target.checked)}
+                          className="mt-0.5 accent-wine"
+                        />
+                        <span>
+                          Je n&apos;ai pas encore de site, créez-moi en un
+                          <span className="block text-xs text-ink/50">+499€ de frais uniques, à la souscription</span>
+                        </span>
+                      </label>
+                    )}
+
                     <button
                       onClick={() => handleSubscribe(planKey)}
                       disabled={estPlanActuel || subscribing !== null}

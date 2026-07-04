@@ -12,4 +12,7 @@ export const STRIPE_PRICES = {
   premium_annuel: process.env.STRIPE_PRICE_PREMIUM_ANNUEL!,
 } as const
 
+// Frais uniques (one-shot), facturés seulement si le restaurant veut qu'on lui crée un site
+export const STRIPE_PRICE_FRAIS_SITE = process.env.STRIPE_PRICE_FRAIS_SITE_PREMIUM!
+
 export type PlanKey = keyof typeof STRIPE_PRICES

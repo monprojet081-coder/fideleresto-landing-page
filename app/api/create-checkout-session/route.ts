@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { stripe, STRIPE_PRICES, PlanKey } from '@/lib/stripe'
+import { stripe, STRIPE_PRICES, STRIPE_PRICE_FRAIS_SITE, PlanKey } from '@/lib/stripe'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,7 +9,11 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, plan } = await req.json() as { userId: string; plan: PlanKey }
+    const { userId, plan, avecCreationSite } = await req.json() as {
+      userId: string
+      plan: PlanKey
+      avecCreationSite?: boolean
+    }
 
     if (!userId || !plan || !STRIPE_PRICES[plan]) {
       return NextResponse.json({ error: 'Paramètres invalides' }, { status: 400 })
@@ -31,9 +35,18 @@ export async function POST(req: NextRequest) {
 
     const origin = req.headers.get('origin') || 'https://fideleresto-landing-page-9dhz.vercel.app'
 
+    const lineItems: { price: string; quantity: number }[] = [
+      { price: STRIPE_PRICES[plan], quantity: 1 },
+    ]
+
+    // Frais de mise en place du site : uniquement si demandé, et uniquement sur le Premium
+    if (plan.startsWith('premium') && avecCreationSite) {
+      lineItems.push({ price: STRIPE_PRICE_FRAIS_SITE, quantity: 1 })
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
-      line_items: [{ price: STRIPE_PRICES[plan], quantity: 1 }],
+      line_items: lineItems,
       // On garde une trace du restaurant concerné : récupéré dans le webhook
       // pour savoir quel restaurant mettre à jour une fois le paiement confirmé
       client_reference_id: slug,
