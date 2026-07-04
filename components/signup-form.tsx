@@ -62,38 +62,38 @@ export function SignupForm() {
   return (
     <div className="max-w-lg mx-auto">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-ink mb-2">
           Créez votre compte restaurant
         </h1>
-        <p className="text-gray-500">
+        <p className="text-ink/55">
           Rejoignez FidèleResto et commencez à fidéliser vos clients dès aujourd'hui.
         </p>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+      <div className="bg-card border border-wine/10 rounded-2xl p-8 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-5">
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-ink/80 mb-1">
               Nom du restaurant
             </label>
             <input
               type="text"
               placeholder="Chez Marco"
               required
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-wine/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold"
               value={formData.nomRestaurant}
               onChange={(e) => setFormData({ ...formData, nomRestaurant: e.target.value })}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-ink/80 mb-1">
               Type de cuisine
             </label>
             <select
               required
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="w-full px-4 py-2.5 border border-wine/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold bg-card"
               value={formData.typeCuisine}
               onChange={(e) => setFormData({ ...formData, typeCuisine: e.target.value })}
             >
@@ -110,55 +110,55 @@ export function SignupForm() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-ink/80 mb-1">
                 Ville
               </label>
               <input
                 type="text"
                 placeholder="Paris"
                 required
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-wine/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold"
                 value={formData.ville}
                 onChange={(e) => setFormData({ ...formData, ville: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-ink/80 mb-1">
                 Téléphone
               </label>
               <input
                 type="tel"
                 placeholder="06 12 34 56 78"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-wine/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold"
                 value={formData.telephone}
                 onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
               />
             </div>
           </div>
           <div>
-  <label className="block text-sm font-medium text-gray-700 mb-1">
+  <label className="block text-sm font-medium text-ink/80 mb-1">
     Lien de votre page avis Google
   </label>
   <input
     type="text"
     placeholder="Ex : https://g.page/r/XXXXXXXXXXXX/review"
-    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    className="w-full px-4 py-2.5 border border-wine/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold"
     value={formData.googleAvisUrl}
     onChange={(e) => setFormData({ ...formData, googleAvisUrl: e.target.value })}
   />
-  <p className="mt-1 text-xs text-gray-400">
+  <p className="mt-1 text-xs text-ink/45">
     Vous pouvez le laisser vide pour l'instant, mais pensez à l'ajouter dans Paramètres avant de commencer à utiliser la roue, sinon vos clients ne pourront pas laisser d'avis après avoir gagné.
   </p>
 </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-ink/80 mb-1">
               Email professionnel
             </label>
             <input
               type="email"
               placeholder="contact@monresto.fr"
               required
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-wine/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
@@ -166,27 +166,27 @@ export function SignupForm() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-ink/80 mb-1">
                 Mot de passe
               </label>
               <input
                 type="password"
                 placeholder="••••••••"
                 required
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-wine/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold"
                 value={formData.motDePasse}
                 onChange={(e) => setFormData({ ...formData, motDePasse: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-ink/80 mb-1">
                 Confirmer le mot de passe
               </label>
               <input
                 type="password"
                 placeholder="••••••••"
                 required
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-wine/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold"
                 value={formData.confirmerMotDePasse}
                 onChange={(e) => setFormData({ ...formData, confirmerMotDePasse: e.target.value })}
               />
@@ -197,37 +197,37 @@ export function SignupForm() {
             <input
               type="checkbox"
               id="conditions"
-              className="mt-1 accent-blue-600"
+              className="mt-1 accent-wine"
               checked={formData.conditions}
               onChange={(e) => setFormData({ ...formData, conditions: e.target.checked })}
             />
-            <label htmlFor="conditions" className="text-sm text-gray-600">
+            <label htmlFor="conditions" className="text-sm text-ink/70">
               J'accepte les{" "}
-              <a href="/conditions" className="text-blue-600 hover:underline">
+              <a href="/conditions" className="text-wine hover:underline">
                 conditions générales
               </a>{" "}
               et la{" "}
-              <a href="/confidentialite" className="text-blue-600 hover:underline">
+              <a href="/confidentialite" className="text-wine hover:underline">
                 politique de confidentialité
               </a>
             </label>
           </div>
 
           {error && (
-            <p className="text-red-500 text-sm text-center">{error}</p>
+            <p className="text-wine text-sm text-center">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-3 rounded-lg transition-colors"
+            className="w-full bg-wine hover:bg-wine-dark disabled:opacity-60 text-gold-light font-medium py-3 rounded-lg transition-colors"
           >
             {loading ? "Création en cours..." : "Créer mon compte"}
           </button>
 
-          <p className="text-center text-sm text-gray-500">
+          <p className="text-center text-sm text-ink/55">
             Déjà un compte ?{" "}
-            <a href="/connexion" className="text-blue-600 hover:underline font-medium">
+            <a href="/connexion" className="text-wine hover:underline font-medium">
               Se connecter
             </a>
           </p>
@@ -235,7 +235,7 @@ export function SignupForm() {
         </form>
       </div>
 
-      <p className="text-center text-xs text-gray-400 mt-6">
+      <p className="text-center text-xs text-ink/45 mt-6">
         14 jours d'essai gratuit · Sans carte bancaire · Sans engagement
       </p>
     </div>
