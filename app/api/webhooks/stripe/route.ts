@@ -27,18 +27,24 @@ export async function POST(req: NextRequest) {
 
   try {
     switch (event.type) {
-      // Le paiement initial est confirmé : on active le plan choisi
+      // Le paiement initial est confirmé (ou la période d'essai démarre) : on active le plan choisi
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
         const slug = session.client_reference_id
         const plan = session.metadata?.plan?.startsWith('premium') ? 'premium' : 'standard'
 
         if (slug) {
+          let statut = 'actif'
+          if (session.subscription) {
+            const subscription = await stripe.subscriptions.retrieve(session.subscription as string)
+            statut = subscription.status === 'trialing' ? 'essai' : 'actif'
+          }
+
           await supabase
             .from('restaurants')
             .update({
               plan,
-              statut_abonnement: 'actif',
+              statut_abonnement: statut,
               stripe_customer_id: session.customer as string,
             })
             .eq('slug', slug)
@@ -46,7 +52,7 @@ export async function POST(req: NextRequest) {
         break
       }
 
-      // L'abonnement est modifié (changement de plan, relance après échec de paiement résolue...)
+      // L'abonnement est modifié (changement de plan, fin d'essai, relance après échec de paiement résolue...)
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription
         const slug = subscription.metadata?.slug
@@ -54,6 +60,7 @@ export async function POST(req: NextRequest) {
 
         if (slug) {
           const statut =
+            subscription.status === 'trialing' ? 'essai' :
             subscription.status === 'active' ? 'actif' :
             subscription.status === 'past_due' ? 'impaye' :
             'annule'

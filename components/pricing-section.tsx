@@ -7,6 +7,7 @@ const plans = [
     prix: "99€",
     description: "Pour lancer votre fidélisation client",
     highlight: false,
+    essaiGratuit: true,
     features: [
       "QR code unique personnalisé",
       "Roue de la fidélité illimitée",
@@ -21,6 +22,7 @@ const plans = [
     prix: "149€",
     description: "Pour aller plus loin que la fidélisation",
     highlight: true,
+    essaiGratuit: false,
     features: [
       "Tout ce qui est inclus dans Standard",
       "Menu digital en ligne",
@@ -73,6 +75,11 @@ export function PricingSection() {
                   <span className="mb-1 text-lg opacity-80">/mois</span>
                 </div>
                 <p className="mt-2 text-sm opacity-80">{plan.description}</p>
+                {plan.essaiGratuit && (
+                  <p className="mt-3 inline-flex items-center rounded-full bg-gold-light/20 px-3 py-1 text-xs font-semibold">
+                    14 jours d&apos;essai gratuit
+                  </p>
+                )}
               </div>
 
               <div className="border-t border-dashed border-wine/25 px-8 py-8">

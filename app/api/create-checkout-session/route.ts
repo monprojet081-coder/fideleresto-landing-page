@@ -52,7 +52,11 @@ export async function POST(req: NextRequest) {
       client_reference_id: slug,
       customer_email: restaurant.stripe_customer_id ? undefined : userData?.user?.email,
       metadata: { slug, plan },
-      subscription_data: { metadata: { slug, plan } },
+      subscription_data: {
+        metadata: { slug, plan },
+        // 14 jours gratuits, uniquement sur le plan Standard
+        ...(plan.startsWith('standard') ? { trial_period_days: 14 } : {}),
+      },
       success_url: `${origin}/dashboard?abonnement=succes`,
       cancel_url: `${origin}/dashboard?abonnement=annule`,
       // Si le restaurant a déjà un client Stripe (résilié puis reparti par ex.), on le réutilise

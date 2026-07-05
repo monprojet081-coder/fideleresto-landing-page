@@ -541,10 +541,12 @@ function DashboardContent() {
                 </div>
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                   restaurant.statut_abonnement === "actif" ? "bg-sage/12 text-sage" :
+                  restaurant.statut_abonnement === "essai" ? "bg-gold/15 text-wine-dark" :
                   restaurant.statut_abonnement === "impaye" ? "bg-wine/10 text-wine" :
                   "bg-secondary text-ink/50"
                 }`}>
                   {restaurant.statut_abonnement === "actif" ? "Actif" :
+                   restaurant.statut_abonnement === "essai" ? "Essai gratuit en cours" :
                    restaurant.statut_abonnement === "impaye" ? "Paiement en échec" :
                    "Annulé"}
                 </span>
@@ -602,7 +604,7 @@ function DashboardContent() {
                 },
               ].map((offre) => {
                 const planKey = `${offre.key}_${billingPeriod === "mensuel" ? "mensuel" : "annuel"}`
-                const estPlanActuel = restaurant?.plan === offre.key && restaurant?.statut_abonnement === "actif"
+                const estPlanActuel = restaurant?.plan === offre.key && ["actif", "essai"].includes(restaurant?.statut_abonnement)
                 return (
                   <div
                     key={offre.key}
@@ -624,6 +626,11 @@ function DashboardContent() {
                         /{billingPeriod === "mensuel" ? "mois" : "an"}
                       </span>
                     </div>
+                    {offre.key === "standard" && (
+                      <p className="mt-2 inline-flex items-center rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-wine-dark">
+                        14 jours d&apos;essai gratuit
+                      </p>
+                    )}
                     <ul className="mt-5 space-y-2.5">
                       {offre.features.map((f) => (
                         <li key={f} className="flex items-start gap-2 text-sm text-ink/75">
