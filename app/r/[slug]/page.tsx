@@ -16,18 +16,20 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [rewards, setRewards] = useState<{ label: string; probabilite: number; couleur: string }[]>([])
+  const [estPremium, setEstPremium] = useState(false)
 
   // Vérifie que le restaurant existe vraiment avant d'afficher quoi que ce soit.
   // Empêche de contourner l'anti-fraude en modifiant le slug dans l'URL.
   React.useEffect(() => {
     supabase
       .from("restaurants")
-      .select("id")
+      .select("id, plan")
       .eq("slug", slug)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
           setStep("form")
+          setEstPremium(data.plan === "premium")
           // Le scan ne compte que si le restaurant existe réellement
           fetch("/api/send-reward-email/track-scan", {
             method: "POST",
@@ -291,6 +293,14 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             </div>
             <p className="text-sm text-gray-500 mb-4">Un email avec votre récompense vient de vous être envoyé. Montrez-le au comptoir pour en profiter !</p>
             <GoogleReviewButton slug={slug} />
+            {estPremium && (
+              <a
+                href={`/carte/${slug}`}
+                className="mt-3 block text-sm text-blue-600 font-medium hover:underline"
+              >
+                Voir le menu et ma carte de fidélité →
+              </a>
+            )}
           </div>
         )}
 
@@ -302,6 +312,14 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
               <p className="text-sm text-gray-600">Revenez nous voir bientôt pour retenter votre chance ! 🍀</p>
             </div>
+            {estPremium && (
+              <a
+                href={`/carte/${slug}`}
+                className="mt-3 block text-sm text-blue-600 font-medium hover:underline"
+              >
+                Voir le menu et ma carte de fidélité →
+              </a>
+            )}
           </div>
         )}
 
