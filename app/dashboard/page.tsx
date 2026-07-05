@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check } from "lucide-react"
+import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search } from "lucide-react"
 
 export default function DashboardPage() {
   return (
@@ -37,6 +37,25 @@ function DashboardContent() {
   const [avecCreationSite, setAvecCreationSite] = useState(false)
   const [subscribing, setSubscribing] = useState<string | null>(null)
   const [abonnementMessage, setAbonnementMessage] = useState<string | null>(null)
+
+  // Menu digital
+  const [menuItems, setMenuItems] = useState<any[]>([])
+  const [menuLoading, setMenuLoading] = useState(true)
+  const [newMenuItem, setNewMenuItem] = useState({ nom: "", description: "", prix: "", categorie: "Plats" })
+  const [savingMenuItem, setSavingMenuItem] = useState(false)
+
+  // Carte de fidélité
+  const [tamponsRequis, setTamponsRequis] = useState(8)
+  const [montantMin, setMontantMin] = useState(1)
+  const [recompenseFidelite, setRecompenseFidelite] = useState("Un plat offert")
+  const [savingFidelite, setSavingFidelite] = useState(false)
+  const [rechercheEmail, setRechercheEmail] = useState("")
+  const [clientTrouve, setClientTrouve] = useState<any>(null)
+  const [rechercheLoading, setRechercheLoading] = useState(false)
+  const [rechercheError, setRechercheError] = useState("")
+  const [montantPassage, setMontantPassage] = useState("")
+  const [validationLoading, setValidationLoading] = useState(false)
+  const [validationMessage, setValidationMessage] = useState("")
 
   useEffect(() => {
     const getUser = async () => {
@@ -116,7 +135,26 @@ function DashboardContent() {
         }
       })
     }
-  }, [activeSection, user])
+
+    if (activeSection === "menu" && user && menuLoading) {
+      const slug = user.id.slice(0, 8)
+      supabase
+        .from("menu_items")
+        .select("*")
+        .eq("restaurant_slug", slug)
+        .order("ordre", { ascending: true })
+        .then(({ data }) => {
+          setMenuItems(data || [])
+          setMenuLoading(false)
+        })
+    }
+
+    if (activeSection === "fidelite" && restaurant) {
+      setTamponsRequis(restaurant.fidelite_tampons_requis ?? 8)
+      setMontantMin(restaurant.fidelite_montant_min ?? 1)
+      setRecompenseFidelite(restaurant.fidelite_recompense ?? "Un plat offert")
+    }
+  }, [activeSection, user, restaurant])
 
   useEffect(() => {
     const statut = searchParams.get("abonnement")
@@ -180,6 +218,114 @@ function DashboardContent() {
     alert("Roue sauvegardée !")
   }
 
+  const ajouterPlat = async () => {
+    if (!newMenuItem.nom.trim()) return
+    setSavingMenuItem(true)
+    const slug = user.id.slice(0, 8)
+    const { data, error } = await supabase
+      .from("menu_items")
+      .insert([{
+        restaurant_slug: slug,
+        nom: newMenuItem.nom,
+        description: newMenuItem.description || null,
+        prix: newMenuItem.prix ? parseFloat(newMenuItem.prix) : null,
+        categorie: newMenuItem.categorie,
+        ordre: menuItems.length,
+      }])
+      .select()
+      .single()
+
+    if (!error && data) {
+      setMenuItems([...menuItems, data])
+      setNewMenuItem({ nom: "", description: "", prix: "", categorie: "Plats" })
+    } else if (error) {
+      alert("Erreur : " + error.message)
+    }
+    setSavingMenuItem(false)
+  }
+
+  const supprimerPlat = async (id: string) => {
+    await supabase.from("menu_items").delete().eq("id", id)
+    setMenuItems(menuItems.filter(item => item.id !== id))
+  }
+
+  const saveFideliteConfig = async () => {
+    setSavingFidelite(true)
+    const slug = user.id.slice(0, 8)
+    const { error } = await supabase
+      .from("restaurants")
+      .update({
+        fidelite_tampons_requis: tamponsRequis,
+        fidelite_montant_min: montantMin,
+        fidelite_recompense: recompenseFidelite,
+      })
+      .eq("slug", slug)
+
+    if (error) {
+      alert("Erreur : " + error.message)
+    } else {
+      setRestaurant({ ...restaurant, fidelite_tampons_requis: tamponsRequis, fidelite_montant_min: montantMin, fidelite_recompense: recompenseFidelite })
+      alert("Réglages sauvegardés !")
+    }
+    setSavingFidelite(false)
+  }
+
+  const rechercherClient = async () => {
+    setRechercheError("")
+    setClientTrouve(null)
+    setValidationMessage("")
+    if (!rechercheEmail.trim()) return
+    setRechercheLoading(true)
+
+    const slug = user.id.slice(0, 8)
+    const { data: { session } } = await supabase.auth.getSession()
+
+    const res = await fetch("/api/fidelite/rechercher-client", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ email: rechercheEmail, restaurantSlug: slug }),
+    })
+    const result = await res.json()
+
+    if (result.error) {
+      setRechercheError(result.error)
+    } else {
+      setClientTrouve(result)
+    }
+    setRechercheLoading(false)
+  }
+
+  const validerPassage = async () => {
+    const montant = parseFloat(montantPassage)
+    if (!montant || montant <= 0) {
+      setValidationMessage("Entrez un montant valide.")
+      return
+    }
+    setValidationLoading(true)
+    const slug = user.id.slice(0, 8)
+    const { data: { session } } = await supabase.auth.getSession()
+
+    const res = await fetch("/api/fidelite/valider-passage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ email: rechercheEmail, restaurantSlug: slug, montant }),
+    })
+    const result = await res.json()
+
+    if (result.error) {
+      setValidationMessage(result.error)
+    } else {
+      setClientTrouve({ ...clientTrouve, tampons: result.tampons })
+      setMontantPassage("")
+      setValidationMessage(
+        result.recompenseDebloquee
+          ? `🎉 Récompense débloquée : ${restaurant?.fidelite_recompense} ! Compteur remis à zéro.`
+          : "Tampon ajouté !"
+      )
+    }
+    setValidationLoading(false)
+  }
+
   const saveParametres = async () => {
     setSavingParams(true)
     const slug = user.id.slice(0, 8)
@@ -219,6 +365,10 @@ function DashboardContent() {
     { id: "qrcode", label: "Mon QR code", icon: QrCode },
     { id: "clients", label: "Mes clients", icon: Users },
     { id: "roue", label: "Ma roue", icon: Sliders },
+    ...(restaurant?.plan === "premium" ? [
+      { id: "menu", label: "Menu digital", icon: BookOpen },
+      { id: "fidelite", label: "Carte fidélité", icon: Award },
+    ] : []),
     { id: "abonnement", label: "Abonnement", icon: CreditCard },
     { id: "parametres", label: "Paramètres", icon: Settings },
   ]
@@ -516,6 +666,193 @@ function DashboardContent() {
               >
                 {saving ? "Sauvegarde..." : "Sauvegarder ma roue"}
               </button>
+            </div>
+          </div>
+        )}
+
+        {activeSection === "menu" && (
+          <div>
+            <div className="mb-8">
+              <h1 className="text-2xl font-display font-semibold text-ink">Menu digital</h1>
+              <p className="text-ink/55 mt-1">Ajoutez vos plats, visibles par vos clients sur leur carte de fidélité</p>
+            </div>
+
+            <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-2xl mb-6">
+              <p className="text-sm font-medium text-ink mb-4">Ajouter un plat</p>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <input
+                  type="text"
+                  placeholder="Nom du plat"
+                  value={newMenuItem.nom}
+                  onChange={e => setNewMenuItem({ ...newMenuItem, nom: e.target.value })}
+                  className="border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+                />
+                <select
+                  value={newMenuItem.categorie}
+                  onChange={e => setNewMenuItem({ ...newMenuItem, categorie: e.target.value })}
+                  className="border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+                >
+                  <option>Entrées</option>
+                  <option>Plats</option>
+                  <option>Desserts</option>
+                  <option>Boissons</option>
+                </select>
+              </div>
+              <input
+                type="text"
+                placeholder="Description (optionnel)"
+                value={newMenuItem.description}
+                onChange={e => setNewMenuItem({ ...newMenuItem, description: e.target.value })}
+                className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-gold"
+              />
+              <div className="flex gap-3">
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Prix en €"
+                  value={newMenuItem.prix}
+                  onChange={e => setNewMenuItem({ ...newMenuItem, prix: e.target.value })}
+                  className="flex-1 border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+                />
+                <button
+                  onClick={ajouterPlat}
+                  disabled={savingMenuItem}
+                  className="bg-wine hover:bg-wine-dark disabled:opacity-60 text-gold-light font-medium px-5 rounded-lg text-sm"
+                >
+                  Ajouter
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-card rounded-xl border border-wine/10 shadow-sm max-w-2xl">
+              {menuLoading ? (
+                <div className="p-6 text-center">
+                  <div className="w-6 h-6 border-2 border-wine border-t-transparent rounded-full animate-spin mx-auto"></div>
+                </div>
+              ) : menuItems.length === 0 ? (
+                <div className="p-8 text-center text-sm text-ink/55">Aucun plat ajouté pour le moment.</div>
+              ) : (
+                <div className="divide-y divide-wine/8">
+                  {menuItems.map(item => (
+                    <div key={item.id} className="flex items-center justify-between px-5 py-3">
+                      <div>
+                        <p className="text-sm font-medium text-ink">{item.nom} <span className="text-xs text-ink/40">· {item.categorie}</span></p>
+                        {item.description && <p className="text-xs text-ink/50">{item.description}</p>}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {item.prix != null && <span className="text-sm text-ink/70">{item.prix}€</span>}
+                        <button onClick={() => supprimerPlat(item.id)} className="text-ink/30 hover:text-wine">
+                          <Trash2 className="size-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeSection === "fidelite" && (
+          <div>
+            <div className="mb-8">
+              <h1 className="text-2xl font-display font-semibold text-ink">Carte fidélité</h1>
+              <p className="text-ink/55 mt-1">Réglez votre carte et validez les passages de vos clients</p>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2 max-w-4xl">
+              {/* Réglages */}
+              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
+                <p className="text-sm font-medium text-ink mb-4">Réglages de la carte</p>
+
+                <label className="block text-sm text-ink/70 mb-1">
+                  Nombre de tampons requis : <span className="font-semibold text-wine">{tamponsRequis}</span>
+                </label>
+                <input
+                  type="range"
+                  min={6}
+                  max={15}
+                  value={tamponsRequis}
+                  onChange={e => setTamponsRequis(parseInt(e.target.value))}
+                  className="w-full accent-wine mb-4"
+                />
+
+                <label className="block text-sm text-ink/70 mb-1">Montant minimum pour valider un tampon (€)</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  min={0}
+                  value={montantMin}
+                  onChange={e => setMontantMin(parseFloat(e.target.value))}
+                  className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-gold"
+                />
+
+                <label className="block text-sm text-ink/70 mb-1">Récompense offerte</label>
+                <input
+                  type="text"
+                  value={recompenseFidelite}
+                  onChange={e => setRecompenseFidelite(e.target.value)}
+                  className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-gold"
+                />
+
+                <button
+                  onClick={saveFideliteConfig}
+                  disabled={savingFidelite}
+                  className="w-full bg-wine hover:bg-wine-dark disabled:opacity-60 text-gold-light font-medium py-2.5 rounded-lg text-sm"
+                >
+                  {savingFidelite ? "Sauvegarde..." : "Sauvegarder les réglages"}
+                </button>
+              </div>
+
+              {/* Validation d'un passage */}
+              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
+                <p className="text-sm font-medium text-ink mb-4">Valider un passage client</p>
+
+                <div className="flex gap-2 mb-4">
+                  <input
+                    type="email"
+                    placeholder="Email du client"
+                    value={rechercheEmail}
+                    onChange={e => setRechercheEmail(e.target.value)}
+                    className="flex-1 border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+                  />
+                  <button
+                    onClick={rechercherClient}
+                    disabled={rechercheLoading}
+                    className="bg-secondary hover:bg-secondary/70 text-ink px-3 rounded-lg"
+                  >
+                    <Search className="size-4" />
+                  </button>
+                </div>
+
+                {rechercheError && <p className="text-sm text-wine mb-4">{rechercheError}</p>}
+
+                {clientTrouve && (
+                  <div className="rounded-lg bg-secondary/40 p-4">
+                    <p className="text-sm text-ink mb-3">
+                      <span className="font-medium">{clientTrouve.email}</span> — {clientTrouve.tampons}/{tamponsRequis} tampons
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        step="0.01"
+                        placeholder="Montant dépensé (€)"
+                        value={montantPassage}
+                        onChange={e => setMontantPassage(e.target.value)}
+                        className="flex-1 border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+                      />
+                      <button
+                        onClick={validerPassage}
+                        disabled={validationLoading}
+                        className="bg-wine hover:bg-wine-dark disabled:opacity-60 text-gold-light font-medium px-4 rounded-lg text-sm whitespace-nowrap"
+                      >
+                        Valider
+                      </button>
+                    </div>
+                    {validationMessage && <p className="text-sm text-sage mt-3">{validationMessage}</p>}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
