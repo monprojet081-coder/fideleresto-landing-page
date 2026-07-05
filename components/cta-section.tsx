@@ -22,7 +22,7 @@ export function CtaSection() {
               size="lg"
               className="h-11 bg-gold px-6 text-base text-wine-dark hover:bg-gold-light"
               nativeButton={false}
-              render={<a href="/inscription" />}
+              render={<a href="/inscription?plan=standard_mensuel" />}
             >
               Commencer gratuitement
               <ArrowRight className="size-4" aria-hidden="true" />

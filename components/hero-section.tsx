@@ -33,7 +33,7 @@ export function HeroSection() {
               size="lg"
               className="h-11 bg-wine px-6 text-base text-gold-light shadow-lg shadow-wine/20 transition-transform hover:scale-[1.02] hover:bg-wine-dark"
               nativeButton={false}
-              render={<a href="/inscription" />}
+              render={<a href="/inscription?plan=standard_mensuel" />}
             >
               Commencer
               <ArrowRight className="size-4" aria-hidden="true" />

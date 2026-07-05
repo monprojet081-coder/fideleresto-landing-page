@@ -98,7 +98,7 @@ export function PricingSection() {
                   size="lg"
                   className="mt-8 h-11 w-full bg-wine text-base text-gold-light shadow-md shadow-wine/20 hover:bg-wine-dark"
                   nativeButton={false}
-                  render={<a href="/inscription" />}
+                  render={<a href={`/inscription?plan=${plan.nom === "Premium" ? "premium_mensuel" : "standard_mensuel"}`} />}
                 >
                   Commencer
                 </Button>

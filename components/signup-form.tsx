@@ -1,11 +1,21 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 
 export function SignupForm() {
+  return (
+    <Suspense fallback={null}>
+      <SignupFormContent />
+    </Suspense>
+  )
+}
+
+function SignupFormContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const plan = searchParams.get("plan") || "standard_mensuel"
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [formData, setFormData] = useState({
@@ -36,7 +46,7 @@ export function SignupForm() {
 
     setLoading(true)
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.motDePasse,
       options: {
@@ -56,6 +66,30 @@ export function SignupForm() {
       return
     }
 
+    if (!data.user) {
+      // Cas rare : confirmation par email requise, pas de session immédiate
+      router.push("/dashboard")
+      return
+    }
+
+    // Redirection directe vers le paiement Stripe pour le plan choisi
+    try {
+      const res = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: data.user.id, plan }),
+      })
+      const checkoutData = await res.json()
+      if (checkoutData.url) {
+        window.location.href = checkoutData.url
+        return
+      }
+    } catch (err) {
+      console.error("Erreur redirection paiement:", err)
+    }
+
+    // Si le paiement n'a pas pu démarrer pour une raison quelconque, on ne bloque pas
+    // l'utilisateur : il atterrit sur le dashboard et pourra payer depuis l'onglet Abonnement
     router.push("/dashboard")
   }
 
@@ -117,6 +151,8 @@ export function SignupForm() {
                 type="text"
                 placeholder="Paris"
                 required
+                pattern="[A-Za-zÀ-ÿ\s\-']+"
+                title="La ville ne doit contenir que des lettres"
                 className="w-full px-4 py-2.5 border border-wine/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold"
                 value={formData.ville}
                 onChange={(e) => setFormData({ ...formData, ville: e.target.value })}
@@ -129,6 +165,9 @@ export function SignupForm() {
               <input
                 type="tel"
                 placeholder="06 12 34 56 78"
+                required
+                pattern="^(0|\+33\s?)[1-9]([\s.\-]?\d{2}){4}$"
+                title="Format attendu : 06 12 34 56 78"
                 className="w-full px-4 py-2.5 border border-wine/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold"
                 value={formData.telephone}
                 onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}

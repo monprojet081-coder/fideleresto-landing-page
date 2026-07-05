@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 const navLinks = [
   { label: "Fonctionnalités", href: "#fonctionnalites" },
   { label: "Comment ça marche", href: "#comment-ca-marche" },
+  { label: "Témoignages", href: "#temoignages" },
   { label: "Tarifs", href: "#tarifs" },
 ]
 
@@ -53,7 +54,7 @@ export function SiteHeader() {
             size="lg"
             className="bg-wine text-gold-light hover:bg-wine-dark"
             nativeButton={false}
-            render={<a href="/inscription" />}
+            render={<a href="/inscription?plan=standard_mensuel" />}
           >
             Commencer gratuitement
           </Button>
@@ -99,7 +100,7 @@ export function SiteHeader() {
                 size="lg"
                 className="bg-wine text-gold-light"
                 nativeButton={false}
-                render={<a href="/inscription" />}
+                render={<a href="/inscription?plan=standard_mensuel" />}
               >
                 Commencer gratuitement
               </Button>

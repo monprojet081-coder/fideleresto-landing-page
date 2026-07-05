@@ -21,17 +21,32 @@ export async function POST(req: NextRequest) {
 
     const slug = userId.slice(0, 8)
 
-    const { data: restaurant } = await supabase
+    let { data: restaurant } = await supabase
       .from('restaurants')
       .select('*')
       .eq('slug', slug)
       .maybeSingle()
 
+    const { data: userData } = await supabase.auth.admin.getUserById(userId)
+
+    if (!restaurant) {
+      const { data: newResto } = await supabase
+        .from('restaurants')
+        .insert([{
+          user_id: userId,
+          slug,
+          nom_restaurant: userData?.user?.user_metadata?.nom_restaurant || 'Mon Restaurant',
+          google_avis_url: userData?.user?.user_metadata?.google_avis_url || null,
+          scan_qr: 0,
+        }])
+        .select()
+        .single()
+      restaurant = newResto
+    }
+
     if (!restaurant) {
       return NextResponse.json({ error: 'Restaurant introuvable' }, { status: 404 })
     }
-
-    const { data: userData } = await supabase.auth.admin.getUserById(restaurant.user_id)
 
     const origin = req.headers.get('origin') || 'https://fideleresto-landing-page-9dhz.vercel.app'
 
