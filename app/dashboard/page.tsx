@@ -39,10 +39,9 @@ function DashboardContent() {
   const [abonnementMessage, setAbonnementMessage] = useState<string | null>(null)
 
   // Menu digital
-  const [menuItems, setMenuItems] = useState<any[]>([])
-  const [menuLoading, setMenuLoading] = useState(true)
-  const [newMenuItem, setNewMenuItem] = useState({ nom: "", description: "", prix: "", categorie: "Plats" })
-  const [savingMenuItem, setSavingMenuItem] = useState(false)
+  const [uploadingMenu, setUploadingMenu] = useState(false)
+  const [menuUploadError, setMenuUploadError] = useState("")
+  const [menuUploadSuccess, setMenuUploadSuccess] = useState(false)
 
   // Carte de fidélité
   const [tamponsRequis, setTamponsRequis] = useState(8)
@@ -141,19 +140,6 @@ function DashboardContent() {
       })
     }
 
-    if (activeSection === "menu" && user && menuLoading) {
-      const slug = user.id.slice(0, 8)
-      supabase
-        .from("menu_items")
-        .select("*")
-        .eq("restaurant_slug", slug)
-        .order("ordre", { ascending: true })
-        .then(({ data }) => {
-          setMenuItems(data || [])
-          setMenuLoading(false)
-        })
-    }
-
     if (activeSection === "fidelite" && restaurant) {
       setTamponsRequis(restaurant.fidelite_tampons_requis ?? 8)
       setMontantMin(restaurant.fidelite_montant_min ?? 1)
@@ -227,35 +213,32 @@ function DashboardContent() {
     alert("Roue sauvegardée !")
   }
 
-  const ajouterPlat = async () => {
-    if (!newMenuItem.nom.trim()) return
-    setSavingMenuItem(true)
-    const slug = user.id.slice(0, 8)
-    const { data, error } = await supabase
-      .from("menu_items")
-      .insert([{
-        restaurant_slug: slug,
-        nom: newMenuItem.nom,
-        description: newMenuItem.description || null,
-        prix: newMenuItem.prix ? parseFloat(newMenuItem.prix) : null,
-        categorie: newMenuItem.categorie,
-        ordre: menuItems.length,
-      }])
-      .select()
-      .single()
+  const handleMenuUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    if (!error && data) {
-      setMenuItems([...menuItems, data])
-      setNewMenuItem({ nom: "", description: "", prix: "", categorie: "Plats" })
-    } else if (error) {
-      alert("Erreur : " + error.message)
+    setUploadingMenu(true)
+    setMenuUploadError("")
+    setMenuUploadSuccess(false)
+
+    const { data: { session } } = await supabase.auth.getSession()
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("token", session?.access_token || "")
+
+    try {
+      const res = await fetch("/api/menu/upload", { method: "POST", body: formData })
+      const result = await res.json()
+      if (result.error) {
+        setMenuUploadError(result.error)
+      } else {
+        setMenuUploadSuccess(true)
+        setRestaurant({ ...restaurant, menu_type: result.menuType, menu_url: result.menuUrl })
+      }
+    } catch (err) {
+      setMenuUploadError("Erreur lors de l'envoi du fichier.")
     }
-    setSavingMenuItem(false)
-  }
-
-  const supprimerPlat = async (id: string) => {
-    await supabase.from("menu_items").delete().eq("id", id)
-    setMenuItems(menuItems.filter(item => item.id !== id))
+    setUploadingMenu(false)
   }
 
   const saveFideliteConfig = async () => {
@@ -759,81 +742,38 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Menu digital</h1>
-              <p className="text-ink/55 mt-1">Ajoutez vos plats, visibles par vos clients sur leur carte de fidélité</p>
+              <p className="text-ink/55 mt-1">Importez votre menu existant, visible par vos clients sur leur carte de fidélité</p>
             </div>
 
-            <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-2xl mb-6">
-              <p className="text-sm font-medium text-ink mb-4">Ajouter un plat</p>
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                <input
-                  type="text"
-                  placeholder="Nom du plat"
-                  value={newMenuItem.nom}
-                  onChange={e => setNewMenuItem({ ...newMenuItem, nom: e.target.value })}
-                  className="border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-                <select
-                  value={newMenuItem.categorie}
-                  onChange={e => setNewMenuItem({ ...newMenuItem, categorie: e.target.value })}
-                  className="border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
-                >
-                  <option>Entrées</option>
-                  <option>Plats</option>
-                  <option>Desserts</option>
-                  <option>Boissons</option>
-                </select>
-              </div>
-              <input
-                type="text"
-                placeholder="Description (optionnel)"
-                value={newMenuItem.description}
-                onChange={e => setNewMenuItem({ ...newMenuItem, description: e.target.value })}
-                className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-gold"
-              />
-              <div className="flex gap-3">
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="Prix en €"
-                  value={newMenuItem.prix}
-                  onChange={e => setNewMenuItem({ ...newMenuItem, prix: e.target.value })}
-                  className="flex-1 border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-                <button
-                  onClick={ajouterPlat}
-                  disabled={savingMenuItem}
-                  className="bg-wine hover:bg-wine-dark disabled:opacity-60 text-gold-light font-medium px-5 rounded-lg text-sm"
-                >
-                  Ajouter
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-card rounded-xl border border-wine/10 shadow-sm max-w-2xl">
-              {menuLoading ? (
-                <div className="p-6 text-center">
-                  <div className="w-6 h-6 border-2 border-wine border-t-transparent rounded-full animate-spin mx-auto"></div>
-                </div>
-              ) : menuItems.length === 0 ? (
-                <div className="p-8 text-center text-sm text-ink/55">Aucun plat ajouté pour le moment.</div>
-              ) : (
-                <div className="divide-y divide-wine/8">
-                  {menuItems.map(item => (
-                    <div key={item.id} className="flex items-center justify-between px-5 py-3">
-                      <div>
-                        <p className="text-sm font-medium text-ink">{item.nom} <span className="text-xs text-ink/40">· {item.categorie}</span></p>
-                        {item.description && <p className="text-xs text-ink/50">{item.description}</p>}
-                      </div>
-                      <div className="flex items-center gap-3">
-                        {item.prix != null && <span className="text-sm text-ink/70">{item.prix}€</span>}
-                        <button onClick={() => supprimerPlat(item.id)} className="text-ink/30 hover:text-wine">
-                          <Trash2 className="size-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+            <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-2xl">
+              {restaurant?.menu_type && (
+                <div className="flex items-center justify-between rounded-lg bg-secondary/40 px-4 py-3 mb-5">
+                  <p className="text-sm text-ink/70">
+                    Menu actuel : <span className="font-medium text-ink capitalize">{restaurant.menu_type}</span>
+                  </p>
+                  <a href={restaurant.menu_url} target="_blank" rel="noreferrer" className="text-sm text-wine font-medium hover:underline">
+                    Voir le fichier →
+                  </a>
                 </div>
               )}
+
+              <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-wine/20 rounded-xl py-10 cursor-pointer hover:border-gold/50 transition-colors">
+                <BookOpen className="size-8 text-wine/40" />
+                <p className="text-sm text-ink/70">
+                  {uploadingMenu ? "Envoi en cours..." : "Cliquez pour choisir votre fichier"}
+                </p>
+                <p className="text-xs text-ink/40">PDF, JPG, PNG, Word (.docx) ou Excel (.xlsx)</p>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,.webp,.docx,.xlsx,.xls"
+                  className="hidden"
+                  disabled={uploadingMenu}
+                  onChange={handleMenuUpload}
+                />
+              </label>
+
+              {menuUploadError && <p className="text-sm text-wine mt-4">{menuUploadError}</p>}
+              {menuUploadSuccess && <p className="text-sm text-sage mt-4">Menu importé avec succès !</p>}
             </div>
           </div>
         )}

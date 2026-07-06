@@ -4,19 +4,20 @@ import React, { useState } from "react"
 import { supabase } from "@/lib/supabase"
 
 type Step = "checking" | "not_found" | "not_premium" | "auth" | "compte"
-type MenuItem = { id: string; nom: string; description: string | null; prix: number | null; categorie: string }
 type Restaurant = {
   nom_restaurant: string
   slug: string
   fidelite_tampons_requis: number
   fidelite_recompense: string
+  menu_type: "pdf" | "image" | "document" | null
+  menu_url: string | null
+  menu_html: string | null
 }
 
 export default function CartePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = React.use(params)
   const [step, setStep] = useState<Step>("checking")
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [tampons, setTampons] = useState(0)
   const [user, setUser] = useState<any>(null)
 
@@ -30,7 +31,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
     const init = async () => {
       const { data: resto } = await supabase
         .from("restaurants")
-        .select("nom_restaurant, slug, fidelite_tampons_requis, fidelite_recompense, plan")
+        .select("nom_restaurant, slug, fidelite_tampons_requis, fidelite_recompense, plan, menu_type, menu_url, menu_html")
         .eq("slug", slug)
         .maybeSingle()
 
@@ -43,13 +44,6 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
         return
       }
       setRestaurant(resto)
-
-      const { data: items } = await supabase
-        .from("menu_items")
-        .select("id, nom, description, prix, categorie")
-        .eq("restaurant_slug", slug)
-        .order("ordre", { ascending: true })
-      setMenuItems(items || [])
 
       const { data: { user: currentUser } } = await supabase.auth.getUser()
       if (currentUser) {
@@ -267,33 +261,31 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
             {/* Menu */}
             <div>
               <p className="text-sm font-medium text-ink mb-3">Le menu</p>
-              {menuItems.length === 0 ? (
+              {!restaurant.menu_type ? (
                 <p className="text-sm text-ink/50 text-center py-6">Le menu n'est pas encore disponible.</p>
-              ) : (
-                <div className="space-y-4">
-                  {Object.entries(
-                    menuItems.reduce((acc: Record<string, MenuItem[]>, item) => {
-                      acc[item.categorie] = acc[item.categorie] || []
-                      acc[item.categorie].push(item)
-                      return acc
-                    }, {})
-                  ).map(([categorie, items]) => (
-                    <div key={categorie}>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-wine mb-2">{categorie}</p>
-                      <div className="space-y-2">
-                        {items.map(item => (
-                          <div key={item.id} className="flex justify-between gap-3 text-sm">
-                            <div>
-                              <p className="text-ink font-medium">{item.nom}</p>
-                              {item.description && <p className="text-ink/50 text-xs">{item.description}</p>}
-                            </div>
-                            {item.prix != null && <p className="text-ink/70 whitespace-nowrap">{item.prix}€</p>}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+              ) : restaurant.menu_type === "image" ? (
+                <img src={restaurant.menu_url!} alt="Menu du restaurant" className="w-full rounded-lg border border-wine/10" />
+              ) : restaurant.menu_type === "pdf" ? (
+                <div className="rounded-lg border border-wine/10 overflow-hidden">
+                  <iframe src={restaurant.menu_url!} className="w-full h-[500px]" title="Menu du restaurant" />
+                  <a
+                    href={restaurant.menu_url!}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block text-center text-sm text-wine font-medium py-2 border-t border-wine/10 hover:underline"
+                  >
+                    Ouvrir en plein écran
+                  </a>
                 </div>
+              ) : restaurant.menu_html ? (
+                <div
+                  className="text-sm text-ink prose prose-sm max-w-none [&_table]:w-full [&_td]:border [&_td]:border-wine/10 [&_td]:px-2 [&_td]:py-1"
+                  dangerouslySetInnerHTML={{ __html: restaurant.menu_html }}
+                />
+              ) : (
+                <a href={restaurant.menu_url!} target="_blank" rel="noreferrer" className="text-sm text-wine font-medium hover:underline">
+                  Télécharger le menu →
+                </a>
               )}
             </div>
           </div>

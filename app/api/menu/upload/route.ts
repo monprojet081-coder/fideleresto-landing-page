@@ -1,0 +1,79 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+export async function POST(req: NextRequest) {
+  try {
+    const formData = await req.formData()
+    const file = formData.get('file') as File | null
+    const token = formData.get('token') as string | null
+
+    if (!file || !token) {
+      return NextResponse.json({ error: 'Fichier ou authentification manquant' }, { status: 400 })
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Session invalide' }, { status: 403 })
+    }
+
+    const slug = user.id.slice(0, 8)
+    const nomFichier = file.name.toLowerCase()
+    const buffer = Buffer.from(await file.arrayBuffer())
+
+    let menuType: 'pdf' | 'image' | 'document'
+    let extension: string
+    let menuHtml: string | null = null
+
+    if (nomFichier.endsWith('.pdf')) {
+      menuType = 'pdf'
+      extension = 'pdf'
+    } else if (/\.(jpe?g|png|webp)$/.test(nomFichier)) {
+      menuType = 'image'
+      extension = nomFichier.split('.').pop()!
+    } else if (nomFichier.endsWith('.docx')) {
+      menuType = 'document'
+      extension = 'docx'
+      const mammoth = await import('mammoth')
+      const result = await mammoth.convertToHtml({ buffer })
+      menuHtml = result.value
+    } else if (/\.(xlsx|xls)$/.test(nomFichier)) {
+      menuType = 'document'
+      extension = nomFichier.split('.').pop()!
+      const XLSX = await import('xlsx')
+      const workbook = XLSX.read(buffer, { type: 'buffer' })
+      const feuilles = workbook.SheetNames.map((nom) => {
+        const html = XLSX.utils.sheet_to_html(workbook.Sheets[nom], { header: '', footer: '' })
+        return `<h3>${nom}</h3>${html}`
+      })
+      menuHtml = feuilles.join('<hr/>')
+    } else {
+      return NextResponse.json({ error: 'Format non supporté. Utilisez PDF, JPG, PNG, DOCX ou XLSX.' }, { status: 400 })
+    }
+
+    const cheminFichier = `${slug}/menu.${extension}`
+    const { error: uploadError } = await supabase.storage
+      .from('menus')
+      .upload(cheminFichier, buffer, { contentType: file.type, upsert: true })
+
+    if (uploadError) {
+      return NextResponse.json({ error: "Erreur lors de l'envoi : " + uploadError.message }, { status: 500 })
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from('menus').getPublicUrl(cheminFichier)
+
+    await supabase
+      .from('restaurants')
+      .update({ menu_type: menuType, menu_url: publicUrl, menu_html: menuHtml })
+      .eq('slug', slug)
+
+    return NextResponse.json({ success: true, menuType, menuUrl: publicUrl })
+  } catch (err: any) {
+    console.error('Erreur upload menu:', err)
+    return NextResponse.json({ error: 'Erreur serveur : ' + err.message }, { status: 500 })
+  }
+}
