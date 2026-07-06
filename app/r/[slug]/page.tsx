@@ -92,10 +92,10 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
       .filter("restaurant_id", "like", `${slug}%`)
 
     const rewardsList = roueData && roueData.length > 0 ? roueData : [
-      { label: "Boisson offerte 🥤", probabilite: 25, couleur: "#3b82f6" },
-      { label: "Dessert offert 🍰", probabilite: 25, couleur: "#10b981" },
-      { label: "10% de réduction 🏷️", probabilite: 25, couleur: "#f59e0b" },
-      { label: "Perdu 😢", probabilite: 25, couleur: "#ef4444" },
+      { label: "Boisson offerte 🥤", probabilite: 25, couleur: "#6b1e2e" },
+      { label: "Dessert offert 🍰", probabilite: 25, couleur: "#c9962c" },
+      { label: "10% de réduction 🏷️", probabilite: 25, couleur: "#3f6b4f" },
+      { label: "Perdu 😢", probabilite: 25, couleur: "#a8536a" },
     ]
 
     setRewards(rewardsList)
@@ -147,71 +147,71 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
   if (step === "checking") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <p className="text-gray-400 text-sm">Chargement...</p>
+      <div className="min-h-screen bg-ivory flex items-center justify-center p-4">
+        <p className="text-ink/50 text-sm">Chargement...</p>
       </div>
     )
   }
 
   if (step === "not_found") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-8 text-center">
+      <div className="min-h-screen bg-ivory flex items-center justify-center p-4">
+        <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8 text-center">
           <div className="text-6xl mb-4">🔍</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Roue introuvable</h1>
-          <p className="text-gray-500 text-sm">Ce lien ne correspond à aucun restaurant. Vérifiez le QR code ou le lien utilisé.</p>
+          <h1 className="text-2xl font-display font-semibold text-ink mb-2">Roue introuvable</h1>
+          <p className="text-ink/55 text-sm">Ce lien ne correspond à aucun restaurant. Vérifiez le QR code ou le lien utilisé.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-8">
+    <div className="min-h-screen bg-ivory flex items-center justify-center p-4">
+      <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8">
 
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-12 h-12 bg-wine rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-2xl">🎡</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Tentez votre chance !</h1>
-          <p className="text-gray-500 text-sm mt-2">Remplissez vos infos et tournez la roue pour gagner une récompense</p>
+          <h1 className="text-2xl font-display font-semibold text-ink">Tentez votre chance !</h1>
+          <p className="text-ink/55 text-sm mt-2">Remplissez vos infos et tournez la roue pour gagner une récompense</p>
         </div>
 
         {step === "form" && (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+              <label className="block text-sm font-medium text-ink/80 mb-1">Prénom</label>
               <input
                 type="text"
                 required
                 placeholder="Jean"
                 value={prenom}
                 onChange={e => setPrenom(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-wine/15 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-ink/80 mb-1">Email</label>
               <input
                 type="email"
                 required
                 placeholder="jean@email.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-wine/15 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
               />
             </div>
             <div className="flex items-start gap-2">
-              <input type="checkbox" required id="rgpd" className="mt-1 accent-blue-600" />
-              <label htmlFor="rgpd" className="text-xs text-gray-500">
+              <input type="checkbox" required id="rgpd" className="mt-1 accent-wine" />
+              <label htmlFor="rgpd" className="text-xs text-ink/50">
                 J'accepte que mes données soient utilisées pour recevoir des offres de ce restaurant
               </label>
             </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && <p className="text-wine text-sm">{error}</p>}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-3 rounded-lg transition-colors"
+              className="w-full bg-wine hover:bg-wine-dark disabled:opacity-60 text-gold-light font-medium py-3 rounded-lg transition-colors"
             >
               {loading ? "Vérification..." : "Tourner la roue 🎡"}
             </button>
@@ -225,7 +225,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                 <div className="w-0 h-0" style={{
                   borderLeft: "10px solid transparent",
                   borderRight: "10px solid transparent",
-                  borderTop: "20px solid #1d4ed8"
+                  borderTop: "20px solid #6b1e2e"
                 }} />
               </div>
               <canvas
@@ -251,7 +251,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                     ctx.closePath()
                     ctx.fillStyle = reward.couleur
                     ctx.fill()
-                    ctx.strokeStyle = "#ffffff"
+                    ctx.strokeStyle = "#faf3e8"
                     ctx.lineWidth = 2
                     ctx.stroke()
 
@@ -259,7 +259,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                     ctx.translate(centerX, centerY)
                     ctx.rotate(startAngle + arc / 2)
                     ctx.textAlign = "right"
-                    ctx.fillStyle = "#ffffff"
+                    ctx.fillStyle = "#faf3e8"
                     ctx.font = "bold 12px sans-serif"
                     ctx.fillText(reward.label, radius - 10, 5)
                     ctx.restore()
@@ -267,9 +267,9 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
                   ctx.beginPath()
                   ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI)
-                  ctx.fillStyle = "#1d4ed8"
+                  ctx.fillStyle = "#6b1e2e"
                   ctx.fill()
-                  ctx.strokeStyle = "#ffffff"
+                  ctx.strokeStyle = "#c9962c"
                   ctx.lineWidth = 3
                   ctx.stroke()
                 }}
@@ -277,25 +277,33 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                   transform: `rotate(${rotation}deg)`,
                   transition: spinning ? "transform 4000ms cubic-bezier(0.17, 0.67, 0.12, 0.99)" : "none",
                   borderRadius: "50%",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.15)"
+                  boxShadow: "0 4px 20px rgba(107,30,46,0.2)"
                 }}
               />
             </div>
-            <p className="text-gray-500 text-sm">{spinning ? "La roue tourne... 🎡" : "Regardez le résultat !"}</p>
+            <p className="text-ink/55 text-sm">{spinning ? "La roue tourne... 🎡" : "Regardez le résultat !"}</p>
           </div>
         )}
 
         {step === "win" && result && (
           <div className="text-center">
             <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Félicitations !</h2>
-            <p className="text-gray-500 mb-6">Vous avez gagné :</p>
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
-              <p className="text-xl font-bold text-blue-600">{result.label}</p>
+            <h2 className="text-2xl font-display font-semibold text-ink mb-2">Félicitations !</h2>
+            <p className="text-ink/55 mb-6">Vous avez gagné :</p>
+            <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 mb-6">
+              <p className="text-xl font-display font-semibold text-wine-dark">{result.label}</p>
             </div>
-            <p className="text-sm text-gray-500 mb-5">Un email avec votre récompense vient de vous être envoyé. Montrez-le au comptoir pour en profiter !</p>
+            <p className="text-sm text-ink/55 mb-5">Un email avec votre récompense vient de vous être envoyé. Montrez-le au comptoir pour en profiter !</p>
 
             <GoogleReviewButton slug={slug} onClick={() => setAvisClique(true)} onUrlChecked={setAvisExiste} />
+            {avisExiste && !avisClique && (
+              <button
+                onClick={() => setAvisClique(true)}
+                className="mt-2 text-xs text-ink/45 hover:text-wine underline"
+              >
+                J'ai déjà laissé un avis
+              </button>
+            )}
 
             {estPremium && (avisClique || !avisExiste) && (
               <a
@@ -311,13 +319,21 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         {step === "lose" && (
           <div className="text-center">
             <div className="text-6xl mb-4">😢</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Pas de chance !</h2>
-            <p className="text-gray-500 mb-6">Vous n'avez rien gagné cette fois...</p>
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-5">
-              <p className="text-sm text-gray-600">Revenez nous voir bientôt pour retenter votre chance ! 🍀</p>
+            <h2 className="text-2xl font-display font-semibold text-ink mb-2">Pas de chance !</h2>
+            <p className="text-ink/55 mb-6">Vous n'avez rien gagné cette fois...</p>
+            <div className="bg-secondary/50 border border-wine/10 rounded-xl p-6 mb-5">
+              <p className="text-sm text-ink/65">Revenez nous voir bientôt pour retenter votre chance ! 🍀</p>
             </div>
 
             <GoogleReviewButton slug={slug} onClick={() => setAvisClique(true)} onUrlChecked={setAvisExiste} />
+            {avisExiste && !avisClique && (
+              <button
+                onClick={() => setAvisClique(true)}
+                className="mt-2 text-xs text-ink/45 hover:text-wine underline"
+              >
+                J'ai déjà laissé un avis
+              </button>
+            )}
 
             {estPremium && (avisClique || !avisExiste) && (
               <a
@@ -333,10 +349,10 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         {step === "already_played" && (
           <div className="text-center">
             <div className="text-6xl mb-4">⏳</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Déjà joué !</h2>
-            <p className="text-gray-500 mb-6">Vous avez déjà participé avec cet email aujourd'hui.</p>
-            <div className="bg-orange-50 border border-orange-200 rounded-xl p-6">
-              <p className="text-sm text-orange-600 font-medium">Revenez dans 24h pour retenter votre chance ! 🍀</p>
+            <h2 className="text-2xl font-display font-semibold text-ink mb-2">Déjà joué !</h2>
+            <p className="text-ink/55 mb-6">Vous avez déjà participé avec cet email aujourd'hui.</p>
+            <div className="bg-gold/10 border border-gold/30 rounded-xl p-6">
+              <p className="text-sm text-wine-dark font-medium">Revenez dans 24h pour retenter votre chance ! 🍀</p>
             </div>
           </div>
         )}
