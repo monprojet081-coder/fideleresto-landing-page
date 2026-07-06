@@ -17,6 +17,8 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [error, setError] = useState("")
   const [rewards, setRewards] = useState<{ label: string; probabilite: number; couleur: string }[]>([])
   const [estPremium, setEstPremium] = useState(false)
+  const [avisClique, setAvisClique] = useState(false)
+  const [avisExiste, setAvisExiste] = useState(true)
 
   // Vérifie que le restaurant existe vraiment avant d'afficher quoi que ce soit.
   // Empêche de contourner l'anti-fraude en modifiant le slug dans l'URL.
@@ -291,14 +293,16 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
               <p className="text-xl font-bold text-blue-600">{result.label}</p>
             </div>
-            <p className="text-sm text-gray-500 mb-4">Un email avec votre récompense vient de vous être envoyé. Montrez-le au comptoir pour en profiter !</p>
-            <GoogleReviewButton slug={slug} />
-            {estPremium && (
+            <p className="text-sm text-gray-500 mb-5">Un email avec votre récompense vient de vous être envoyé. Montrez-le au comptoir pour en profiter !</p>
+
+            <GoogleReviewButton slug={slug} onClick={() => setAvisClique(true)} onUrlChecked={setAvisExiste} />
+
+            {estPremium && (avisClique || !avisExiste) && (
               <a
                 href={`/carte/${slug}`}
-                className="mt-3 block text-sm text-blue-600 font-medium hover:underline"
+                className="mt-3 block w-full border border-wine/20 text-ink font-medium text-sm py-3 rounded-lg hover:bg-wine/5 transition-colors"
               >
-                Voir le menu et ma carte de fidélité →
+                🍽️ Voir le menu et ma carte de fidélité
               </a>
             )}
           </div>
@@ -309,15 +313,18 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <div className="text-6xl mb-4">😢</div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Pas de chance !</h2>
             <p className="text-gray-500 mb-6">Vous n'avez rien gagné cette fois...</p>
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-5">
               <p className="text-sm text-gray-600">Revenez nous voir bientôt pour retenter votre chance ! 🍀</p>
             </div>
-            {estPremium && (
+
+            <GoogleReviewButton slug={slug} onClick={() => setAvisClique(true)} onUrlChecked={setAvisExiste} />
+
+            {estPremium && (avisClique || !avisExiste) && (
               <a
                 href={`/carte/${slug}`}
-                className="mt-3 block text-sm text-blue-600 font-medium hover:underline"
+                className="mt-3 block w-full border border-wine/20 text-ink font-medium text-sm py-3 rounded-lg hover:bg-wine/5 transition-colors"
               >
-                Voir le menu et ma carte de fidélité →
+                🍽️ Voir le menu et ma carte de fidélité
               </a>
             )}
           </div>
@@ -339,7 +346,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   )
 }
 
-function GoogleReviewButton({ slug }: { slug: string }) {
+function GoogleReviewButton({ slug, onClick, onUrlChecked }: { slug: string; onClick?: () => void; onUrlChecked?: (hasUrl: boolean) => void }) {
   const [googleUrl, setGoogleUrl] = useState<string | null>(null)
 
   React.useEffect(() => {
@@ -352,6 +359,7 @@ function GoogleReviewButton({ slug }: { slug: string }) {
         if (data?.google_avis_url) {
           setGoogleUrl(data.google_avis_url)
         }
+        onUrlChecked?.(!!data?.google_avis_url)
       })
   }, [slug])
 
@@ -362,7 +370,8 @@ function GoogleReviewButton({ slug }: { slug: string }) {
       href={googleUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-block bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm font-medium px-4 py-2 rounded-lg hover:bg-yellow-100 transition-colors"
+      onClick={onClick}
+      className="flex items-center justify-center gap-2 w-full bg-wine text-gold-light text-base font-semibold px-4 py-3.5 rounded-lg shadow-md shadow-wine/20 hover:bg-wine-dark transition-colors"
     >
       ⭐ Laisser un avis Google
     </a>
