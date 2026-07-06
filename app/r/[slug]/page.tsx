@@ -19,6 +19,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [estPremium, setEstPremium] = useState(false)
   const [avisClique, setAvisClique] = useState(false)
   const [avisExiste, setAvisExiste] = useState(true)
+  const [dejaVenu, setDejaVenu] = useState(false)
 
   // Vérifie que le restaurant existe vraiment avant d'afficher quoi que ce soit.
   // Empêche de contourner l'anti-fraude en modifiant le slug dans l'URL.
@@ -85,6 +86,15 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
       setLoading(false)
       return
     }
+
+    // Détecte si ce client est déjà venu au moins une fois avant aujourd'hui
+    // (utile pour ne proposer "j'ai déjà laissé un avis" qu'aux habitués, pas aux nouveaux clients)
+    const { count: visitesPrecedentes } = await supabase
+      .from("clients")
+      .select("id", { count: "exact", head: true })
+      .eq("email", email)
+      .eq("restaurant_slug", slug)
+    setDejaVenu((visitesPrecedentes || 0) > 0)
 
     const { data: roueData } = await supabase
       .from("roue_config")
@@ -296,7 +306,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <p className="text-sm text-ink/55 mb-5">Un email avec votre récompense vient de vous être envoyé. Montrez-le au comptoir pour en profiter !</p>
 
             <GoogleReviewButton slug={slug} onClick={() => setAvisClique(true)} onUrlChecked={setAvisExiste} />
-            {avisExiste && !avisClique && (
+            {dejaVenu && avisExiste && !avisClique && (
               <button
                 onClick={() => setAvisClique(true)}
                 className="mt-2 text-xs text-ink/45 hover:text-wine underline"
@@ -326,7 +336,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             </div>
 
             <GoogleReviewButton slug={slug} onClick={() => setAvisClique(true)} onUrlChecked={setAvisExiste} />
-            {avisExiste && !avisClique && (
+            {dejaVenu && avisExiste && !avisClique && (
               <button
                 onClick={() => setAvisClique(true)}
                 className="mt-2 text-xs text-ink/45 hover:text-wine underline"

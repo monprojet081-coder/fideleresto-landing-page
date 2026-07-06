@@ -14,7 +14,7 @@ export function HeroSection() {
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-1.5 text-sm font-medium text-wine-dark">
             <span className="flex size-2 rounded-full bg-gold" aria-hidden="true" />
-            La fidélité client, simplifiée pour les restaurants
+            Boostez vos avis, vos clients, et leur fidélité
           </span>
 
           <h1 className="mt-6 text-balance font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl md:text-6xl">
