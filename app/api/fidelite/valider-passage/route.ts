@@ -3,7 +3,7 @@ import { verifierRestaurateur } from '@/lib/verifierRestaurateur'
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, restaurantSlug, montant } = await req.json()
+    const { email, clientId: clientIdInput, restaurantSlug, montant } = await req.json()
     const auth = await verifierRestaurateur(req.headers.get('authorization'), restaurantSlug)
 
     if (!auth.ok) {
@@ -16,20 +16,24 @@ export async function POST(req: NextRequest) {
       }, { status: 400 })
     }
 
-    const { data: usersList, error: listError } = await auth.supabase.auth.admin.listUsers()
-    if (listError) {
-      return NextResponse.json({ error: 'Erreur lors de la recherche' }, { status: 500 })
-    }
+    let clientId = clientIdInput
 
-    const client = usersList.users.find(u => u.email?.toLowerCase() === email.toLowerCase())
-    if (!client) {
-      return NextResponse.json({ error: 'Client introuvable' }, { status: 404 })
+    if (!clientId) {
+      const { data: usersList, error: listError } = await auth.supabase.auth.admin.listUsers()
+      if (listError) {
+        return NextResponse.json({ error: 'Erreur lors de la recherche' }, { status: 500 })
+      }
+      const client = usersList.users.find(u => u.email?.toLowerCase() === email.toLowerCase())
+      if (!client) {
+        return NextResponse.json({ error: 'Client introuvable' }, { status: 404 })
+      }
+      clientId = client.id
     }
 
     const { data: carteExistante } = await auth.supabase
       .from('cartes_fidelite')
       .select('*')
-      .eq('client_id', client.id)
+      .eq('client_id', clientId)
       .eq('restaurant_slug', restaurantSlug)
       .maybeSingle()
 
@@ -43,12 +47,12 @@ export async function POST(req: NextRequest) {
       await auth.supabase
         .from('cartes_fidelite')
         .update({ tampons: tamponsFinal, updated_at: new Date().toISOString() })
-        .eq('client_id', client.id)
+        .eq('client_id', clientId)
         .eq('restaurant_slug', restaurantSlug)
     } else {
       await auth.supabase
         .from('cartes_fidelite')
-        .insert([{ client_id: client.id, restaurant_slug: restaurantSlug, tampons: tamponsFinal }])
+        .insert([{ client_id: clientId, restaurant_slug: restaurantSlug, tampons: tamponsFinal }])
     }
 
     return NextResponse.json({ tampons: tamponsFinal, recompenseDebloquee })

@@ -56,6 +56,11 @@ function DashboardContent() {
   const [montantPassage, setMontantPassage] = useState("")
   const [validationLoading, setValidationLoading] = useState(false)
   const [validationMessage, setValidationMessage] = useState("")
+  const [scanning, setScanning] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const scanCanvasRef = useRef<HTMLCanvasElement>(null)
+  const scanFrameRef = useRef<number | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
     const getUser = async () => {
@@ -153,6 +158,10 @@ function DashboardContent() {
       setTamponsRequis(restaurant.fidelite_tampons_requis ?? 8)
       setMontantMin(restaurant.fidelite_montant_min ?? 1)
       setRecompenseFidelite(restaurant.fidelite_recompense ?? "Un plat offert")
+    }
+
+    if (activeSection !== "fidelite" && streamRef.current) {
+      arreterScan()
     }
   }, [activeSection, user, restaurant])
 
@@ -268,6 +277,82 @@ function DashboardContent() {
       alert("Réglages sauvegardés !")
     }
     setSavingFidelite(false)
+  }
+
+  const rechercherClientParId = async (clientId: string) => {
+    setRechercheError("")
+    setClientTrouve(null)
+    setValidationMessage("")
+    setRechercheLoading(true)
+    const slug = user.id.slice(0, 8)
+    const { data: { session } } = await supabase.auth.getSession()
+
+    const res = await fetch("/api/fidelite/rechercher-client-id", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ clientId, restaurantSlug: slug }),
+    })
+    const result = await res.json()
+
+    if (result.error) {
+      setRechercheError(result.error)
+    } else {
+      setClientTrouve(result)
+    }
+    setRechercheLoading(false)
+  }
+
+  const arreterScan = () => {
+    if (scanFrameRef.current) cancelAnimationFrame(scanFrameRef.current)
+    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop())
+    streamRef.current = null
+    setScanning(false)
+  }
+
+  const demarrerScan = async () => {
+    setRechercheError("")
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      streamRef.current = stream
+      setScanning(true)
+
+      // On attend que le <video> soit bien monté dans le DOM avant d'y attacher le flux
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          videoRef.current.play()
+          boucleScan()
+        }
+      }, 50)
+    } catch (err) {
+      setRechercheError("Impossible d'accéder à la caméra. Vérifiez les autorisations de votre navigateur.")
+    }
+  }
+
+  const boucleScan = async () => {
+    const jsQR = (await import("jsqr")).default
+    const tick = () => {
+      const video = videoRef.current
+      const canvas = scanCanvasRef.current
+      if (video && canvas && video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth
+        canvas.height = video.videoHeight
+        const ctx = canvas.getContext("2d")
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+          const code = jsQR(imageData.data, imageData.width, imageData.height)
+          if (code && code.data.startsWith("fideleresto:client:")) {
+            const clientId = code.data.replace("fideleresto:client:", "")
+            arreterScan()
+            rechercherClientParId(clientId)
+            return
+          }
+        }
+      }
+      scanFrameRef.current = requestAnimationFrame(tick)
+    }
+    scanFrameRef.current = requestAnimationFrame(tick)
   }
 
   const rechercherClient = async () => {
@@ -808,27 +893,56 @@ function DashboardContent() {
               <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
                 <p className="text-sm font-medium text-ink mb-4">Valider un passage client</p>
 
-                <div className="flex gap-2 mb-4">
-                  <input
-                    type="email"
-                    placeholder="Email du client"
-                    value={rechercheEmail}
-                    onChange={e => setRechercheEmail(e.target.value)}
-                    className="flex-1 border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
-                  />
+                {scanning ? (
+                  <div className="mb-4">
+                    <div className="relative rounded-lg overflow-hidden bg-ink aspect-square max-w-xs mx-auto">
+                      <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
+                      <div className="absolute inset-6 border-2 border-gold rounded-lg pointer-events-none" />
+                    </div>
+                    <canvas ref={scanCanvasRef} className="hidden" />
+                    <button
+                      onClick={arreterScan}
+                      className="mt-3 w-full text-sm text-ink/60 hover:text-wine"
+                    >
+                      Annuler le scan
+                    </button>
+                  </div>
+                ) : (
                   <button
-                    onClick={rechercherClient}
-                    disabled={rechercheLoading}
-                    className="bg-secondary hover:bg-secondary/70 text-ink px-3 rounded-lg"
+                    onClick={demarrerScan}
+                    className="w-full flex items-center justify-center gap-2 bg-wine hover:bg-wine-dark text-gold-light font-medium py-3 rounded-lg text-sm mb-4"
                   >
-                    <Search className="size-4" />
+                    <QrCode className="size-4" />
+                    Scanner la carte du client
                   </button>
-                </div>
+                )}
 
-                {rechercheError && <p className="text-sm text-wine mb-4">{rechercheError}</p>}
+                <details className="mb-2">
+                  <summary className="text-xs text-ink/50 cursor-pointer hover:text-ink/70">
+                    Ou rechercher par email
+                  </summary>
+                  <div className="flex gap-2 mt-2">
+                    <input
+                      type="email"
+                      placeholder="Email du client"
+                      value={rechercheEmail}
+                      onChange={e => setRechercheEmail(e.target.value)}
+                      className="flex-1 border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+                    />
+                    <button
+                      onClick={rechercherClient}
+                      disabled={rechercheLoading}
+                      className="bg-secondary hover:bg-secondary/70 text-ink px-3 rounded-lg"
+                    >
+                      <Search className="size-4" />
+                    </button>
+                  </div>
+                </details>
+
+                {rechercheError && <p className="text-sm text-wine mt-3 mb-2">{rechercheError}</p>}
 
                 {clientTrouve && (
-                  <div className="rounded-lg bg-secondary/40 p-4">
+                  <div className="rounded-lg bg-secondary/40 p-4 mt-4">
                     <p className="text-sm text-ink mb-3">
                       <span className="font-medium">{clientTrouve.email}</span> — {clientTrouve.tampons}/{tamponsRequis} tampons
                     </p>

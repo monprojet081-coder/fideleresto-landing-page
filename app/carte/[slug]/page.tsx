@@ -82,6 +82,22 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
     }
   }
 
+  React.useEffect(() => {
+    if (step === "compte" && user) {
+      import('qrcode').then(QRCode => {
+        const canvas = document.getElementById('qr-carte-canvas') as HTMLCanvasElement
+        if (canvas) {
+          QRCode.toCanvas(
+            canvas,
+            `fideleresto:client:${user.id}`,
+            { width: 180, margin: 1, color: { dark: "#241914", light: "#ffffff" } },
+            () => {}
+          )
+        }
+      })
+    }
+  }, [step, user])
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
@@ -223,6 +239,14 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
             {/* Carte de fidélité */}
             <div className="rounded-xl border border-gold/30 bg-gold/8 p-5 mb-8">
               <p className="text-sm font-medium text-wine-dark mb-3">Votre carte de fidélité</p>
+
+              <div className="flex justify-center mb-4">
+                <canvas id="qr-carte-canvas" className="rounded-lg bg-card p-2" />
+              </div>
+              <p className="text-xs text-ink/50 text-center mb-4">
+                Montrez ce QR code au comptoir au moment de payer
+              </p>
+
               <div className="flex gap-1.5 flex-wrap mb-3">
                 {Array.from({ length: restaurant.fidelite_tampons_requis }).map((_, i) => (
                   <span
