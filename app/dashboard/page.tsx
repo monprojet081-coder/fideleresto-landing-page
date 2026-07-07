@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search } from "lucide-react"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 
 export default function DashboardPage() {
   return (
@@ -428,6 +429,38 @@ function DashboardContent() {
     { label: "Avis Google", value: "0", icon: Star, color: "bg-wine/8 text-wine" },
   ]
 
+  // Clients collectés par jour, sur les 14 derniers jours
+  const clientsParJour = Array.from({ length: 14 }).map((_, i) => {
+    const date = new Date()
+    date.setDate(date.getDate() - (13 - i))
+    const jourStr = date.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })
+    const debutJour = new Date(date.setHours(0, 0, 0, 0))
+    const finJour = new Date(date.setHours(23, 59, 59, 999))
+    const count = clients.filter((c) => {
+      const d = new Date(c.created_at)
+      return d >= debutJour && d <= finJour
+    }).length
+    return { jour: jourStr, clients: count }
+  })
+
+  // Taux de victoire
+  const nbGagne = clients.filter((c) => c.a_gagne).length
+  const nbPerdu = clients.length - nbGagne
+  const dataVictoire = [
+    { name: "Gagné", value: nbGagne },
+    { name: "Perdu", value: nbPerdu },
+  ]
+
+  // Récompenses les plus données (parmi les gagnants)
+  const recompensesCount: Record<string, number> = {}
+  clients.filter((c) => c.a_gagne).forEach((c) => {
+    recompensesCount[c.recompense] = (recompensesCount[c.recompense] || 0) + 1
+  })
+  const dataRecompenses = Object.entries(recompensesCount)
+    .map(([nom, count]) => ({ nom, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
+
   const navItems = [
     { id: "accueil", label: "Tableau de bord", icon: LayoutDashboard },
     { id: "qrcode", label: "Mon QR code", icon: QrCode },
@@ -511,6 +544,53 @@ function DashboardContent() {
                 )
               })}
             </div>
+            {clients.length === 0 ? null : (
+              <div className="grid gap-4 lg:grid-cols-3 mb-8">
+                <div className="lg:col-span-2 bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
+                  <p className="text-sm font-medium text-ink mb-4">Clients collectés (14 derniers jours)</p>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={clientsParJour}>
+                      <XAxis dataKey="jour" tick={{ fontSize: 11, fill: "#241914aa" }} axisLine={false} tickLine={false} />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "#241914aa" }} axisLine={false} tickLine={false} width={24} />
+                      <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #6b1e2e20", fontSize: 13 }} />
+                      <Bar dataKey="clients" fill="#6b1e2e" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
+                  <p className="text-sm font-medium text-ink mb-4">Taux de victoire</p>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <PieChart>
+                      <Pie data={dataVictoire} dataKey="value" nameKey="name" innerRadius={50} outerRadius={75} paddingAngle={3}>
+                        <Cell fill="#c9962c" />
+                        <Cell fill="#e7d9c3" />
+                      </Pie>
+                      <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #6b1e2e20", fontSize: 13 }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="flex justify-center gap-4 text-xs text-ink/60 -mt-2">
+                    <span><span className="inline-block size-2 rounded-full bg-gold mr-1" />Gagné ({nbGagne})</span>
+                    <span><span className="inline-block size-2 rounded-full bg-[#e7d9c3] mr-1" />Perdu ({nbPerdu})</span>
+                  </div>
+                </div>
+
+                {dataRecompenses.length > 0 && (
+                  <div className="lg:col-span-3 bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
+                    <p className="text-sm font-medium text-ink mb-4">Récompenses les plus données</p>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={dataRecompenses} layout="vertical" margin={{ left: 10 }}>
+                        <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "#241914aa" }} axisLine={false} tickLine={false} />
+                        <YAxis type="category" dataKey="nom" width={140} tick={{ fontSize: 12, fill: "#241914" }} axisLine={false} tickLine={false} />
+                        <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #6b1e2e20", fontSize: 13 }} />
+                        <Bar dataKey="count" fill="#3f6b4f" radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
               <h2 className="font-display font-semibold text-ink mb-4">Démarrer rapidement</h2>
               <div className="space-y-3">
