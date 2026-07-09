@@ -71,7 +71,6 @@ export default function AdminPage() {
     }
 
     const { error } = await supabase.auth.verifyOtp({
-      email: result.email,
       token_hash: result.hashedToken,
       type: "email",
     })
