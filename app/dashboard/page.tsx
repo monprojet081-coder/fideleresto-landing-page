@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
 
 export default function DashboardPage() {
   return (
@@ -47,6 +48,7 @@ function DashboardContent() {
   // Flyer
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [logoUploadError, setLogoUploadError] = useState("")
+  const [selectedModele, setSelectedModele] = useState<ModeleFlyer | null>(null)
   const [generatingFlyer, setGeneratingFlyer] = useState(false)
 
   // Carte de fidélité
@@ -284,6 +286,7 @@ function DashboardContent() {
   }
 
   const generateFlyer = async () => {
+    if (!selectedModele) return
     setGeneratingFlyer(true)
     try {
       const { jsPDF } = await import("jspdf")
@@ -293,113 +296,72 @@ function DashboardContent() {
       const slug = user.id.slice(0, 8)
       const urlRoue = `https://fideleresto-landing-page-9dhz.vercel.app/r/${slug}`
 
-      // Couleurs identité visuelle
-      const wine = "#6b1e2e"
-      const wineDark = "#431320"
-      const gold = "#c9962c"
-      const ivory = "#faf3e8"
       const ink = "#241914"
+      const ivory = "#faf3e8"
 
-      const doc = new jsPDF({ unit: "mm", format: "a5", orientation: "portrait" })
-      const pageW = doc.internal.pageSize.getWidth()
-      const pageH = doc.internal.pageSize.getHeight()
+      // Le PDF garde les proportions exactes de l'image du modèle choisi
+      const pageW = 148 // mm, référence A5
+      const pageH = pageW * (selectedModele.hauteurPx / selectedModele.largeurPx)
 
-      // Fond ivoire
-      doc.setFillColor(ivory)
-      doc.rect(0, 0, pageW, pageH, "F")
+      const doc = new jsPDF({ unit: "mm", format: [pageW, pageH], orientation: "portrait" })
 
-      // Cadre "ticket de tombola" : bordure pointillée bordeaux
-      const marge = 6
-      doc.setDrawColor(wine)
-      doc.setLineWidth(0.6)
-      doc.setLineDashPattern([2, 1.5], 0)
-      doc.roundedRect(marge, marge, pageW - marge * 2, pageH - marge * 2, 3, 3, "S")
-      doc.setLineDashPattern([], 0)
+      // Fond = l'image du modèle en pleine page
+      const fondImg = await chargerImage(selectedModele.fichierPng)
+      doc.addImage(fondImg, "PNG", 0, 0, pageW, pageH)
 
-      // Petites encoches rondes façon ticket, sur les côtés
-      doc.setFillColor(ivory)
-      doc.setDrawColor(wine)
-      doc.setLineWidth(0.4);
-      [pageH * 0.33, pageH * 0.66].forEach((y) => {
-        doc.circle(marge, y, 2.2, "FD")
-        doc.circle(pageW - marge, y, 2.2, "FD")
-      })
+      // Zone bannière (nom + logo)
+      const b = selectedModele.banniere
+      const bx = (b.xPct / 100) * pageW
+      const by = (b.yPct / 100) * pageH
+      const bw = (b.wPct / 100) * pageW
+      const bh = (b.hPct / 100) * pageH
+      const couleurTexte = selectedModele.interieurClair ? ink : ivory
 
-      let curY = 16
-
-      // Logo si présent
+      let logoW = 0
       if (restaurant?.logo_url) {
         try {
-          const img = await chargerImage(restaurant.logo_url)
-          const logoMaxW = 26
-          const ratio = img.height / img.width
-          const logoW = logoMaxW
-          const logoH = logoW * ratio
-          doc.addImage(img, "PNG", pageW / 2 - logoW / 2, curY, logoW, logoH)
-          curY += logoH + 6
+          const logoImg = await chargerImage(restaurant.logo_url)
+          const ratio = logoImg.height / logoImg.width
+          const logoH = bh * 0.8
+          logoW = logoH / ratio
+          doc.addImage(logoImg, "PNG", bx + 3, by + (bh - logoH) / 2, logoW, logoH)
         } catch {
-          // logo indisponible, on continue sans bloquer
+          logoW = 0
         }
       }
 
-      // Nom du restaurant
-      doc.setTextColor(wineDark)
+      doc.setTextColor(couleurTexte)
       doc.setFont("helvetica", "bold")
-      doc.setFontSize(20)
-      doc.text(nomRestaurant, pageW / 2, curY + 6, { align: "center", maxWidth: pageW - marge * 2 - 10 })
-      curY += 14
-
-      // Accroche
-      doc.setTextColor(gold)
-      doc.setFont("helvetica", "bolditalic")
-      doc.setFontSize(13)
-      doc.text("La roue de la fidélité est 100% GRATUITE !", pageW / 2, curY, { align: "center", maxWidth: pageW - marge * 2 - 10 })
-      curY += 10
-
-      // Points clés
-      const points = [
-        "Laissez un avis Google",
-        "Tournez la roue et tentez de gagner un cadeau",
-        "Menu digital et carte de fidélité disponibles juste après !",
-      ]
-      doc.setFont("helvetica", "normal")
-      doc.setFontSize(10.5)
-      doc.setTextColor(ink)
-      points.forEach((point) => {
-        const lignes = doc.splitTextToSize(point, pageW - marge * 2 - 16)
-        doc.setFillColor(wine)
-        doc.circle(marge + 8, curY - 1.3, 1, "F")
-        doc.text(lignes, marge + 12, curY, { maxWidth: pageW - marge * 2 - 16 })
-        curY += lignes.length * 5 + 2.5
+      const tailleTexte = Math.min(18, Math.max(10, bh * 2.6))
+      doc.setFontSize(tailleTexte)
+      const texteX = logoW > 0 ? bx + logoW + 7 : bx + bw / 2
+      const alignement = logoW > 0 ? "left" : "center"
+      doc.text(nomRestaurant, texteX, by + bh / 2 + tailleTexte * 0.1, {
+        align: alignement,
+        maxWidth: logoW > 0 ? bw - logoW - 10 : bw - 6,
       })
 
-      curY += 4
+      // Zone QR code
+      const q = selectedModele.qr
+      const qx = (q.xPct / 100) * pageW
+      const qy = (q.yPct / 100) * pageH
+      const qw = (q.wPct / 100) * pageW
+      const qh = (q.hPct / 100) * pageH
+      const qrTaille = Math.min(qw, qh)
 
-      // QR code
       const qrDataUrl: string = await QRCode.toDataURL(urlRoue, {
         width: 400,
-        margin: 1,
-        color: { dark: ink, light: ivory },
+        margin: 0,
+        color: { dark: "#000000", light: "#ffffff" },
       })
-      const qrSize = 42
-      doc.setDrawColor(wine)
-      doc.setLineWidth(0.4)
-      doc.roundedRect(pageW / 2 - qrSize / 2 - 2, curY - 2, qrSize + 4, qrSize + 4, 2, 2, "S")
-      doc.addImage(qrDataUrl, "PNG", pageW / 2 - qrSize / 2, curY, qrSize, qrSize)
-      curY += qrSize + 7
+      doc.addImage(
+        qrDataUrl, "PNG",
+        qx + (qw - qrTaille) / 2,
+        qy + (qh - qrTaille) / 2,
+        qrTaille, qrTaille
+      )
 
-      doc.setFont("helvetica", "bold")
-      doc.setFontSize(11)
-      doc.setTextColor(wineDark)
-      doc.text("Scannez-moi !", pageW / 2, curY, { align: "center" })
-
-      // Signature bas de page
-      doc.setFont("helvetica", "italic")
-      doc.setFontSize(7.5)
-      doc.setTextColor(wine)
-      doc.text("Propulsé par FidèleResto", marge + 2, pageH - marge - 2, { align: "left" })
-
-      doc.save(`flyer-${slug}.pdf`)
+      doc.save(`flyer-${selectedModele.id}-${slug}.pdf`)
     } catch (err) {
       alert("Erreur lors de la génération du flyer.")
       console.error(err)
@@ -819,43 +781,62 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Mon flyer</h1>
-              <p className="text-ink/55 mt-1">Un flyer prêt à imprimer avec votre logo et votre QR code, pour vos tables et vitrines</p>
+              <p className="text-ink/55 mt-1">Choisissez un modèle, votre nom et votre QR code s'ajoutent automatiquement</p>
             </div>
 
-            <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-2xl">
-              <p className="text-sm font-medium text-ink mb-3">Votre logo (optionnel)</p>
+            <div className="max-w-2xl">
+              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm mb-6">
+                <p className="text-sm font-medium text-ink mb-3">Votre logo (optionnel)</p>
 
-              {restaurant?.logo_url && (
-                <div className="flex items-center gap-3 rounded-lg bg-secondary/40 px-4 py-3 mb-4">
-                  <img src={restaurant.logo_url} alt="Logo" className="w-10 h-10 object-contain rounded" />
-                  <p className="text-sm text-ink/70">Logo actuel</p>
+                {restaurant?.logo_url && (
+                  <div className="flex items-center gap-3 rounded-lg bg-secondary/40 px-4 py-3 mb-4">
+                    <img src={restaurant.logo_url} alt="Logo" className="w-10 h-10 object-contain rounded" />
+                    <p className="text-sm text-ink/70">Logo actuel</p>
+                  </div>
+                )}
+
+                <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-wine/20 rounded-xl py-6 cursor-pointer hover:border-gold/50 transition-colors">
+                  <ImageIcon className="size-6 text-wine/40" />
+                  <p className="text-sm text-ink/70">
+                    {uploadingLogo ? "Envoi en cours..." : "Cliquez pour choisir votre logo"}
+                  </p>
+                  <p className="text-xs text-ink/40">JPG, PNG ou WEBP</p>
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    className="hidden"
+                    disabled={uploadingLogo}
+                    onChange={handleLogoUpload}
+                  />
+                </label>
+                {logoUploadError && <p className="text-sm text-wine mt-3">{logoUploadError}</p>}
+              </div>
+
+              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
+                <p className="text-sm font-medium text-ink mb-4">Choisissez votre modèle</p>
+
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                  {MODELES_FLYER.filter((m) => m.plan === (restaurant?.plan === "premium" ? "premium" : "standard")).map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => setSelectedModele(m)}
+                      className={`rounded-lg overflow-hidden border-2 transition-colors text-left ${
+                        selectedModele?.id === m.id ? "border-wine" : "border-transparent hover:border-wine/30"
+                      }`}
+                    >
+                      <img src={m.fichierThumb} alt={m.nom} className="w-full aspect-[3/4] object-cover" />
+                      <p className="text-xs text-center py-1.5 bg-secondary/40 text-ink/70">{m.nom}</p>
+                    </button>
+                  ))}
                 </div>
-              )}
 
-              <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-wine/20 rounded-xl py-8 cursor-pointer hover:border-gold/50 transition-colors">
-                <ImageIcon className="size-7 text-wine/40" />
-                <p className="text-sm text-ink/70">
-                  {uploadingLogo ? "Envoi en cours..." : "Cliquez pour choisir votre logo"}
-                </p>
-                <p className="text-xs text-ink/40">JPG, PNG ou WEBP</p>
-                <input
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.webp"
-                  className="hidden"
-                  disabled={uploadingLogo}
-                  onChange={handleLogoUpload}
-                />
-              </label>
-              {logoUploadError && <p className="text-sm text-wine mt-3">{logoUploadError}</p>}
-
-              <div className="border-t border-wine/10 mt-6 pt-6">
                 <button
                   onClick={generateFlyer}
-                  disabled={generatingFlyer}
+                  disabled={generatingFlyer || !selectedModele}
                   className="w-full bg-wine hover:bg-wine-dark text-gold-light font-medium py-2.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                   <Download className="w-4 h-4" />
-                  {generatingFlyer ? "Génération en cours..." : "Télécharger mon flyer (PDF)"}
+                  {generatingFlyer ? "Génération en cours..." : "Télécharger le flyer (PDF)"}
                 </button>
                 <p className="text-xs text-ink/40 mt-3 text-center">
                   Le flyer reprend automatiquement le nom de votre restaurant, votre QR code et, si ajouté, votre logo.

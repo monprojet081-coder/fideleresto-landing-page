@@ -176,7 +176,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   }
 
   return (
-    <div className="min-h-screen bg-ivory flex items-center justify-center p-4">
+    <div className="min-h-screen bg-ivory flex flex-col items-center justify-center p-4">
       <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8">
 
         <div className="text-center mb-8">
@@ -368,6 +368,8 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         )}
 
       </div>
+
+      <img src="/badge-fideleresto.png" alt="Propulsé par FidèleResto" className="w-40 mt-6 opacity-90" />
     </div>
   )
 }
