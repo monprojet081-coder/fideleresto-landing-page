@@ -325,10 +325,10 @@ function DashboardContent() {
       // Zone bannière (nom OU logo) — on rétrécit un peu la zone mesurée pour
       // rester à l'écart des décorations du cadre (feuilles, coins arrondis du ticket)
       const b = selectedModele.banniere
-      const bx = (b.xPct / 100) * pageW + (b.wPct / 100) * pageW * 0.06
-      const by = (b.yPct / 100) * pageH + (b.hPct / 100) * pageH * 0.10
-      const bw = (b.wPct / 100) * pageW * 0.88
-      const bh = (b.hPct / 100) * pageH * 0.80
+      const bx = (b.xPct / 100) * pageW + (b.wPct / 100) * pageW * 0.03
+      const by = (b.yPct / 100) * pageH + (b.hPct / 100) * pageH * 0.06
+      const bw = (b.wPct / 100) * pageW * 0.94
+      const bh = (b.hPct / 100) * pageH * 0.88
       const couleurTexte = selectedModele.interieurClair ? ink : ivory
 
       const afficherLogo = flyerAffichage === "logo" && !!restaurant?.logo_url
@@ -337,10 +337,10 @@ function DashboardContent() {
         // Logo seul, en grand, centré dans la bannière
         const logoImg = await chargerImage(restaurant.logo_url)
         const ratio = logoImg.height / logoImg.width
-        let logoH = bh * 0.95
+        let logoH = bh * 0.98
         let logoW = logoH / ratio
-        if (logoW > bw * 0.92) {
-          logoW = bw * 0.92
+        if (logoW > bw * 0.96) {
+          logoW = bw * 0.96
           logoH = logoW * ratio
         }
         doc.addImage(logoImg, "PNG", bx + (bw - logoW) / 2, by + (bh - logoH) / 2, logoW, logoH)

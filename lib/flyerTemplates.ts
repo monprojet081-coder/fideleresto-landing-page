@@ -33,7 +33,7 @@ export const MODELES_FLYER: ModeleFlyer[] = [
     largeurPx: 1054,
     hauteurPx: 1492,
     interieurClair: true,
-    banniere: { xPct: 1.7, yPct: 2.0, wPct: 95.9, hPct: 16.2 },
+    banniere: { xPct: 8.0, yPct: 3.3, wPct: 83.4, hPct: 13.6 },
     qr: { xPct: 33.9, yPct: 67.4, wPct: 31.4, hPct: 20.7 },
   },
   {
@@ -57,7 +57,7 @@ export const MODELES_FLYER: ModeleFlyer[] = [
     largeurPx: 1254,
     hauteurPx: 1254,
     interieurClair: true,
-    banniere: { xPct: 8, yPct: 3, wPct: 84, hPct: 12 },
+    banniere: { xPct: 10.5, yPct: 4.3, wPct: 79.1, hPct: 12.7 },
     qr: { xPct: 11.1, yPct: 62.5, wPct: 21.4, hPct: 20.4 },
   },
   {
@@ -69,7 +69,7 @@ export const MODELES_FLYER: ModeleFlyer[] = [
     largeurPx: 1054,
     hauteurPx: 1492,
     interieurClair: false,
-    banniere: { xPct: 13, yPct: 4, wPct: 78, hPct: 9 },
+    banniere: { xPct: 14.9, yPct: 2.3, wPct: 70.8, hPct: 10.5 },
     qr: { xPct: 4.6, yPct: 63.3, wPct: 17.7, hPct: 12.5 },
   },
   {
@@ -81,7 +81,7 @@ export const MODELES_FLYER: ModeleFlyer[] = [
     largeurPx: 1054,
     hauteurPx: 1492,
     interieurClair: false,
-    banniere: { xPct: 13, yPct: 3.5, wPct: 75, hPct: 8.5 },
+    banniere: { xPct: 13.9, yPct: 2.9, wPct: 72.2, hPct: 9.9 },
     qr: { xPct: 4.9, yPct: 66.3, wPct: 17.2, hPct: 11.9 },
   },
   {
@@ -93,7 +93,7 @@ export const MODELES_FLYER: ModeleFlyer[] = [
     largeurPx: 1254,
     hauteurPx: 1254,
     interieurClair: true,
-    banniere: { xPct: 15, yPct: 1, wPct: 70, hPct: 11 },
+    banniere: { xPct: 14.5, yPct: 3.6, wPct: 70.7, hPct: 10.5 },
     qr: { xPct: 12.3, yPct: 54.9, wPct: 21.8, hPct: 21.0 },
   },
 ]
