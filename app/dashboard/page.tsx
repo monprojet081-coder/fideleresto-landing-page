@@ -33,6 +33,7 @@ function DashboardContent() {
   const [clients, setClients] = useState<any[]>([])
   const [clientsLoading, setClientsLoading] = useState(true)
   const [restaurant, setRestaurant] = useState<any>(null)
+  const [nomRestaurantInput, setNomRestaurantInput] = useState("")
   const [googleAvisUrl, setGoogleAvisUrl] = useState("")
   const [savingParams, setSavingParams] = useState(false)
   const [billingPeriod, setBillingPeriod] = useState<"mensuel" | "annuel">("mensuel")
@@ -49,6 +50,7 @@ function DashboardContent() {
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [logoUploadError, setLogoUploadError] = useState("")
   const [selectedModele, setSelectedModele] = useState<ModeleFlyer | null>(null)
+  const [flyerAffichage, setFlyerAffichage] = useState<"nom" | "logo">("nom")
   const [generatingFlyer, setGeneratingFlyer] = useState(false)
 
   // Carte de fidélité
@@ -109,6 +111,7 @@ function DashboardContent() {
         if (restoData) {
           setRestaurant(restoData)
           setGoogleAvisUrl(restoData.google_avis_url || "")
+          setNomRestaurantInput(restoData.nom_restaurant || "")
         } else {
           const { data: newResto } = await supabase
             .from("restaurants")
@@ -124,6 +127,7 @@ function DashboardContent() {
           if (newResto) {
             setRestaurant(newResto)
             setGoogleAvisUrl(newResto.google_avis_url || "")
+            setNomRestaurantInput(newResto.nom_restaurant || "")
           }
         }
       }
@@ -305,11 +309,20 @@ function DashboardContent() {
 
       const doc = new jsPDF({ unit: "mm", format: [pageW, pageH], orientation: "portrait" })
 
+      // Police Fraunces (identité FidèleResto) intégrée au PDF, à la place des polices génériques
+      const fontResp = await fetch("/fonts/fraunces-bold.ttf")
+      const fontBuffer = await fontResp.arrayBuffer()
+      let fontBinaire = ""
+      new Uint8Array(fontBuffer).forEach((b) => (fontBinaire += String.fromCharCode(b)))
+      const fontBase64 = btoa(fontBinaire)
+      doc.addFileToVFS("fraunces-bold.ttf", fontBase64)
+      doc.addFont("fraunces-bold.ttf", "Fraunces", "bold")
+
       // Fond = l'image du modèle en pleine page
       const fondImg = await chargerImage(selectedModele.fichierPng)
       doc.addImage(fondImg, "PNG", 0, 0, pageW, pageH)
 
-      // Zone bannière (nom + logo) — on rétrécit un peu la zone mesurée pour
+      // Zone bannière (nom OU logo) — on rétrécit un peu la zone mesurée pour
       // rester à l'écart des décorations du cadre (feuilles, coins arrondis du ticket)
       const b = selectedModele.banniere
       const bx = (b.xPct / 100) * pageW + (b.wPct / 100) * pageW * 0.06
@@ -318,50 +331,36 @@ function DashboardContent() {
       const bh = (b.hPct / 100) * pageH * 0.80
       const couleurTexte = selectedModele.interieurClair ? ink : ivory
 
-      doc.setFont("times", "bold")
-      let tailleTexte = Math.min(24, Math.max(11, bh * 3.2))
+      const afficherLogo = flyerAffichage === "logo" && !!restaurant?.logo_url
 
-      // Logo : hauteur proportionnelle à la bannière, largeur plafonnée pour ne pas écraser le nom
-      let logoW = 0
-      let logoH = 0
-      let logoImg: HTMLImageElement | null = null
-      if (restaurant?.logo_url) {
-        try {
-          logoImg = await chargerImage(restaurant.logo_url)
-          const ratio = logoImg.height / logoImg.width
-          logoH = bh * 0.9
-          logoW = Math.min(logoH / ratio, bw * 0.3)
-        } catch {
-          logoImg = null
+      if (afficherLogo) {
+        // Logo seul, en grand, centré dans la bannière
+        const logoImg = await chargerImage(restaurant.logo_url)
+        const ratio = logoImg.height / logoImg.width
+        let logoH = bh * 0.95
+        let logoW = logoH / ratio
+        if (logoW > bw * 0.92) {
+          logoW = bw * 0.92
+          logoH = logoW * ratio
         }
-      }
-
-      const espace = logoImg ? bw * 0.04 : 0
-
-      // On réduit la taille du texte tant qu'il ne rentre pas dans l'espace disponible
-      const largeurDispoTexte = bw - logoW - espace
-      doc.setFontSize(tailleTexte)
-      while (doc.getTextWidth(nomRestaurant) > largeurDispoTexte && tailleTexte > 9) {
-        tailleTexte -= 0.5
+        doc.addImage(logoImg, "PNG", bx + (bw - logoW) / 2, by + (bh - logoH) / 2, logoW, logoH)
+      } else {
+        // Nom du restaurant seul, centré, en Fraunces
+        doc.setFont("Fraunces", "bold")
+        let tailleTexte = Math.min(30, Math.max(12, bh * 3.6))
         doc.setFontSize(tailleTexte)
+        while (doc.getTextWidth(nomRestaurant) > bw * 0.94 && tailleTexte > 9) {
+          tailleTexte -= 0.5
+          doc.setFontSize(tailleTexte)
+        }
+        doc.setTextColor(couleurTexte)
+        doc.text(
+          nomRestaurant,
+          bx + bw / 2,
+          by + bh / 2 + tailleTexte * 0.35 * 0.3528,
+          { align: "center" }
+        )
       }
-      const texteW = doc.getTextWidth(nomRestaurant)
-
-      // Centrage du bloc [logo + texte] dans la bannière
-      const largeurBloc = logoW + espace + texteW
-      const startX = bx + Math.max(0, (bw - largeurBloc) / 2)
-
-      if (logoImg) {
-        doc.addImage(logoImg, "PNG", startX, by + (bh - logoH) / 2, logoW, logoH)
-      }
-
-      doc.setTextColor(couleurTexte)
-      doc.text(
-        nomRestaurant,
-        startX + logoW + espace,
-        by + bh / 2 + tailleTexte * 0.35 * 0.3528,
-        { align: "left" }
-      )
 
       // Zone QR code — on garde une marge intérieure pour ne pas toucher le cadre
       const q = selectedModele.qr
@@ -549,11 +548,12 @@ function DashboardContent() {
     const slug = user.id.slice(0, 8)
     const { error } = await supabase
       .from("restaurants")
-      .update({ google_avis_url: googleAvisUrl })
+      .update({ google_avis_url: googleAvisUrl, nom_restaurant: nomRestaurantInput })
       .eq("slug", slug)
     if (error) {
       alert("Erreur lors de la sauvegarde : " + error.message)
     } else {
+      setRestaurant({ ...restaurant, nom_restaurant: nomRestaurantInput, google_avis_url: googleAvisUrl })
       alert("Paramètres sauvegardés !")
     }
     setSavingParams(false)
@@ -568,7 +568,7 @@ function DashboardContent() {
     </div>
   )
 
-  const nomResto = user?.user_metadata?.nom_restaurant || "Mon Restaurant"
+  const nomResto = restaurant?.nom_restaurant || "Mon Restaurant"
   const totalProba = rewards.reduce((a, r) => a + r.probabilite, 0)
 
   const kpis = [
@@ -832,6 +832,30 @@ function DashboardContent() {
                   />
                 </label>
                 {logoUploadError && <p className="text-sm text-wine mt-3">{logoUploadError}</p>}
+              </div>
+
+              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm mb-6">
+                <p className="text-sm font-medium text-ink mb-3">Afficher sur le flyer</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setFlyerAffichage("nom")}
+                    className={`rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
+                      flyerAffichage === "nom" ? "border-wine bg-wine/5 text-wine" : "border-wine/15 text-ink/60 hover:border-wine/30"
+                    }`}
+                  >
+                    Nom du restaurant
+                  </button>
+                  <button
+                    onClick={() => restaurant?.logo_url && setFlyerAffichage("logo")}
+                    disabled={!restaurant?.logo_url}
+                    className={`rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
+                      flyerAffichage === "logo" ? "border-wine bg-wine/5 text-wine" : "border-wine/15 text-ink/60 hover:border-wine/30"
+                    } disabled:opacity-40 disabled:cursor-not-allowed`}
+                  >
+                    Mon logo {!restaurant?.logo_url && "(ajoutez-en un ci-dessus)"}
+                  </button>
+                </div>
+                <p className="mt-2 text-xs text-ink/40">Un seul des deux s'affiche à la fois, en grand, pour un rendu plus propre.</p>
               </div>
 
               <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
@@ -1375,7 +1399,8 @@ function DashboardContent() {
                   <label className="block text-sm font-medium text-ink/80 mb-1">Nom du restaurant</label>
                   <input
                     type="text"
-                    defaultValue={nomResto}
+                    value={nomRestaurantInput}
+                    onChange={e => setNomRestaurantInput(e.target.value)}
                     className="w-full border border-wine/15 rounded-lg px-4 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
                   />
                 </div>
