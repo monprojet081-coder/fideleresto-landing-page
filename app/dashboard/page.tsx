@@ -309,49 +309,71 @@ function DashboardContent() {
       const fondImg = await chargerImage(selectedModele.fichierPng)
       doc.addImage(fondImg, "PNG", 0, 0, pageW, pageH)
 
-      // Zone bannière (nom + logo)
+      // Zone bannière (nom + logo) — on rétrécit un peu la zone mesurée pour
+      // rester à l'écart des décorations du cadre (feuilles, coins arrondis du ticket)
       const b = selectedModele.banniere
-      const bx = (b.xPct / 100) * pageW
-      const by = (b.yPct / 100) * pageH
-      const bw = (b.wPct / 100) * pageW
-      const bh = (b.hPct / 100) * pageH
+      const bx = (b.xPct / 100) * pageW + (b.wPct / 100) * pageW * 0.06
+      const by = (b.yPct / 100) * pageH + (b.hPct / 100) * pageH * 0.10
+      const bw = (b.wPct / 100) * pageW * 0.88
+      const bh = (b.hPct / 100) * pageH * 0.80
       const couleurTexte = selectedModele.interieurClair ? ink : ivory
 
+      doc.setFont("times", "bold")
+      let tailleTexte = Math.min(24, Math.max(11, bh * 3.2))
+
+      // Logo : hauteur proportionnelle à la bannière, largeur plafonnée pour ne pas écraser le nom
       let logoW = 0
+      let logoH = 0
+      let logoImg: HTMLImageElement | null = null
       if (restaurant?.logo_url) {
         try {
-          const logoImg = await chargerImage(restaurant.logo_url)
+          logoImg = await chargerImage(restaurant.logo_url)
           const ratio = logoImg.height / logoImg.width
-          const logoH = bh * 0.8
-          logoW = logoH / ratio
-          doc.addImage(logoImg, "PNG", bx + 3, by + (bh - logoH) / 2, logoW, logoH)
+          logoH = bh * 0.9
+          logoW = Math.min(logoH / ratio, bw * 0.3)
         } catch {
-          logoW = 0
+          logoImg = null
         }
       }
 
-      doc.setTextColor(couleurTexte)
-      doc.setFont("helvetica", "bold")
-      const tailleTexte = Math.min(18, Math.max(10, bh * 2.6))
-      doc.setFontSize(tailleTexte)
-      const texteX = logoW > 0 ? bx + logoW + 7 : bx + bw / 2
-      const alignement = logoW > 0 ? "left" : "center"
-      doc.text(nomRestaurant, texteX, by + bh / 2 + tailleTexte * 0.1, {
-        align: alignement,
-        maxWidth: logoW > 0 ? bw - logoW - 10 : bw - 6,
-      })
+      const espace = logoImg ? bw * 0.04 : 0
 
-      // Zone QR code
+      // On réduit la taille du texte tant qu'il ne rentre pas dans l'espace disponible
+      const largeurDispoTexte = bw - logoW - espace
+      doc.setFontSize(tailleTexte)
+      while (doc.getTextWidth(nomRestaurant) > largeurDispoTexte && tailleTexte > 9) {
+        tailleTexte -= 0.5
+        doc.setFontSize(tailleTexte)
+      }
+      const texteW = doc.getTextWidth(nomRestaurant)
+
+      // Centrage du bloc [logo + texte] dans la bannière
+      const largeurBloc = logoW + espace + texteW
+      const startX = bx + Math.max(0, (bw - largeurBloc) / 2)
+
+      if (logoImg) {
+        doc.addImage(logoImg, "PNG", startX, by + (bh - logoH) / 2, logoW, logoH)
+      }
+
+      doc.setTextColor(couleurTexte)
+      doc.text(
+        nomRestaurant,
+        startX + logoW + espace,
+        by + bh / 2 + tailleTexte * 0.35 * 0.3528,
+        { align: "left" }
+      )
+
+      // Zone QR code — on garde une marge intérieure pour ne pas toucher le cadre
       const q = selectedModele.qr
       const qx = (q.xPct / 100) * pageW
       const qy = (q.yPct / 100) * pageH
       const qw = (q.wPct / 100) * pageW
       const qh = (q.hPct / 100) * pageH
-      const qrTaille = Math.min(qw, qh)
+      const qrTaille = Math.min(qw, qh) * 0.86
 
       const qrDataUrl: string = await QRCode.toDataURL(urlRoue, {
         width: 400,
-        margin: 0,
+        margin: 1,
         color: { dark: "#000000", light: "#ffffff" },
       })
       doc.addImage(
