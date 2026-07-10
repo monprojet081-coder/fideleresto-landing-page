@@ -357,8 +357,8 @@ function DashboardContent() {
         doc.text(
           nomRestaurant,
           bx + bw / 2,
-          by + bh / 2 + tailleTexte * 0.35 * 0.3528,
-          { align: "center" }
+          by + bh / 2,
+          { align: "center", baseline: "middle" }
         )
       }
 
