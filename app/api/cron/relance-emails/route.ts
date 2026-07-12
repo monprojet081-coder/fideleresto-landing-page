@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
           const lienDesabonnement = `${SITE_URL}/api/relance/desabonner?email=${encodeURIComponent(passage.email)}&slug=${resto.slug}`
 
           const { error: sendError } = await resend.emails.send({
-            from: 'onboarding@resend.dev', // à remplacer par contact@fideleresto.fr une fois le domaine vérifié
+            from: 'FidèleResto <contact@fideleresto.fr>',
             to: [passage.email],
             subject: `${passage.prenom}, on ne vous a pas vu depuis un moment 👋`,
             html: `

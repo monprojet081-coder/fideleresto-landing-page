@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { data, error } = await resend.emails.send({
-      from: 'onboarding@resend.dev', // à adapter selon ton domaine vérifié dans Resend
+      from: 'FidèleResto <contact@fideleresto.fr>',
       to: [email],
       subject: `🎉 Félicitations ${prenom} ! Votre récompense vous attend`,
       html: `
