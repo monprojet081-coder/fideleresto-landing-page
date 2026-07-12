@@ -10,6 +10,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [step, setStep] = useState<Step>("checking")
   const [prenom, setPrenom] = useState("")
   const [email, setEmail] = useState("")
+  const [consentementMarketing, setConsentementMarketing] = useState(false)
   const [spinning, setSpinning] = useState(false)
   const [result, setResult] = useState<{ label: string; probabilite: number; couleur: string } | null>(null)
   const [rotation, setRotation] = useState(0)
@@ -118,7 +119,8 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         email,
         restaurant_slug: slug,
         a_gagne: reward.label !== "Perdu 😢",
-        recompense: reward.label
+        recompense: reward.label,
+        consentement_marketing: consentementMarketing
       }])
 
     if (insertError) {
@@ -212,7 +214,14 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
               />
             </div>
             <div className="flex items-start gap-2">
-              <input type="checkbox" required id="rgpd" className="mt-1 accent-wine" />
+              <input
+                type="checkbox"
+                required
+                id="rgpd"
+                checked={consentementMarketing}
+                onChange={e => setConsentementMarketing(e.target.checked)}
+                className="mt-1 accent-wine"
+              />
               <label htmlFor="rgpd" className="text-xs text-ink/50">
                 J'accepte que mes données soient utilisées pour recevoir des offres de ce restaurant
               </label>

@@ -36,6 +36,9 @@ function DashboardContent() {
   const [nomRestaurantInput, setNomRestaurantInput] = useState("")
   const [googleAvisUrl, setGoogleAvisUrl] = useState("")
   const [savingParams, setSavingParams] = useState(false)
+  const [relanceActive, setRelanceActive] = useState(false)
+  const [relanceJours, setRelanceJours] = useState(10)
+  const [relancePourcentage, setRelancePourcentage] = useState(10)
   const [billingPeriod, setBillingPeriod] = useState<"mensuel" | "annuel">("mensuel")
   const [avecCreationSite, setAvecCreationSite] = useState(false)
   const [subscribing, setSubscribing] = useState<string | null>(null)
@@ -112,6 +115,9 @@ function DashboardContent() {
           setRestaurant(restoData)
           setGoogleAvisUrl(restoData.google_avis_url || "")
           setNomRestaurantInput(restoData.nom_restaurant || "")
+          setRelanceActive(restoData.relance_active || false)
+          setRelanceJours(restoData.relance_jours_inactivite || 10)
+          setRelancePourcentage(restoData.relance_pourcentage || 10)
         } else {
           const { data: newResto } = await supabase
             .from("restaurants")
@@ -548,12 +554,25 @@ function DashboardContent() {
     const slug = user.id.slice(0, 8)
     const { error } = await supabase
       .from("restaurants")
-      .update({ google_avis_url: googleAvisUrl, nom_restaurant: nomRestaurantInput })
+      .update({
+        google_avis_url: googleAvisUrl,
+        nom_restaurant: nomRestaurantInput,
+        relance_active: relanceActive,
+        relance_jours_inactivite: relanceJours,
+        relance_pourcentage: relancePourcentage,
+      })
       .eq("slug", slug)
     if (error) {
       alert("Erreur lors de la sauvegarde : " + error.message)
     } else {
-      setRestaurant({ ...restaurant, nom_restaurant: nomRestaurantInput, google_avis_url: googleAvisUrl })
+      setRestaurant({
+        ...restaurant,
+        nom_restaurant: nomRestaurantInput,
+        google_avis_url: googleAvisUrl,
+        relance_active: relanceActive,
+        relance_jours_inactivite: relanceJours,
+        relance_pourcentage: relancePourcentage,
+      })
       alert("Paramètres sauvegardés !")
     }
     setSavingParams(false)
@@ -1424,6 +1443,48 @@ function DashboardContent() {
                   />
                   <p className="mt-1 text-xs text-ink/45">Vos clients seront redirigés vers ce lien après avoir gagné à la roue.</p>
                 </div>
+
+                <div className="border-t border-wine/10 pt-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium text-ink/80">Emails de relance automatiques</label>
+                    <button
+                      onClick={() => setRelanceActive(!relanceActive)}
+                      className={`relative w-10 h-5.5 rounded-full transition-colors ${relanceActive ? "bg-wine" : "bg-secondary"}`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-4.5 h-4.5 rounded-full bg-white transition-transform ${relanceActive ? "translate-x-4.5" : ""}`} />
+                    </button>
+                  </div>
+                  <p className="text-xs text-ink/45 mb-3">
+                    Envoie un email automatique avec une petite réduction aux clients qui ne sont pas revenus depuis un moment (uniquement à ceux ayant accepté de recevoir des offres).
+                  </p>
+                  {relanceActive && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-ink/60 mb-1">Après combien de jours d'inactivité</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={90}
+                          value={relanceJours}
+                          onChange={e => setRelanceJours(Number(e.target.value))}
+                          className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-ink/60 mb-1">% de réduction offert</label>
+                        <input
+                          type="number"
+                          min={5}
+                          max={50}
+                          value={relancePourcentage}
+                          onChange={e => setRelancePourcentage(Number(e.target.value))}
+                          className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <button
                   onClick={saveParametres}
                   disabled={savingParams}
