@@ -9,7 +9,7 @@ const supabaseAdmin = createClient(
 )
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const SITE_URL = 'https://fideleresto-landing-page-9dhz.vercel.app'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fideleresto-landing-page-9dhz.vercel.app'
 
 export async function GET(req: NextRequest) {
   // Vérifie que l'appel vient bien de Vercel Cron (et pas de n'importe qui sur internet)

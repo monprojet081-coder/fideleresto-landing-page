@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Restaurant introuvable' }, { status: 404 })
     }
 
-    const origin = req.headers.get('origin') || 'https://fideleresto-landing-page-9dhz.vercel.app'
+    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'https://fideleresto-landing-page-9dhz.vercel.app'
 
     const lineItems: { price: string; quantity: number }[] = [
       { price: STRIPE_PRICES[plan], quantity: 1 },

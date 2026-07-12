@@ -150,7 +150,7 @@ function DashboardContent() {
         if (canvas) {
           QRCode.toCanvas(
             canvas,
-            `https://fideleresto-landing-page-9dhz.vercel.app/r/${user.id.slice(0, 8)}`,
+            `${process.env.NEXT_PUBLIC_SITE_URL || "https://fideleresto-landing-page-9dhz.vercel.app"}/r/${user.id.slice(0, 8)}`,
             { width: 200, margin: 2, color: { dark: "#241914", light: "#faf3e8" } },
             () => {}
           )
@@ -304,7 +304,7 @@ function DashboardContent() {
 
       const nomRestaurant = restaurant?.nom_restaurant || "Notre restaurant"
       const slug = user.id.slice(0, 8)
-      const urlRoue = `https://fideleresto-landing-page-9dhz.vercel.app/r/${slug}`
+      const urlRoue = `${process.env.NEXT_PUBLIC_SITE_URL || "https://fideleresto-landing-page-9dhz.vercel.app"}/r/${slug}`
 
       const ink = "#241914"
       const ivory = "#faf3e8"
@@ -797,7 +797,7 @@ function DashboardContent() {
                 <canvas id="qr-canvas" className="rounded-lg" />
               </div>
               <p className="text-center text-sm text-ink/55 mb-6">
-                URL : <span className="text-wine font-medium">fideleresto-landing-page-9dhz.vercel.app/r/{user?.id?.slice(0, 8)}</span>
+                URL : <span className="text-wine font-medium">{(process.env.NEXT_PUBLIC_SITE_URL || "fideleresto-landing-page-9dhz.vercel.app").replace(/^https?:\/\//, "")}/r/{user?.id?.slice(0, 8)}</span>
               </p>
               <button
                 onClick={() => {
