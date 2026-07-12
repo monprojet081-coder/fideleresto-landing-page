@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { supabase } from "@/lib/supabase"
+import { UtensilsCrossed } from "lucide-react"
 
 type Step = "checking" | "not_found" | "form" | "wheel" | "win" | "lose" | "already_played"
 
@@ -378,7 +379,12 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
       </div>
 
-      <img src="/badge-fideleresto.png" alt="Propulsé par FidèleResto" className="w-40 mt-6 opacity-90" />
+      <div className="flex items-center gap-1.5 mt-6 text-ink/35">
+        <UtensilsCrossed className="w-3 h-3" />
+        <p className="text-xs font-display tracking-wide">
+          Propulsé par <span className="font-semibold text-wine/50">FidèleResto</span>
+        </p>
+      </div>
     </div>
   )
 }
