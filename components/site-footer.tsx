@@ -1,11 +1,11 @@
 import { UtensilsCrossed } from "lucide-react"
 
 const legalLinks = [
-  { label: "Mentions légales", href: "#" },
-  { label: "Conditions générales", href: "#" },
-  { label: "Politique de confidentialité", href: "#" },
-  { label: "Cookies", href: "#" },
-  { label: "Contact", href: "#" },
+  { label: "Mentions légales", href: "/mentions-legales" },
+  { label: "Conditions générales", href: "/cgv" },
+  { label: "Politique de confidentialité", href: "/confidentialite" },
+  { label: "Cookies", href: "/cookies" },
+  { label: "Contact", href: "mailto:contact@fideleresto.fr" },
 ]
 
 export function SiteFooter() {

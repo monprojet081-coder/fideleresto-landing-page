@@ -224,7 +224,10 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                 className="mt-1 accent-wine"
               />
               <label htmlFor="rgpd" className="text-xs text-ink/50">
-                J'accepte que mes données soient utilisées pour recevoir des offres de ce restaurant
+                J'accepte que mes données soient utilisées pour recevoir des offres de ce restaurant.{" "}
+                <a href="/confidentialite" target="_blank" className="underline hover:text-wine">
+                  En savoir plus
+                </a>
               </label>
             </div>
             {error && <p className="text-wine text-sm">{error}</p>}
