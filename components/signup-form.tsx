@@ -242,7 +242,7 @@ function SignupFormContent() {
             />
             <label htmlFor="conditions" className="text-sm text-ink/70">
               J'accepte les{" "}
-              <a href="/conditions" className="text-wine hover:underline">
+              <a href="/cgv" className="text-wine hover:underline">
                 conditions générales
               </a>{" "}
               et la{" "}
