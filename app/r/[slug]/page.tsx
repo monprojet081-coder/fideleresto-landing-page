@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { UtensilsCrossed } from "lucide-react"
 
-type Step = "checking" | "not_found" | "form" | "wheel" | "win" | "lose" | "already_played"
+type Step = "checking" | "not_found" | "inactive" | "form" | "wheel" | "win" | "lose" | "already_played"
 
 export default function WheelPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = React.use(params)
@@ -28,22 +28,29 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   React.useEffect(() => {
     supabase
       .from("restaurants")
-      .select("id, plan")
+      .select("id, plan, statut_abonnement")
       .eq("slug", slug)
       .maybeSingle()
       .then(({ data }) => {
-        if (data) {
-          setStep("form")
-          setEstPremium(data.plan === "premium")
-          // Le scan ne compte que si le restaurant existe réellement
-          fetch("/api/send-reward-email/track-scan", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ slug }),
-          })
-        } else {
+        if (!data) {
           setStep("not_found")
+          return
         }
+        // Si l'abonnement n'est plus actif (essai jamais converti, résilié, impayé...),
+        // la roue s'arrête : sinon un restaurant qui ne paie plus continuerait à distribuer
+        // des récompenses gratuitement via ses flyers/QR codes déjà imprimés
+        if (!data.plan || !["actif", "essai"].includes(data.statut_abonnement)) {
+          setStep("inactive")
+          return
+        }
+        setStep("form")
+        setEstPremium(data.plan === "premium")
+        // Le scan ne compte que si le restaurant existe réellement
+        fetch("/api/send-reward-email/track-scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slug }),
+        })
       })
   }, [slug])
 
@@ -173,6 +180,18 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
           <div className="text-6xl mb-4">🔍</div>
           <h1 className="text-2xl font-display font-semibold text-ink mb-2">Roue introuvable</h1>
           <p className="text-ink/55 text-sm">Ce lien ne correspond à aucun restaurant. Vérifiez le QR code ou le lien utilisé.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (step === "inactive") {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center p-4">
+        <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8 text-center">
+          <div className="text-6xl mb-4">⏸️</div>
+          <h1 className="text-2xl font-display font-semibold text-ink mb-2">Roue temporairement indisponible</h1>
+          <p className="text-ink/55 text-sm">Ce restaurant n&apos;a pas (ou plus) d&apos;abonnement actif.</p>
         </div>
       </div>
     )

@@ -45,6 +45,7 @@ function DashboardContent() {
   const [subscribing, setSubscribing] = useState<string | null>(null)
   const [abonnementMessage, setAbonnementMessage] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
 
   // Menu digital
   const [uploadingMenu, setUploadingMenu] = useState(false)
@@ -217,6 +218,49 @@ function DashboardContent() {
       alert("Erreur lors de la connexion au paiement")
       setSubscribing(null)
     }
+  }
+
+  const handleCancelSubscription = async () => {
+    if (!confirm("Résilier votre abonnement ? Il restera actif jusqu'à la fin de la période en cours (ou de votre essai gratuit), puis s'arrêtera automatiquement sans prélèvement.")) return
+    setCancelling(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch("/api/cancel-subscription", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      })
+      const data = await res.json()
+      if (data.success) {
+        setRestaurant({ ...restaurant, resiliation_prevue: true, fin_periode_actuelle: data.finPeriode })
+        setAbonnementMessage("Résiliation programmée. Votre abonnement reste actif jusqu'à la fin de la période en cours.")
+      } else {
+        alert("Erreur : " + (data.error || "impossible de résilier"))
+      }
+    } catch {
+      alert("Erreur lors de la résiliation")
+    }
+    setCancelling(false)
+  }
+
+  const handleReactivateSubscription = async () => {
+    setCancelling(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch("/api/reactivate-subscription", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      })
+      const data = await res.json()
+      if (data.success) {
+        setRestaurant({ ...restaurant, resiliation_prevue: false })
+        setAbonnementMessage("Résiliation annulée, votre abonnement continue normalement.")
+      } else {
+        alert("Erreur : " + (data.error || "impossible d'annuler la résiliation"))
+      }
+    } catch {
+      alert("Erreur lors de l'annulation de la résiliation")
+    }
+    setCancelling(false)
   }
 
   const saveRewards = async () => {
@@ -1305,6 +1349,38 @@ function DashboardContent() {
                    restaurant.statut_abonnement === "impaye" ? "Paiement en échec" :
                    "Annulé"}
                 </span>
+              </div>
+            )}
+
+            {restaurant?.plan && ["actif", "essai"].includes(restaurant?.statut_abonnement) && (
+              <div className="mb-8 max-w-2xl rounded-xl border border-wine/10 bg-card px-5 py-4 shadow-sm">
+                {restaurant?.resiliation_prevue ? (
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm text-ink/70">
+                      Résiliation programmée{restaurant?.fin_periode_actuelle && (
+                        <> — actif jusqu&apos;au {new Date(restaurant.fin_periode_actuelle).toLocaleDateString("fr-FR")}</>
+                      )}
+                    </p>
+                    <button
+                      onClick={handleReactivateSubscription}
+                      disabled={cancelling}
+                      className="text-sm font-medium text-wine hover:underline disabled:opacity-50 whitespace-nowrap"
+                    >
+                      Annuler la résiliation
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm text-ink/55">Vous pouvez résilier à tout moment, sans engagement.</p>
+                    <button
+                      onClick={handleCancelSubscription}
+                      disabled={cancelling}
+                      className="text-sm font-medium text-wine hover:underline disabled:opacity-50 whitespace-nowrap"
+                    >
+                      {cancelling ? "..." : "Résilier mon abonnement"}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

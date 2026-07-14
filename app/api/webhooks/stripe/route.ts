@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
             plan,
             statut_abonnement: statut,
             stripe_customer_id: session.customer as string,
+            stripe_subscription_id: session.subscription as string || null,
           }
           if (aPrisSite) misAJour.option_site = true
           if (aPrisReseaux) misAJour.option_reseaux = true
@@ -93,7 +94,8 @@ export async function POST(req: NextRequest) {
         break
       }
 
-      // L'abonnement est modifié (changement de plan, fin d'essai, relance après échec de paiement résolue...)
+      // L'abonnement est modifié (changement de plan, fin d'essai, relance après échec de paiement résolue,
+      // demande de résiliation programmée ou annulation de cette demande...)
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription
         const slug = subscription.metadata?.slug
@@ -106,9 +108,18 @@ export async function POST(req: NextRequest) {
             subscription.status === 'past_due' ? 'impaye' :
             'annule'
 
+          const finPeriode = subscription.items?.data?.[0]?.current_period_end
+            ? new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
+            : null
+
           await supabase
             .from('restaurants')
-            .update({ plan, statut_abonnement: statut })
+            .update({
+              plan,
+              statut_abonnement: statut,
+              resiliation_prevue: subscription.cancel_at_period_end,
+              fin_periode_actuelle: finPeriode,
+            })
             .eq('slug', slug)
         }
         break
@@ -122,7 +133,7 @@ export async function POST(req: NextRequest) {
         if (slug) {
           await supabase
             .from('restaurants')
-            .update({ plan: null, statut_abonnement: 'annule' })
+            .update({ plan: null, statut_abonnement: 'annule', resiliation_prevue: false, fin_periode_actuelle: null })
             .eq('slug', slug)
         }
         break
