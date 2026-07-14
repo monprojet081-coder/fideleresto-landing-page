@@ -64,21 +64,21 @@ export async function POST(req: NextRequest) {
       { price: STRIPE_PRICES[plan], quantity: 1 },
     ]
 
-    // Options (création de site, gestion réseaux) : uniquement sur le Premium, et uniquement
-    // en formule mensuelle (impossible de mélanger deux fréquences de facturation différentes
-    // dans un seul abonnement Stripe, donc pas d'option sur trimestriel/annuel)
-    const optionsDisponibles = plan.startsWith('premium') && periodeDuPlan(plan) === 'mensuel'
+    // Options (création de site, gestion réseaux) : uniquement sur le Premium, mais
+    // maintenant disponibles quel que soit le rythme (mensuel/trimestriel/annuel) —
+    // l'abonnement de suivi (maintenance/gestion) est facturé au même rythme que le plan
+    // principal, pour ne pas mélanger deux fréquences différentes dans un seul abonnement Stripe
+    const periode = periodeDuPlan(plan)
+    const optionsDisponibles = plan.startsWith('premium')
 
     if (optionsDisponibles && avecCreationSite) {
-      // Frais uniques de mise en place, puis abonnement mensuel de maintenance
       lineItems.push({ price: STRIPE_PRICE_FRAIS_SITE, quantity: 1 })
-      lineItems.push({ price: STRIPE_PRICE_MAINTENANCE_SITE, quantity: 1 })
+      lineItems.push({ price: STRIPE_PRICE_MAINTENANCE_SITE[periode], quantity: 1 })
     }
 
     if (optionsDisponibles && avecReseaux) {
-      // Frais uniques de création, puis abonnement mensuel de gestion
       lineItems.push({ price: STRIPE_PRICE_FRAIS_RESEAUX, quantity: 1 })
-      lineItems.push({ price: STRIPE_PRICE_GESTION_RESEAUX, quantity: 1 })
+      lineItems.push({ price: STRIPE_PRICE_GESTION_RESEAUX[periode], quantity: 1 })
     }
 
     const session = await stripe.checkout.sessions.create({

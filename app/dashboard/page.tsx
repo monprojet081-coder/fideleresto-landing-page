@@ -190,8 +190,8 @@ function DashboardContent() {
         body: JSON.stringify({
           userId: user.id,
           plan: planKey,
-          avecCreationSite: planKey === "premium_mensuel" ? avecCreationSite : false,
-          avecReseaux: planKey === "premium_mensuel" ? avecReseaux : false,
+          avecCreationSite: planKey.startsWith("premium") ? avecCreationSite : false,
+          avecReseaux: planKey.startsWith("premium") ? avecReseaux : false,
         }),
       })
       const data = await res.json()
@@ -1288,7 +1288,7 @@ function DashboardContent() {
             )}
 
             {/* Bascule mensuel / annuel */}
-            <div className="mb-3 inline-flex items-center rounded-full border border-wine/15 bg-card p-1">
+            <div className="mb-8 inline-flex items-center rounded-full border border-wine/15 bg-card p-1">
               <button
                 onClick={() => setBillingPeriod("mensuel")}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
@@ -1314,11 +1314,7 @@ function DashboardContent() {
                 Annuel <span className="opacity-75">(-20%)</span>
               </button>
             </div>
-            {billingPeriod !== "mensuel" && (
-              <p className="mb-5 text-xs text-ink/50">
-                Les options (site, réseaux sociaux) sont disponibles uniquement en formule mensuelle.
-              </p>
-            )}
+
 
             <div className="grid gap-6 sm:grid-cols-2 max-w-3xl">
               {[
@@ -1405,7 +1401,7 @@ function DashboardContent() {
                       ))}
                     </ul>
 
-                    {offre.key === "premium" && !estPlanActuel && billingPeriod === "mensuel" && (
+                    {offre.key === "premium" && !estPlanActuel && (
                       <div className="mt-4 space-y-2">
                         <label className="flex items-start gap-2.5 rounded-lg bg-secondary/50 p-3 text-sm text-ink/75 cursor-pointer">
                           <input
@@ -1417,7 +1413,8 @@ function DashboardContent() {
                           <span>
                             Je n&apos;ai pas encore de site, créez-moi en un
                             <span className="block text-xs text-ink/50">
-                              600€ de frais uniques, puis 100€/mois de maintenance
+                              600€ de frais uniques, puis {" "}
+                              {billingPeriod === "mensuel" ? "100€/mois" : billingPeriod === "trimestriel" ? "300€/trimestre" : "1200€/an"} de maintenance
                             </span>
                           </span>
                         </label>
@@ -1431,7 +1428,8 @@ function DashboardContent() {
                           <span>
                             Gérez-moi mes réseaux sociaux
                             <span className="block text-xs text-ink/50">
-                              400€ de frais uniques, puis 200€/mois de gestion
+                              400€ de frais uniques, puis {" "}
+                              {billingPeriod === "mensuel" ? "200€/mois" : billingPeriod === "trimestriel" ? "600€/trimestre" : "2400€/an"} de gestion
                             </span>
                           </span>
                         </label>

@@ -162,7 +162,7 @@ export function PricingSection() {
           })}
         </div>
         <p className="mt-8 text-center text-sm text-ink/50">
-          Options création de site et gestion des réseaux sociaux disponibles sur le Premium, en formule mensuelle.
+          Options création de site et gestion des réseaux sociaux disponibles sur le Premium, quel que soit le rythme choisi.
         </p>
       </div>
     </section>

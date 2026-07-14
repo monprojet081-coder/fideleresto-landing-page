@@ -15,12 +15,26 @@ export const STRIPE_PRICES = {
   premium_annuel: process.env.STRIPE_PRICE_PREMIUM_ANNUEL!,
 } as const
 
-// Options, disponibles uniquement en formule mensuelle (voir create-checkout-session)
-// Frais uniques de mise en place, puis abonnement mensuel de suivi
+// Options, disponibles sur le Premium, quel que soit le rythme choisi (mensuel/trimestriel/annuel)
+// Frais uniques de mise en place, toujours au même montant peu importe le rythme
 export const STRIPE_PRICE_FRAIS_SITE = process.env.STRIPE_PRICE_FRAIS_SITE!
-export const STRIPE_PRICE_MAINTENANCE_SITE = process.env.STRIPE_PRICE_MAINTENANCE_SITE!
 export const STRIPE_PRICE_FRAIS_RESEAUX = process.env.STRIPE_PRICE_FRAIS_RESEAUX!
-export const STRIPE_PRICE_GESTION_RESEAUX = process.env.STRIPE_PRICE_GESTION_RESEAUX!
+
+// Abonnements de suivi (maintenance / gestion), au tarif plein multiplié par la durée
+// (pas de remise -10%/-20% dessus, contrairement au plan principal), et surtout : leur
+// fréquence doit matcher celle du plan principal, car Stripe ne peut pas mélanger deux
+// fréquences de facturation différentes dans un seul abonnement
+export const STRIPE_PRICE_MAINTENANCE_SITE = {
+  mensuel: process.env.STRIPE_PRICE_MAINTENANCE_SITE_MENSUEL!,
+  trimestriel: process.env.STRIPE_PRICE_MAINTENANCE_SITE_TRIMESTRIEL!,
+  annuel: process.env.STRIPE_PRICE_MAINTENANCE_SITE_ANNUEL!,
+} as const
+
+export const STRIPE_PRICE_GESTION_RESEAUX = {
+  mensuel: process.env.STRIPE_PRICE_GESTION_RESEAUX_MENSUEL!,
+  trimestriel: process.env.STRIPE_PRICE_GESTION_RESEAUX_TRIMESTRIEL!,
+  annuel: process.env.STRIPE_PRICE_GESTION_RESEAUX_ANNUEL!,
+} as const
 
 export type PlanKey = keyof typeof STRIPE_PRICES
 

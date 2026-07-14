@@ -82,8 +82,8 @@ function SignupFormContent() {
         body: JSON.stringify({
           userId: data.user.id,
           plan,
-          avecCreationSite: plan === "premium_mensuel" ? avecCreationSite : false,
-          avecReseaux: plan === "premium_mensuel" ? avecReseaux : false,
+          avecCreationSite: plan.startsWith("premium") ? avecCreationSite : false,
+          avecReseaux: plan.startsWith("premium") ? avecReseaux : false,
         }),
       })
       const checkoutData = await res.json()
@@ -239,7 +239,7 @@ function SignupFormContent() {
             </div>
           </div>
 
-          {plan === "premium_mensuel" && (
+          {plan.startsWith("premium") && (
             <div className="space-y-2 rounded-lg border border-wine/10 bg-secondary/40 p-4">
               <p className="text-sm font-medium text-ink/80">Options (facultatif)</p>
               <label className="flex items-start gap-2.5 text-sm text-ink/75 cursor-pointer">
@@ -251,7 +251,10 @@ function SignupFormContent() {
                 />
                 <span>
                   Je n&apos;ai pas encore de site, créez-moi en un
-                  <span className="block text-xs text-ink/50">600€ de frais uniques, puis 100€/mois de maintenance</span>
+                  <span className="block text-xs text-ink/50">
+                    600€ de frais uniques, puis {" "}
+                    {plan.endsWith("trimestriel") ? "300€/trimestre" : plan.endsWith("annuel") ? "1200€/an" : "100€/mois"} de maintenance
+                  </span>
                 </span>
               </label>
               <label className="flex items-start gap-2.5 text-sm text-ink/75 cursor-pointer">
@@ -263,7 +266,10 @@ function SignupFormContent() {
                 />
                 <span>
                   Gérez-moi mes réseaux sociaux
-                  <span className="block text-xs text-ink/50">400€ de frais uniques, puis 200€/mois de gestion</span>
+                  <span className="block text-xs text-ink/50">
+                    400€ de frais uniques, puis {" "}
+                    {plan.endsWith("trimestriel") ? "600€/trimestre" : plan.endsWith("annuel") ? "2400€/an" : "200€/mois"} de gestion
+                  </span>
                 </span>
               </label>
               <p className="text-xs text-ink/45 pt-1">
