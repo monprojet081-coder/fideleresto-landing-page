@@ -12,6 +12,8 @@ type RestaurantAdmin = {
   nom_restaurant: string
   plan: string | null
   statut_abonnement: string | null
+  option_site: boolean | null
+  option_reseaux: boolean | null
   email: string | null
   created_at: string
 }
@@ -120,6 +122,20 @@ export default function AdminPage() {
                 <p className="text-xs text-ink/50">
                   {r.email} · plan {r.plan || "aucun"} · {r.statut_abonnement || "statut inconnu"}
                 </p>
+                {(r.option_site || r.option_reseaux) && (
+                  <div className="flex gap-1.5 mt-1.5">
+                    {r.option_site && (
+                      <span className="text-[11px] font-medium bg-gold/15 text-wine-dark px-2 py-0.5 rounded-full">
+                        🔔 Création de site
+                      </span>
+                    )}
+                    {r.option_reseaux && (
+                      <span className="text-[11px] font-medium bg-gold/15 text-wine-dark px-2 py-0.5 rounded-full">
+                        🔔 Réseaux sociaux
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
               <button
                 onClick={() => accederAuCompte(r)}

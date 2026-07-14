@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 
     const { data: restaurants, error } = await supabaseAdmin
       .from('restaurants')
-      .select('id, user_id, slug, nom_restaurant, plan, statut_abonnement, created_at')
+      .select('id, user_id, slug, nom_restaurant, plan, statut_abonnement, option_site, option_reseaux, created_at')
       .order('created_at', { ascending: false })
 
     if (error) {

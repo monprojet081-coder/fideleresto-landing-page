@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { stripe } from '@/lib/stripe'
+import { Resend } from 'resend'
+import { stripe, STRIPE_PRICE_FRAIS_SITE, STRIPE_PRICE_FRAIS_RESEAUX } from '@/lib/stripe'
 import type Stripe from 'stripe'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: NextRequest) {
   const body = await req.text()
@@ -40,14 +43,52 @@ export async function POST(req: NextRequest) {
             statut = subscription.status === 'trialing' ? 'essai' : 'actif'
           }
 
-          await supabase
+          // On regarde le détail des lignes payées pour savoir si le client a pris
+          // l'option création de site et/ou gestion des réseaux sociaux
+          const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 })
+          const priceIds = lineItems.data.map((item) => item.price?.id)
+          const aPrisSite = priceIds.includes(STRIPE_PRICE_FRAIS_SITE)
+          const aPrisReseaux = priceIds.includes(STRIPE_PRICE_FRAIS_RESEAUX)
+
+          const misAJour: Record<string, any> = {
+            plan,
+            statut_abonnement: statut,
+            stripe_customer_id: session.customer as string,
+          }
+          if (aPrisSite) misAJour.option_site = true
+          if (aPrisReseaux) misAJour.option_reseaux = true
+
+          const { data: resto } = await supabase
             .from('restaurants')
-            .update({
-              plan,
-              statut_abonnement: statut,
-              stripe_customer_id: session.customer as string,
-            })
+            .update(misAJour)
             .eq('slug', slug)
+            .select('nom_restaurant')
+            .maybeSingle()
+
+          // Notifie l'équipe par email si une option a été prise, pour savoir qu'il faut
+          // s'occuper du site ou des réseaux sociaux du restaurant
+          if ((aPrisSite || aPrisReseaux) && process.env.ADMIN_EMAILS) {
+            const destinataires = process.env.ADMIN_EMAILS.split(',').map((e) => e.trim()).filter(Boolean)
+            const options = [aPrisSite && 'création de site', aPrisReseaux && 'gestion des réseaux sociaux']
+              .filter(Boolean)
+              .join(' + ')
+
+            if (destinataires.length > 0) {
+              await resend.emails.send({
+                from: 'FidèleResto <contact@fideleresto.fr>',
+                to: destinataires,
+                subject: `🔔 Nouvelle option souscrite : ${options}`,
+                html: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h1 style="color: #6b1e2e;">Nouvelle option à traiter</h1>
+                    <p><strong>${resto?.nom_restaurant || 'Un restaurant'}</strong> (slug : ${slug}) vient de souscrire :</p>
+                    <p style="font-size: 18px; font-weight: bold;">${options}</p>
+                    <p>Rendez-vous dans l'espace admin pour voir les coordonnées du restaurant et le contacter.</p>
+                  </div>
+                `,
+              }).catch((err) => console.error('Erreur envoi email notification option:', err))
+            }
+          }
         }
         break
       }
