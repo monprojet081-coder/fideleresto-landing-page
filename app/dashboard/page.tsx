@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText } from "lucide-react"
+import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
 
@@ -39,8 +39,9 @@ function DashboardContent() {
   const [relanceActive, setRelanceActive] = useState(false)
   const [relanceJours, setRelanceJours] = useState(10)
   const [relancePourcentage, setRelancePourcentage] = useState(10)
-  const [billingPeriod, setBillingPeriod] = useState<"mensuel" | "annuel">("mensuel")
+  const [billingPeriod, setBillingPeriod] = useState<"mensuel" | "trimestriel" | "annuel">("mensuel")
   const [avecCreationSite, setAvecCreationSite] = useState(false)
+  const [avecReseaux, setAvecReseaux] = useState(false)
   const [subscribing, setSubscribing] = useState<string | null>(null)
   const [abonnementMessage, setAbonnementMessage] = useState<string | null>(null)
 
@@ -189,7 +190,8 @@ function DashboardContent() {
         body: JSON.stringify({
           userId: user.id,
           plan: planKey,
-          avecCreationSite: planKey.startsWith("premium") ? avecCreationSite : false,
+          avecCreationSite: planKey === "premium_mensuel" ? avecCreationSite : false,
+          avecReseaux: planKey === "premium_mensuel" ? avecReseaux : false,
         }),
       })
       const data = await res.json()
@@ -594,7 +596,7 @@ function DashboardContent() {
     { label: "Scans QR", value: restaurant?.scan_qr?.toString() || "0", icon: QrCode, color: "bg-wine/8 text-wine" },
     { label: "Clients collectés", value: clients.length.toString(), icon: Users, color: "bg-sage/10 text-sage" },
     { label: "Récompenses distribuées", value: clients.filter((c) => c.a_gagne).length.toString(), icon: Gift, color: "bg-gold/12 text-wine-dark" },
-    { label: "Avis Google", value: "0", icon: Star, color: "bg-wine/8 text-wine" },
+    { label: "Avis Google", value: restaurant?.avis_google_clics?.toString() || "0", icon: Star, color: "bg-wine/8 text-wine" },
   ]
 
   // Clients collectés par jour, sur les 14 derniers jours
@@ -635,11 +637,10 @@ function DashboardContent() {
     { id: "flyer", label: "Mon flyer", icon: FileText },
     { id: "clients", label: "Mes clients", icon: Users },
     { id: "roue", label: "Ma roue", icon: Sliders },
-    ...(restaurant?.plan === "premium" ? [
-      { id: "menu", label: "Menu digital", icon: BookOpen },
-      { id: "fidelite", label: "Carte fidélité", icon: Award },
-    ] : []),
+    { id: "menu", label: "Menu digital", icon: BookOpen },
+    { id: "fidelite", label: "Carte fidélité", icon: Award },
     { id: "abonnement", label: "Abonnement", icon: CreditCard },
+    { id: "relance", label: "Relance", icon: Mail },
     { id: "parametres", label: "Paramètres", icon: Settings },
   ]
 
@@ -1287,7 +1288,7 @@ function DashboardContent() {
             )}
 
             {/* Bascule mensuel / annuel */}
-            <div className="mb-8 inline-flex items-center rounded-full border border-wine/15 bg-card p-1">
+            <div className="mb-3 inline-flex items-center rounded-full border border-wine/15 bg-card p-1">
               <button
                 onClick={() => setBillingPeriod("mensuel")}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
@@ -1297,46 +1298,74 @@ function DashboardContent() {
                 Mensuel
               </button>
               <button
+                onClick={() => setBillingPeriod("trimestriel")}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  billingPeriod === "trimestriel" ? "bg-wine text-gold-light" : "text-ink/60"
+                }`}
+              >
+                Trimestriel <span className="opacity-75">(-10%)</span>
+              </button>
+              <button
                 onClick={() => setBillingPeriod("annuel")}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   billingPeriod === "annuel" ? "bg-wine text-gold-light" : "text-ink/60"
                 }`}
               >
-                Annuel <span className="opacity-75">(2 mois offerts)</span>
+                Annuel <span className="opacity-75">(-20%)</span>
               </button>
             </div>
+            {billingPeriod !== "mensuel" && (
+              <p className="mb-5 text-xs text-ink/50">
+                Les options (site, réseaux sociaux) sont disponibles uniquement en formule mensuelle.
+              </p>
+            )}
 
             <div className="grid gap-6 sm:grid-cols-2 max-w-3xl">
               {[
                 {
                   key: "standard",
                   nom: "Standard",
-                  prixMensuel: 99,
-                  prixAnnuel: 990,
+                  prixMensuel: 180,
+                  prixTrimestriel: 162,
+                  prixAnnuel: 144,
+                  totalTrimestriel: 486,
+                  totalAnnuel: 1728,
                   features: [
-                    "QR code personnalisé illimité",
-                    "Roue de la fidélité personnalisable",
-                    "Collecte automatique des clients",
-                    "Boost des avis Google",
-                    "Emails automatiques de récompense",
+                    "Roue de la fidélité + boost avis Google",
+                    "3 modèles de flyers prêts à imprimer",
+                    "Emails de relance automatiques",
+                    "Menu digital",
+                    "Carte de fidélité digitale",
                     "Tableau de bord complet",
                   ],
                 },
                 {
                   key: "premium",
                   nom: "Premium",
-                  prixMensuel: 149,
-                  prixAnnuel: 1490,
+                  prixMensuel: 280,
+                  prixTrimestriel: 252,
+                  prixAnnuel: 224,
+                  totalTrimestriel: 756,
+                  totalAnnuel: 2688,
                   features: [
                     "Tout ce qui est inclus dans Standard",
-                    "Menu digital en ligne",
-                    "Carte de fidélité digitale",
-                    "Création de votre site web (+499€, optionnel)",
                     "Accompagnement prioritaire",
+                    "Flyers fournis et traduits sur demande",
+                    "Traduction de l'application sur demande",
+                    "Option création de site (mensuel uniquement)",
+                    "Option gestion réseaux sociaux (mensuel uniquement)",
                   ],
                 },
               ].map((offre) => {
-                const planKey = `${offre.key}_${billingPeriod === "mensuel" ? "mensuel" : "annuel"}`
+                const planKey = `${offre.key}_${billingPeriod}`
+                const prixAffiche =
+                  billingPeriod === "mensuel" ? offre.prixMensuel :
+                  billingPeriod === "trimestriel" ? offre.prixTrimestriel :
+                  offre.prixAnnuel
+                const totalPeriode =
+                  billingPeriod === "trimestriel" ? offre.totalTrimestriel :
+                  billingPeriod === "annuel" ? offre.totalAnnuel :
+                  null
                 const estPlanActuel = restaurant?.plan === offre.key && ["actif", "essai"].includes(restaurant?.statut_abonnement)
                 return (
                   <div
@@ -1353,12 +1382,15 @@ function DashboardContent() {
                     <h3 className="font-display text-xl font-semibold text-ink">{offre.nom}</h3>
                     <div className="mt-2 flex items-end gap-1">
                       <span className="font-display text-3xl font-semibold text-wine">
-                        {billingPeriod === "mensuel" ? offre.prixMensuel : offre.prixAnnuel}€
+                        {prixAffiche}€
                       </span>
-                      <span className="text-sm text-ink/50 mb-1">
-                        /{billingPeriod === "mensuel" ? "mois" : "an"}
-                      </span>
+                      <span className="text-sm text-ink/50 mb-1">/mois</span>
                     </div>
+                    {totalPeriode && (
+                      <p className="mt-1 text-sm text-ink/60">
+                        soit {totalPeriode}€ facturés {billingPeriod === "trimestriel" ? "tous les 3 mois" : "1x/an"}
+                      </p>
+                    )}
                     {offre.key === "standard" && (
                       <p className="mt-2 inline-flex items-center rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-wine-dark">
                         14 jours d&apos;essai gratuit
@@ -1373,19 +1405,37 @@ function DashboardContent() {
                       ))}
                     </ul>
 
-                    {offre.key === "premium" && !estPlanActuel && (
-                      <label className="mt-4 flex items-start gap-2.5 rounded-lg bg-secondary/50 p-3 text-sm text-ink/75 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={avecCreationSite}
-                          onChange={(e) => setAvecCreationSite(e.target.checked)}
-                          className="mt-0.5 accent-wine"
-                        />
-                        <span>
-                          Je n&apos;ai pas encore de site, créez-moi en un
-                          <span className="block text-xs text-ink/50">+499€ de frais uniques, à la souscription</span>
-                        </span>
-                      </label>
+                    {offre.key === "premium" && !estPlanActuel && billingPeriod === "mensuel" && (
+                      <div className="mt-4 space-y-2">
+                        <label className="flex items-start gap-2.5 rounded-lg bg-secondary/50 p-3 text-sm text-ink/75 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={avecCreationSite}
+                            onChange={(e) => setAvecCreationSite(e.target.checked)}
+                            className="mt-0.5 accent-wine"
+                          />
+                          <span>
+                            Je n&apos;ai pas encore de site, créez-moi en un
+                            <span className="block text-xs text-ink/50">
+                              600€ de frais uniques, puis 100€/mois de maintenance
+                            </span>
+                          </span>
+                        </label>
+                        <label className="flex items-start gap-2.5 rounded-lg bg-secondary/50 p-3 text-sm text-ink/75 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={avecReseaux}
+                            onChange={(e) => setAvecReseaux(e.target.checked)}
+                            className="mt-0.5 accent-wine"
+                          />
+                          <span>
+                            Gérez-moi mes réseaux sociaux
+                            <span className="block text-xs text-ink/50">
+                              400€ de frais uniques, puis 200€/mois de gestion
+                            </span>
+                          </span>
+                        </label>
+                      </div>
                     )}
 
                     <button
@@ -1402,6 +1452,63 @@ function DashboardContent() {
                   </div>
                 )
               })}
+            </div>
+          </div>
+        )}
+
+        {activeSection === "relance" && (
+          <div>
+            <div className="mb-8">
+              <h1 className="text-2xl font-display font-semibold text-ink">Relance</h1>
+              <p className="text-ink/55 mt-1">Emails automatiques pour faire revenir vos clients inactifs</p>
+            </div>
+            <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-lg">
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-ink/80">Emails de relance automatiques</label>
+                <button
+                  onClick={() => setRelanceActive(!relanceActive)}
+                  className={`relative w-10 h-5.5 rounded-full transition-colors ${relanceActive ? "bg-wine" : "bg-secondary"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4.5 h-4.5 rounded-full bg-white transition-transform ${relanceActive ? "translate-x-4.5" : ""}`} />
+                </button>
+              </div>
+              <p className="text-xs text-ink/45 mb-3">
+                Envoie un email automatique avec une petite réduction aux clients qui ne sont pas revenus depuis un moment (uniquement à ceux ayant accepté de recevoir des offres).
+              </p>
+              {relanceActive && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-ink/60 mb-1">Après combien de jours d'inactivité</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={90}
+                      value={relanceJours}
+                      onChange={e => setRelanceJours(Number(e.target.value))}
+                      className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-ink/60 mb-1">% de réduction offert</label>
+                    <input
+                      type="number"
+                      min={5}
+                      max={50}
+                      value={relancePourcentage}
+                      onChange={e => setRelancePourcentage(Number(e.target.value))}
+                      className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={saveParametres}
+                disabled={savingParams}
+                className="mt-5 bg-wine hover:bg-wine-dark disabled:opacity-50 text-gold-light font-medium py-2.5 px-6 rounded-lg transition-colors text-sm"
+              >
+                {savingParams ? "Sauvegarde..." : "Sauvegarder"}
+              </button>
             </div>
           </div>
         )}
@@ -1442,47 +1549,6 @@ function DashboardContent() {
                     className="w-full border border-wine/15 rounded-lg px-4 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
                   />
                   <p className="mt-1 text-xs text-ink/45">Vos clients seront redirigés vers ce lien après avoir gagné à la roue.</p>
-                </div>
-
-                <div className="border-t border-wine/10 pt-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-sm font-medium text-ink/80">Emails de relance automatiques</label>
-                    <button
-                      onClick={() => setRelanceActive(!relanceActive)}
-                      className={`relative w-10 h-5.5 rounded-full transition-colors ${relanceActive ? "bg-wine" : "bg-secondary"}`}
-                    >
-                      <span className={`absolute top-0.5 left-0.5 w-4.5 h-4.5 rounded-full bg-white transition-transform ${relanceActive ? "translate-x-4.5" : ""}`} />
-                    </button>
-                  </div>
-                  <p className="text-xs text-ink/45 mb-3">
-                    Envoie un email automatique avec une petite réduction aux clients qui ne sont pas revenus depuis un moment (uniquement à ceux ayant accepté de recevoir des offres).
-                  </p>
-                  {relanceActive && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-ink/60 mb-1">Après combien de jours d'inactivité</label>
-                        <input
-                          type="number"
-                          min={1}
-                          max={90}
-                          value={relanceJours}
-                          onChange={e => setRelanceJours(Number(e.target.value))}
-                          className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-ink/60 mb-1">% de réduction offert</label>
-                        <input
-                          type="number"
-                          min={5}
-                          max={50}
-                          value={relancePourcentage}
-                          onChange={e => setRelancePourcentage(Number(e.target.value))}
-                          className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
-                        />
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 <button

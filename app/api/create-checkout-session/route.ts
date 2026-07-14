@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { stripe, STRIPE_PRICES, STRIPE_PRICE_FRAIS_SITE, PlanKey } from '@/lib/stripe'
+import {
+  stripe,
+  STRIPE_PRICES,
+  STRIPE_PRICE_FRAIS_SITE,
+  STRIPE_PRICE_MAINTENANCE_SITE,
+  STRIPE_PRICE_FRAIS_RESEAUX,
+  STRIPE_PRICE_GESTION_RESEAUX,
+  PlanKey,
+  periodeDuPlan,
+} from '@/lib/stripe'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,10 +18,11 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, plan, avecCreationSite } = await req.json() as {
+    const { userId, plan, avecCreationSite, avecReseaux } = await req.json() as {
       userId: string
       plan: PlanKey
       avecCreationSite?: boolean
+      avecReseaux?: boolean
     }
 
     if (!userId || !plan || !STRIPE_PRICES[plan]) {
@@ -54,9 +64,21 @@ export async function POST(req: NextRequest) {
       { price: STRIPE_PRICES[plan], quantity: 1 },
     ]
 
-    // Frais de mise en place du site : uniquement si demandé, et uniquement sur le Premium
-    if (plan.startsWith('premium') && avecCreationSite) {
+    // Options (création de site, gestion réseaux) : uniquement sur le Premium, et uniquement
+    // en formule mensuelle (impossible de mélanger deux fréquences de facturation différentes
+    // dans un seul abonnement Stripe, donc pas d'option sur trimestriel/annuel)
+    const optionsDisponibles = plan.startsWith('premium') && periodeDuPlan(plan) === 'mensuel'
+
+    if (optionsDisponibles && avecCreationSite) {
+      // Frais uniques de mise en place, puis abonnement mensuel de maintenance
       lineItems.push({ price: STRIPE_PRICE_FRAIS_SITE, quantity: 1 })
+      lineItems.push({ price: STRIPE_PRICE_MAINTENANCE_SITE, quantity: 1 })
+    }
+
+    if (optionsDisponibles && avecReseaux) {
+      // Frais uniques de création, puis abonnement mensuel de gestion
+      lineItems.push({ price: STRIPE_PRICE_FRAIS_RESEAUX, quantity: 1 })
+      lineItems.push({ price: STRIPE_PRICE_GESTION_RESEAUX, quantity: 1 })
     }
 
     const session = await stripe.checkout.sessions.create({

@@ -411,12 +411,21 @@ function GoogleReviewButton({ slug, onClick, onUrlChecked }: { slug: string; onC
 
   if (!googleUrl) return null
 
+  const handleClick = () => {
+    onClick?.()
+    fetch("/api/track-avis-clic", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug }),
+    }).catch(() => {})
+  }
+
   return (
     <a
       href={googleUrl}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={onClick}
+      onClick={handleClick}
       className="flex items-center justify-center gap-2 w-full bg-wine text-gold-light text-base font-semibold px-4 py-3.5 rounded-lg shadow-md shadow-wine/20 hover:bg-wine-dark transition-colors"
     >
       ⭐ Laisser un avis Google

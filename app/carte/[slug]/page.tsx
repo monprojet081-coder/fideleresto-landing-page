@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { supabase } from "@/lib/supabase"
 
-type Step = "checking" | "not_found" | "not_premium" | "auth" | "compte"
+type Step = "checking" | "not_found" | "no_access" | "auth" | "compte"
 type Restaurant = {
   nom_restaurant: string
   slug: string
@@ -31,7 +31,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
     const init = async () => {
       const { data: resto } = await supabase
         .from("restaurants")
-        .select("nom_restaurant, slug, fidelite_tampons_requis, fidelite_recompense, plan, menu_type, menu_url, menu_html")
+        .select("nom_restaurant, slug, fidelite_tampons_requis, fidelite_recompense, plan, statut_abonnement, menu_type, menu_url, menu_html")
         .eq("slug", slug)
         .maybeSingle()
 
@@ -39,8 +39,10 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
         setStep("not_found")
         return
       }
-      if (resto.plan !== "premium") {
-        setStep("not_premium")
+      // Menu digital + carte fidélité sont inclus dans Standard ET Premium :
+      // l'accès dépend d'un abonnement actif (ou en essai), pas du plan précis
+      if (!resto.plan || !["actif", "essai"].includes(resto.statut_abonnement)) {
+        setStep("no_access")
         return
       }
       setRestaurant(resto)
@@ -145,7 +147,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
     )
   }
 
-  if (step === "not_premium") {
+  if (step === "no_access") {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center p-4">
         <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8 text-center">
