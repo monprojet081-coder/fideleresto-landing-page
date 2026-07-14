@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail } from "lucide-react"
+import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
 
@@ -44,6 +44,7 @@ function DashboardContent() {
   const [avecReseaux, setAvecReseaux] = useState(false)
   const [subscribing, setSubscribing] = useState<string | null>(null)
   const [abonnementMessage, setAbonnementMessage] = useState<string | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   // Menu digital
   const [uploadingMenu, setUploadingMenu] = useState(false)
@@ -83,6 +84,17 @@ function DashboardContent() {
       } else {
         setUser(user)
         const slug = user.id.slice(0, 8)
+
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session?.access_token) {
+            fetch("/api/admin/check", {
+              headers: { Authorization: `Bearer ${session.access_token}` },
+            })
+              .then((res) => res.json())
+              .then((d) => setIsAdmin(!!d.isAdmin))
+              .catch(() => {})
+          }
+        })
 
         const { data } = await supabase
           .from("roue_config")
@@ -679,6 +691,15 @@ function DashboardContent() {
         </nav>
 
         <div className="px-3 py-4 border-t border-gold-light/15">
+          {isAdmin && (
+            <a
+              href="/admin"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ivory/60 hover:bg-white/5 hover:text-ivory transition-colors"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              Espace admin
+            </a>
+          )}
           <button
             onClick={async () => {
               await supabase.auth.signOut()
