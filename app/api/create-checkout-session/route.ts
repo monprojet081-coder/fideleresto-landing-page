@@ -47,6 +47,8 @@ export async function POST(req: NextRequest) {
           slug,
           nom_restaurant: userData?.user?.user_metadata?.nom_restaurant || 'Mon Restaurant',
           google_avis_url: userData?.user?.user_metadata?.google_avis_url || null,
+          telephone: userData?.user?.user_metadata?.telephone || null,
+          ville: userData?.user?.user_metadata?.ville || null,
           scan_qr: 0,
         }])
         .select()

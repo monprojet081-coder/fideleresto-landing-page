@@ -14,6 +14,8 @@ type RestaurantAdmin = {
   statut_abonnement: string | null
   option_site: boolean | null
   option_reseaux: boolean | null
+  telephone: string | null
+  ville: string | null
   email: string | null
   created_at: string
 }
@@ -122,6 +124,11 @@ export default function AdminPage() {
                 <p className="text-xs text-ink/50">
                   {r.email} · plan {r.plan || "aucun"} · {r.statut_abonnement || "statut inconnu"}
                 </p>
+                {(r.telephone || r.ville) && (
+                  <p className="text-xs text-ink/40 mt-0.5">
+                    {[r.telephone, r.ville].filter(Boolean).join(" · ")}
+                  </p>
+                )}
                 {(r.option_site || r.option_reseaux) && (
                   <div className="flex gap-1.5 mt-1.5">
                     {r.option_site && (
