@@ -43,6 +43,21 @@ export async function POST(req: NextRequest) {
             statut = subscription.status === 'trialing' ? 'essai' : 'actif'
           }
 
+          // Mise à jour critique en premier, séparée du reste : le statut d'abonnement ne doit
+          // jamais rester bloqué à cause d'une colonne optionnelle manquante plus bas
+          const { error: erreurCritique } = await supabase
+            .from('restaurants')
+            .update({
+              plan,
+              statut_abonnement: statut,
+              stripe_customer_id: session.customer as string,
+            })
+            .eq('slug', slug)
+
+          if (erreurCritique) {
+            console.error('Erreur mise à jour critique restaurants (plan/statut):', erreurCritique.message)
+          }
+
           // On regarde le détail des lignes payées pour savoir si le client a pris
           // l'option création de site et/ou gestion des réseaux sociaux
           const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 })
@@ -50,21 +65,22 @@ export async function POST(req: NextRequest) {
           const aPrisSite = priceIds.includes(STRIPE_PRICE_FRAIS_SITE)
           const aPrisReseaux = priceIds.includes(STRIPE_PRICE_FRAIS_RESEAUX)
 
-          const misAJour: Record<string, any> = {
-            plan,
-            statut_abonnement: statut,
-            stripe_customer_id: session.customer as string,
+          const misAJourOptions: Record<string, any> = {
             stripe_subscription_id: session.subscription as string || null,
           }
-          if (aPrisSite) misAJour.option_site = true
-          if (aPrisReseaux) misAJour.option_reseaux = true
+          if (aPrisSite) misAJourOptions.option_site = true
+          if (aPrisReseaux) misAJourOptions.option_reseaux = true
 
-          const { data: resto } = await supabase
+          const { data: resto, error: erreurOptions } = await supabase
             .from('restaurants')
-            .update(misAJour)
+            .update(misAJourOptions)
             .eq('slug', slug)
             .select('nom_restaurant')
             .maybeSingle()
+
+          if (erreurOptions) {
+            console.error('Erreur mise à jour options restaurants (non bloquant):', erreurOptions.message)
+          }
 
           // Notifie l'équipe par email si une option a été prise, pour savoir qu'il faut
           // s'occuper du site ou des réseaux sociaux du restaurant
@@ -108,19 +124,30 @@ export async function POST(req: NextRequest) {
             subscription.status === 'past_due' ? 'impaye' :
             'annule'
 
+          const { error: erreurCritique } = await supabase
+            .from('restaurants')
+            .update({ plan, statut_abonnement: statut })
+            .eq('slug', slug)
+
+          if (erreurCritique) {
+            console.error('Erreur mise à jour critique restaurants (plan/statut):', erreurCritique.message)
+          }
+
           const finPeriode = subscription.items?.data?.[0]?.current_period_end
             ? new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
             : null
 
-          await supabase
+          const { error: erreurResiliation } = await supabase
             .from('restaurants')
             .update({
-              plan,
-              statut_abonnement: statut,
               resiliation_prevue: subscription.cancel_at_period_end,
               fin_periode_actuelle: finPeriode,
             })
             .eq('slug', slug)
+
+          if (erreurResiliation) {
+            console.error('Erreur mise à jour résiliation restaurants (non bloquant):', erreurResiliation.message)
+          }
         }
         break
       }
