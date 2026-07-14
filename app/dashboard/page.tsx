@@ -140,6 +140,8 @@ function DashboardContent() {
               slug,
               nom_restaurant: user.user_metadata?.nom_restaurant || "Mon Restaurant",
               google_avis_url: user.user_metadata?.google_avis_url || null,
+              telephone: user.user_metadata?.telephone || null,
+              ville: user.user_metadata?.ville || null,
               scan_qr: 0,
             }])
             .select()
@@ -155,6 +157,13 @@ function DashboardContent() {
     }
     getUser()
   }, [])
+
+  useEffect(() => {
+    const compteVerrouille = restaurant && (!restaurant.plan || restaurant.statut_abonnement === "annule")
+    if (compteVerrouille && activeSection !== "abonnement") {
+      setActiveSection("abonnement")
+    }
+  }, [restaurant, activeSection])
 
   useEffect(() => {
     if (activeSection === "qrcode" && user && !qrGenerated.current) {
@@ -687,18 +696,26 @@ function DashboardContent() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 5)
 
-  const navItems = [
-    { id: "accueil", label: "Tableau de bord", icon: LayoutDashboard },
-    { id: "qrcode", label: "Mon QR code", icon: QrCode },
-    { id: "flyer", label: "Mon flyer", icon: FileText },
-    { id: "clients", label: "Mes clients", icon: Users },
-    { id: "roue", label: "Ma roue", icon: Sliders },
-    { id: "menu", label: "Menu digital", icon: BookOpen },
-    { id: "fidelite", label: "Carte fidélité", icon: Award },
-    { id: "abonnement", label: "Abonnement", icon: CreditCard },
-    { id: "relance", label: "Relance", icon: Mail },
-    { id: "parametres", label: "Paramètres", icon: Settings },
-  ]
+  // Compte verrouillé : abonnement résilié (arrivé à sa date de fin) ou jamais souscrit.
+  // On ne coupe pas l'accès pendant une résiliation programmée (resiliation_prevue) tant que
+  // la période en cours n'est pas terminée — seulement une fois que Stripe a réellement mis fin
+  // à l'abonnement (statut_abonnement passe à "annule" via le webhook customer.subscription.deleted)
+  const compteVerrouille = !restaurant?.plan || restaurant?.statut_abonnement === "annule"
+
+  const navItems = compteVerrouille
+    ? [{ id: "abonnement", label: "Abonnement", icon: CreditCard }]
+    : [
+        { id: "accueil", label: "Tableau de bord", icon: LayoutDashboard },
+        { id: "qrcode", label: "Mon QR code", icon: QrCode },
+        { id: "flyer", label: "Mon flyer", icon: FileText },
+        { id: "clients", label: "Mes clients", icon: Users },
+        { id: "roue", label: "Ma roue", icon: Sliders },
+        { id: "menu", label: "Menu digital", icon: BookOpen },
+        { id: "fidelite", label: "Carte fidélité", icon: Award },
+        { id: "abonnement", label: "Abonnement", icon: CreditCard },
+        { id: "relance", label: "Relance", icon: Mail },
+        { id: "parametres", label: "Paramètres", icon: Settings },
+      ]
 
   return (
     <div className="min-h-screen bg-secondary/40 flex">
@@ -1325,6 +1342,13 @@ function DashboardContent() {
               <h1 className="text-2xl font-display font-semibold text-ink">Abonnement</h1>
               <p className="text-ink/55 mt-1">Choisissez le plan adapté à votre restaurant</p>
             </div>
+
+            {compteVerrouille && (
+              <div className="mb-6 max-w-2xl rounded-lg border border-wine/20 bg-wine/5 px-4 py-3 text-sm text-wine">
+                Votre abonnement est terminé, l&apos;accès aux fonctionnalités (roue, clients, flyer...) est suspendu.
+                Choisissez un plan ci-dessous pour tout réactiver immédiatement.
+              </div>
+            )}
 
             {abonnementMessage && (
               <div className="mb-6 max-w-2xl rounded-lg border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-wine-dark">
