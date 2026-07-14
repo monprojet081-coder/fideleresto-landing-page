@@ -18,6 +18,8 @@ function SignupFormContent() {
   const plan = searchParams.get("plan") || "standard_mensuel"
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [avecCreationSite, setAvecCreationSite] = useState(false)
+  const [avecReseaux, setAvecReseaux] = useState(false)
   const [formData, setFormData] = useState({
     nomRestaurant: "",
     typeCuisine: "",
@@ -77,7 +79,12 @@ function SignupFormContent() {
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: data.user.id, plan }),
+        body: JSON.stringify({
+          userId: data.user.id,
+          plan,
+          avecCreationSite: plan === "premium_mensuel" ? avecCreationSite : false,
+          avecReseaux: plan === "premium_mensuel" ? avecReseaux : false,
+        }),
       })
       const checkoutData = await res.json()
       if (checkoutData.url) {
@@ -232,6 +239,39 @@ function SignupFormContent() {
             </div>
           </div>
 
+          {plan === "premium_mensuel" && (
+            <div className="space-y-2 rounded-lg border border-wine/10 bg-secondary/40 p-4">
+              <p className="text-sm font-medium text-ink/80">Options (facultatif)</p>
+              <label className="flex items-start gap-2.5 text-sm text-ink/75 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 accent-wine"
+                  checked={avecCreationSite}
+                  onChange={(e) => setAvecCreationSite(e.target.checked)}
+                />
+                <span>
+                  Je n&apos;ai pas encore de site, créez-moi en un
+                  <span className="block text-xs text-ink/50">600€ de frais uniques, puis 100€/mois de maintenance</span>
+                </span>
+              </label>
+              <label className="flex items-start gap-2.5 text-sm text-ink/75 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 accent-wine"
+                  checked={avecReseaux}
+                  onChange={(e) => setAvecReseaux(e.target.checked)}
+                />
+                <span>
+                  Gérez-moi mes réseaux sociaux
+                  <span className="block text-xs text-ink/50">400€ de frais uniques, puis 200€/mois de gestion</span>
+                </span>
+              </label>
+              <p className="text-xs text-ink/45 pt-1">
+                Ces options resteront modifiables plus tard depuis votre dashboard, onglet Abonnement.
+              </p>
+            </div>
+          )}
+
           <div className="flex items-start gap-2">
             <input
               type="checkbox"
@@ -275,7 +315,7 @@ function SignupFormContent() {
       </div>
 
       <p className="text-center text-xs text-ink/45 mt-6">
-        14 jours d'essai gratuit · Sans carte bancaire · Sans engagement
+        14 jours d'essai gratuit · Sans engagement
       </p>
     </div>
   )

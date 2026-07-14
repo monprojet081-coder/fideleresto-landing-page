@@ -37,7 +37,7 @@ export function CtaSection() {
             </Button>
           </div>
           <p className="relative mt-6 text-sm opacity-70">
-            14 jours d&apos;essai gratuit · Sans carte bancaire · Sans engagement
+            14 jours d&apos;essai gratuit · Sans engagement
           </p>
         </div>
       </div>
