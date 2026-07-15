@@ -36,7 +36,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, ignored: true })
     }
 
-    // Récupère l'email du restaurateur (propriétaire) pour l'alerter
+    // On enregistre toujours le retour en base : c'est la source de vérité, consultable
+    // depuis l'onglet "Retours clients" du dashboard, même si l'email ci-dessous échoue
+    const { error: erreurInsert } = await supabase
+      .from('avis_prives')
+      .insert([{ restaurant_slug: slug, note, commentaire: commentaire || null, prenom: prenom || null, email: email || null }])
+
+    if (erreurInsert) {
+      console.error('Erreur enregistrement avis_prives:', erreurInsert.message)
+    }
+
+    // Récupère l'email du restaurateur (propriétaire) pour l'alerter en plus, si possible
     const { data: userData } = await supabase.auth.admin.getUserById(resto.user_id)
     const emailResto = userData?.user?.email
 
@@ -56,7 +66,7 @@ export async function POST(req: NextRequest) {
               ${email ? `<p style="margin: 0 0 8px;"><strong>Email :</strong> ${email}</p>` : ''}
               <p style="margin: 8px 0 0;"><strong>Commentaire :</strong><br/>${commentaire ? String(commentaire).replace(/</g, '&lt;') : '(aucun commentaire laissé)'}</p>
             </div>
-            <p style="color: #6b7280; font-size: 14px;">Envoyé automatiquement par FidèleResto.</p>
+            <p style="color: #6b7280; font-size: 14px;">Retrouvez tous vos retours clients dans votre dashboard, onglet "Retours clients". Envoyé automatiquement par FidèleResto.</p>
           </div>
         `,
       }).catch((err) => console.error('Erreur envoi email alerte insatisfaction:', err))

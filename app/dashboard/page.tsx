@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck, Menu, X } from "lucide-react"
+import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck, Menu, X, Inbox } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
 
@@ -47,6 +47,8 @@ function DashboardContent() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [cancelling, setCancelling] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [avisPrives, setAvisPrives] = useState<{ id: string; note: number; commentaire: string | null; prenom: string | null; email: string | null; created_at: string }[]>([])
+  const [loadingAvisPrives, setLoadingAvisPrives] = useState(false)
 
   // Menu digital
   const [uploadingMenu, setUploadingMenu] = useState(false)
@@ -170,6 +172,22 @@ function DashboardContent() {
   }, [restaurant, activeSection])
 
   useEffect(() => {
+    const chargerAvisPrives = async () => {
+      if (activeSection !== "retours" || !user) return
+      setLoadingAvisPrives(true)
+      const slug = user.id.slice(0, 8)
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch(`/api/avis-prives?slug=${slug}`, {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      })
+      const data = await res.json()
+      setAvisPrives(data.avis || [])
+      setLoadingAvisPrives(false)
+    }
+    chargerAvisPrives()
+  }, [activeSection, user])
+
+  useEffect(() => {
     if (activeSection === "qrcode" && user && !qrGenerated.current) {
       qrGenerated.current = true
       import('qrcode').then(QRCode => {
@@ -274,6 +292,22 @@ function DashboardContent() {
       alert("Erreur lors de l'annulation de la résiliation")
     }
     setCancelling(false)
+  }
+
+  const handleSupprimerAvisPrive = async (id: string) => {
+    if (!confirm("Supprimer ce retour client ? Cette action est définitive.")) return
+    const slug = user.id.slice(0, 8)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch(`/api/avis-prives?slug=${slug}&id=${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${session?.access_token}` },
+    })
+    const data = await res.json()
+    if (data.success) {
+      setAvisPrives(avisPrives.filter((a) => a.id !== id))
+    } else {
+      alert("Erreur : " + (data.error || "impossible de supprimer"))
+    }
   }
 
   const saveRewards = async () => {
@@ -748,6 +782,7 @@ function DashboardContent() {
         { id: "roue", label: "Ma roue", icon: Sliders },
         { id: "menu", label: "Menu digital", icon: BookOpen },
         { id: "fidelite", label: "Carte fidélité", icon: Award },
+        ...(restaurant?.plan === "premium" ? [{ id: "retours", label: "Retours clients", icon: Inbox }] : []),
         { id: "abonnement", label: "Abonnement", icon: CreditCard },
         { id: "relance", label: "Relance", icon: Mail },
         { id: "parametres", label: "Paramètres", icon: Settings },
@@ -1447,6 +1482,54 @@ function DashboardContent() {
           </div>
         )}
 
+        {activeSection === "retours" && (
+          <div>
+            <div className="mb-8">
+              <h1 className="text-2xl font-display font-semibold text-ink">Retours clients</h1>
+              <p className="text-ink/55 mt-1">
+                Les avis mitigés interceptés avant Google. Lisez-les pour vous améliorer, ou supprimez-les.
+              </p>
+            </div>
+
+            {loadingAvisPrives ? (
+              <p className="text-sm text-ink/50">Chargement...</p>
+            ) : avisPrives.length === 0 ? (
+              <div className="bg-card rounded-xl p-8 border border-wine/10 shadow-sm text-center max-w-lg">
+                <div className="text-4xl mb-3">📭</div>
+                <p className="text-sm text-ink/55">Aucun retour pour le moment.</p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-w-2xl">
+                {avisPrives.map((a) => (
+                  <div key={a.id} className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-wine">{a.note}/5</span>
+                        <span className="text-amber-500 text-sm">{"⭐".repeat(a.note)}</span>
+                      </div>
+                      <button
+                        onClick={() => handleSupprimerAvisPrive(a.id)}
+                        className="text-ink/40 hover:text-wine transition-colors"
+                        aria-label="Supprimer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    {a.commentaire && (
+                      <p className="mt-2 text-sm text-ink/75 leading-relaxed">{a.commentaire}</p>
+                    )}
+                    <div className="mt-3 flex items-center gap-3 text-xs text-ink/45">
+                      {a.prenom && <span>{a.prenom}</span>}
+                      {a.email && <span>{a.email}</span>}
+                      <span>{new Date(a.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeSection === "abonnement" && (
           <div>
             <div className="mb-8">
@@ -1579,7 +1662,7 @@ function DashboardContent() {
                     "Tout ce qui est inclus dans Standard",
                     "Alerte insatisfaction (protège votre note Google)",
                     "Statistiques avancées (heures de pointe, évolution)",
-                    "Accompagnement prioritaire",
+                    "Accompagnement",
                     "Flyers fournis et traduits sur demande",
                     "Traduction de l'application sur demande",
                     "Option création de site et gestion des réseaux",
