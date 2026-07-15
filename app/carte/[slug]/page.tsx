@@ -161,7 +161,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
 
   return (
     <div className="min-h-screen bg-ivory flex items-center justify-center p-4">
-      <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8">
+      <div className={`bg-card rounded-2xl shadow-sm border border-wine/10 w-full p-8 ${step === "compte" ? "max-w-4xl" : "max-w-md"}`}>
 
         <div className="text-center mb-8">
           <span className="flex size-12 items-center justify-center rounded-full bg-wine text-gold-light mx-auto mb-4">
@@ -231,9 +231,9 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
         )}
 
         {step === "compte" && restaurant && (
-          <div>
+          <div className="grid gap-8 md:grid-cols-[300px_1fr] items-start">
             {/* Carte de fidélité */}
-            <div className="rounded-xl border border-gold/30 bg-gold/8 p-5 mb-8">
+            <div className="rounded-xl border border-gold/30 bg-gold/8 p-5">
               <p className="text-sm font-medium text-wine-dark mb-3">Votre carte de fidélité</p>
 
               <div className="flex justify-center mb-4">
@@ -261,27 +261,32 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
             </div>
 
             {/* Menu */}
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-medium text-ink mb-3">Le menu</p>
               {!restaurant.menu_type ? (
                 <p className="text-sm text-ink/50 text-center py-6">Le menu n'est pas encore disponible.</p>
               ) : restaurant.menu_type === "image" ? (
-                <img src={restaurant.menu_url!} alt="Menu du restaurant" className="w-full rounded-lg border border-wine/10" />
+                <a href={restaurant.menu_url!} target="_blank" rel="noreferrer" className="block group">
+                  <img src={restaurant.menu_url!} alt="Menu du restaurant" className="w-full rounded-lg border border-wine/10" />
+                  <p className="mt-2 text-center text-sm text-wine font-medium group-hover:underline">
+                    Ouvrir en plein écran ↗
+                  </p>
+                </a>
               ) : restaurant.menu_type === "pdf" ? (
                 <div className="rounded-lg border border-wine/10 overflow-hidden">
-                  <iframe src={restaurant.menu_url!} className="w-full h-[500px]" title="Menu du restaurant" />
+                  <iframe src={restaurant.menu_url!} className="w-full h-[75vh] min-h-[500px]" title="Menu du restaurant" />
                   <a
                     href={restaurant.menu_url!}
                     target="_blank"
                     rel="noreferrer"
-                    className="block text-center text-sm text-wine font-medium py-2 border-t border-wine/10 hover:underline"
+                    className="block text-center text-sm text-wine font-medium py-2.5 border-t border-wine/10 hover:underline"
                   >
-                    Ouvrir en plein écran
+                    Ouvrir en plein écran ↗
                   </a>
                 </div>
               ) : restaurant.menu_html ? (
                 <div
-                  className="text-sm text-ink prose prose-sm max-w-none [&_table]:w-full [&_td]:border [&_td]:border-wine/10 [&_td]:px-2 [&_td]:py-1"
+                  className="text-base text-ink prose prose-sm sm:prose-base max-w-none [&_table]:w-full [&_td]:border [&_td]:border-wine/10 [&_td]:px-3 [&_td]:py-2"
                   dangerouslySetInnerHTML={{ __html: restaurant.menu_html }}
                 />
               ) : (
