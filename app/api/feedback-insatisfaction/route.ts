@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Resend } from 'resend'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
+import { getResend } from '@/lib/resend'
 
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Reçoit un retour négatif capté AVANT redirection Google (fonctionnalité Premium "alerte
 // insatisfaction") : on ne publie rien nulle part, on prévient juste le restaurateur par email
 // pour qu'il puisse rattraper le client avant qu'un mauvais avis n'atterrisse sur Google
 export async function POST(req: NextRequest) {
+  const resend = getResend()
   const supabase = getSupabaseAdmin()
   try {
     const { slug, note, commentaire, prenom, email } = await req.json()
