@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
   try {
-    const { prenom, email, recompense, restaurantNom } = await req.json();
+    const { prenom, email, recompense, restaurantNom, slug } = await req.json();
 
     if (!prenom || !email || !recompense) {
       return NextResponse.json(
@@ -13,6 +13,9 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fideleresto.fr'
+    const lienCarte = slug ? `${siteUrl}/carte/${slug}` : null
 
     const { data, error } = await resend.emails.send({
       from: 'FidèleResto <contact@fideleresto.fr>',
@@ -27,6 +30,13 @@ export async function POST(req: NextRequest) {
             <p style="font-size: 24px; font-weight: bold; color: #92400e; margin: 0;">${recompense}</p>
           </div>
           <p>Présentez simplement cet email au restaurant pour bénéficier de votre récompense.</p>
+          ${lienCarte ? `
+          <div style="text-align: center; margin: 28px 0;">
+            <a href="${lienCarte}" style="display: inline-block; background: #6b1e2e; color: #f5e6c8; text-decoration: none; font-weight: bold; padding: 14px 28px; border-radius: 8px;">
+              🍽️ Voir le menu et ma carte de fidélité
+            </a>
+          </div>
+          ` : ''}
           <hr style="border: 1px solid #e5e7eb; margin: 24px 0;" />
           <p style="color: #6b7280; font-size: 14px; text-align: center;">
             Un avis Google positif nous ferait vraiment plaisir 😊<br/>

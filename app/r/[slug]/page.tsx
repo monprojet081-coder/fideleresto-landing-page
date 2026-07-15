@@ -26,13 +26,14 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [noteAvis, setNoteAvis] = useState(0)
   const [commentaireAvis, setCommentaireAvis] = useState("")
   const [avisEtape, setAvisEtape] = useState<"note" | "negatif" | "positif" | "envoye">("note")
+  const [nomRestaurant, setNomRestaurant] = useState("")
 
   // Vérifie que le restaurant existe vraiment avant d'afficher quoi que ce soit.
   // Empêche de contourner l'anti-fraude en modifiant le slug dans l'URL.
   React.useEffect(() => {
     supabase
       .from("restaurants")
-      .select("id, plan, statut_abonnement")
+      .select("id, plan, statut_abonnement, nom_restaurant")
       .eq("slug", slug)
       .maybeSingle()
       .then(({ data }) => {
@@ -49,6 +50,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         }
         setStep("form")
         setEstPremium(data.plan === "premium")
+        setNomRestaurant(data.nom_restaurant || "")
         // Le scan ne compte que si le restaurant existe réellement
         fetch("/api/send-reward-email/track-scan", {
           method: "POST",
@@ -145,7 +147,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
       await fetch("/api/send-reward-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prenom, email, recompense: reward.label }),
+        body: JSON.stringify({ prenom, email, recompense: reward.label, restaurantNom: nomRestaurant, slug }),
       })
     }
 
@@ -403,12 +405,17 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
       </div>
 
-      <div className="flex items-center gap-1.5 mt-6 text-ink/35">
-        <UtensilsCrossed className="w-3 h-3" />
-        <p className="text-xs font-display tracking-wide">
-          Propulsé par <span className="font-semibold text-wine/50">FidèleResto</span>
+      <a
+        href="https://fideleresto.fr"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 mt-6 text-wine/60 hover:text-wine transition-colors"
+      >
+        <UtensilsCrossed className="w-4 h-4" />
+        <p className="text-sm font-display font-medium tracking-wide">
+          Propulsé par <span className="font-semibold text-wine">FidèleResto</span>
         </p>
-      </div>
+      </a>
     </div>
   )
 }

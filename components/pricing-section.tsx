@@ -40,11 +40,12 @@ const plans = [
     essaiGratuit: false,
     features: [
       "Tout ce qui est inclus dans Standard",
+      "Alerte insatisfaction (protège votre note Google)",
+      "Statistiques avancées (heures de pointe, évolution)",
       "Accompagnement prioritaire",
       "Flyers fournis et traduits sur demande",
       "Traduction de l'application sur demande",
-      "Option création de site (+ maintenance)",
-      "Option gestion des réseaux sociaux",
+      "Option création de site et gestion des réseaux",
     ],
   },
 ]
