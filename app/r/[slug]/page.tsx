@@ -405,17 +405,12 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
       </div>
 
-      <a
-        href="https://fideleresto.fr"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-2 mt-6 text-wine/60 hover:text-wine transition-colors"
-      >
+      <div className="flex items-center gap-2 mt-6 text-wine/60">
         <UtensilsCrossed className="w-4 h-4" />
         <p className="text-sm font-display font-medium tracking-wide">
           Propulsé par <span className="font-semibold text-wine">FidèleResto</span>
         </p>
-      </a>
+      </div>
     </div>
   )
 }
