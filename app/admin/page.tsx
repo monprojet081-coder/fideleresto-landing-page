@@ -1,5 +1,10 @@
 "use client"
 
+// Page dynamique par nature (session utilisateur, donnees en temps reel) : jamais
+// prerenderee statiquement au build, ce qui evitait un plantage du build Vercel
+// quand cette page touchait des variables d'env cote client au mauvais moment
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
