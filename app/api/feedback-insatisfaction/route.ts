@@ -57,16 +57,20 @@ export async function POST(req: NextRequest) {
         subject: `⚠️ Retour client à traiter (${note}/5) — ${resto.nom_restaurant}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #6b1e2e;">Un client vient de laisser un retour mitigé</h1>
-            <p>Ce retour a été <strong>intercepté avant Google</strong> : il n'a pas été publié publiquement.
-            C'est l'occasion de recontacter ce client pour arranger les choses.</p>
+            <h1 style="color: #6b1e2e; font-size: 22px;">Un client a laissé un retour mitigé</h1>
+            <p style="color: #241914; line-height: 1.5;">
+              Bonne nouvelle : ce retour reste privé, il n'a pas été publié sur Google.
+              C'est l'occasion de recontacter ce client pour arranger les choses avant qu'un avis négatif ne parte en ligne.
+            </p>
             <div style="background: #faf3e8; border: 1px solid #c9962c; border-radius: 12px; padding: 20px; margin: 24px 0;">
-              <p style="margin: 0 0 8px;"><strong>Note :</strong> ${note}/5</p>
-              ${prenom ? `<p style="margin: 0 0 8px;"><strong>Prénom :</strong> ${prenom}</p>` : ''}
-              ${email ? `<p style="margin: 0 0 8px;"><strong>Email :</strong> ${email}</p>` : ''}
-              <p style="margin: 8px 0 0;"><strong>Commentaire :</strong><br/>${commentaire ? String(commentaire).replace(/</g, '&lt;') : '(aucun commentaire laissé)'}</p>
+              <p style="margin: 0 0 10px; font-size: 15px;"><strong style="color: #6b1e2e;">Note :</strong> ${note}/5</p>
+              ${prenom ? `<p style="margin: 0 0 10px; font-size: 15px;"><strong style="color: #6b1e2e;">Prénom :</strong> ${prenom}</p>` : ''}
+              ${email ? `<p style="margin: 0 0 10px; font-size: 15px;"><strong style="color: #6b1e2e;">Email :</strong> ${email}</p>` : ''}
+              <p style="margin: 10px 0 0; font-size: 15px;"><strong style="color: #6b1e2e;">Commentaire :</strong><br/>${commentaire ? String(commentaire).replace(/</g, '&lt;') : "(aucun commentaire laissé)"}</p>
             </div>
-            <p style="color: #6b7280; font-size: 14px;">Retrouvez tous vos retours clients dans votre dashboard, onglet "Retours clients". Envoyé automatiquement par FidèleResto.</p>
+            <p style="color: #6b7280; font-size: 13px;">
+              Retrouvez et gérez tous vos retours clients dans votre dashboard, onglet « Retours clients ».
+            </p>
           </div>
         `,
       }).catch((err) => console.error('Erreur envoi email alerte insatisfaction:', err))
