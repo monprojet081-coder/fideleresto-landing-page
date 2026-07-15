@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -13,6 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 // insatisfaction") : on ne publie rien nulle part, on prévient juste le restaurateur par email
 // pour qu'il puisse rattraper le client avant qu'un mauvais avis n'atterrisse sur Google
 export async function POST(req: NextRequest) {
+  const supabase = getSupabaseAdmin()
   try {
     const { slug, note, commentaire, prenom, email } = await req.json()
 

@@ -1,11 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export async function verifierRestaurateur(authHeader: string | null, restaurantSlug: string) {
+  const supabase = getSupabaseAdmin()
   const token = authHeader?.replace('Bearer ', '')
   if (!token) return { ok: false as const, error: 'Non authentifié' }
 

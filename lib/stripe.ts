@@ -1,8 +1,13 @@
 import Stripe from 'stripe'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-06-24.dahlia',
-})
+// Créé à la demande, pas au chargement du module — sinon Next.js essaie de l'exécuter
+// pendant l'étape de build "Collecting page data" et ça plante tout le build si la
+// variable d'env n'est pas dispo à ce moment précis
+export function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2026-06-24.dahlia',
+  })
+}
 
 // Les 6 tarifs créés dans Stripe (Produits > FidèleResto Standard / Premium)
 // Standard : 180€/mois, Premium : 280€/mois — trimestriel -10%, annuel -20%

@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
-import { stripe, STRIPE_PRICE_FRAIS_SITE, STRIPE_PRICE_FRAIS_RESEAUX } from '@/lib/stripe'
+import { getStripe, STRIPE_PRICE_FRAIS_SITE, STRIPE_PRICE_FRAIS_RESEAUX } from '@/lib/stripe'
 import type Stripe from 'stripe'
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: NextRequest) {
+  const supabase = getSupabaseAdmin()
+  const stripe = getStripe()
   const body = await req.text()
   const signature = req.headers.get('stripe-signature')
 

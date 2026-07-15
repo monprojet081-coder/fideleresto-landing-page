@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 // Annule une résiliation programmée (le restaurant a changé d'avis avant la fin de sa période)
 export async function POST(req: NextRequest) {
+  const stripe = getStripe()
+  const supabase = getSupabaseAdmin()
   try {
     const authHeader = req.headers.get('authorization') || ''
     const token = authHeader.replace('Bearer ', '')

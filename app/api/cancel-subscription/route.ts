@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 // Résiliation en libre-service : programme l'arrêt à la fin de la période en cours
 // (donc à la fin de l'essai gratuit si on est encore en essai — aucun prélèvement n'aura lieu),
 // plutôt qu'une coupure immédiate qui priverait le restaurant de ce qu'il a déjà payé
 export async function POST(req: NextRequest) {
+  const stripe = getStripe()
+  const supabase = getSupabaseAdmin()
   try {
     const authHeader = req.headers.get('authorization') || ''
     const token = authHeader.replace('Bearer ', '')

@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-)
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fideleresto-landing-page-9dhz.vercel.app'
 
 export async function GET(req: NextRequest) {
+  const supabaseAdmin = getSupabaseAdmin()
   // Vérifie que l'appel vient bien de Vercel Cron (et pas de n'importe qui sur internet)
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
