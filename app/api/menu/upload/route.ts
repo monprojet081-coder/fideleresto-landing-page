@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import sanitizeHtml from 'sanitize-html'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -53,6 +54,18 @@ export async function POST(req: NextRequest) {
       menuHtml = feuilles.join('<hr/>')
     } else {
       return NextResponse.json({ error: 'Format non supporté. Utilisez PDF, JPG, PNG, DOCX ou XLSX.' }, { status: 400 })
+    }
+
+    // Le HTML vient de la conversion d'un fichier importé par le restaurateur (mammoth pour
+    // .docx, sheet_to_html pour .xlsx) : on le nettoie avant stockage pour ne jamais publier
+    // de script ou d'attribut exécutable sur la page publique /carte/[slug]
+    if (menuHtml) {
+      menuHtml = sanitizeHtml(menuHtml, {
+        allowedTags: ['p', 'br', 'strong', 'em', 'b', 'i', 'u', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'thead', 'tbody', 'tr', 'td', 'th', 'span', 'div', 'hr', 'a'],
+        allowedAttributes: { a: ['href'], td: ['colspan', 'rowspan'], th: ['colspan', 'rowspan'] },
+        allowedSchemes: ['http', 'https', 'mailto'],
+        disallowedTagsMode: 'discard',
+      })
     }
 
     const cheminFichier = `${slug}/menu.${extension}`
