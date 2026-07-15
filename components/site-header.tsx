@@ -17,7 +17,7 @@ export function SiteHeader() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-wine/10 bg-ivory/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <a href="#" className="flex items-center gap-2.5" aria-label="FidèleResto, accueil">
+        <a href="/" className="flex items-center gap-2.5" aria-label="FidèleResto, accueil">
           <span className="flex size-9 items-center justify-center rounded-full bg-wine text-gold-light">
             <UtensilsCrossed className="size-4.5" aria-hidden="true" />
           </span>

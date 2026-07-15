@@ -815,15 +815,15 @@ function DashboardContent() {
 
       {/* Barre supérieure mobile avec bouton menu */}
       <div className="md:hidden fixed top-0 inset-x-0 z-40 bg-wine flex items-center justify-between px-4 h-14">
-        <div className="flex items-center gap-2">
+        <button onClick={() => setSidebarOpen(true)} className="text-gold-light p-1" aria-label="Ouvrir le menu">
+          <Menu className="w-6 h-6" />
+        </button>
+        <a href="/dashboard" className="flex items-center gap-2">
           <span className="flex size-7 items-center justify-center rounded-full bg-gold-light/15 text-gold-light">
             <UtensilsCrossed className="w-3.5 h-3.5" />
           </span>
           <span className="text-sm font-display font-semibold text-gold-light">FidèleResto</span>
-        </div>
-        <button onClick={() => setSidebarOpen(true)} className="text-gold-light p-1" aria-label="Ouvrir le menu">
-          <Menu className="w-6 h-6" />
-        </button>
+        </a>
       </div>
 
       {/* Voile sombre derrière la sidebar sur mobile */}
@@ -833,13 +833,15 @@ function DashboardContent() {
 
       <aside className={`w-64 bg-wine flex flex-col fixed h-full z-50 transition-transform md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="px-6 py-5 border-b border-gold-light/15 flex items-center gap-2.5">
-          <span className="flex size-8 items-center justify-center rounded-full bg-gold-light/15 text-gold-light">
-            <UtensilsCrossed className="w-4 h-4" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <span className="text-base font-display font-semibold text-gold-light block leading-tight">FidèleResto</span>
-            <p className="text-xs text-ivory/50 truncate leading-tight">{nomResto}</p>
-          </div>
+          <a href="/dashboard" className="flex items-center gap-2.5 min-w-0 flex-1">
+            <span className="flex size-8 items-center justify-center rounded-full bg-gold-light/15 text-gold-light flex-shrink-0">
+              <UtensilsCrossed className="w-4 h-4" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <span className="text-base font-display font-semibold text-gold-light block leading-tight">FidèleResto</span>
+              <p className="text-xs text-ivory/50 truncate leading-tight">{nomResto}</p>
+            </div>
+          </a>
           <button onClick={() => setSidebarOpen(false)} className="md:hidden text-ivory/60 p-1" aria-label="Fermer le menu">
             <X className="w-5 h-5" />
           </button>
@@ -1244,51 +1246,55 @@ function DashboardContent() {
             <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-2xl">
               <div className="space-y-4 mb-6">
                 {rewards.map((reward, index) => (
-                  <div key={index} className="flex items-center gap-4 p-4 bg-secondary/40 rounded-xl">
-                    <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: reward.couleur }} />
-                    <input
-                      type="text"
-                      value={reward.label}
-                      onChange={e => {
-                        const updated = [...rewards]
-                        updated[index].label = e.target.value
-                        setRewards(updated)
-                      }}
-                      className="flex-1 border border-wine/15 bg-card rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
-                    />
-                    <div className="flex items-center gap-2 w-40">
+                  <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 bg-secondary/40 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: reward.couleur }} />
                       <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        value={reward.probabilite}
+                        type="text"
+                        value={reward.label}
                         onChange={e => {
                           const updated = [...rewards]
-                          updated[index].probabilite = parseInt(e.target.value)
+                          updated[index].label = e.target.value
                           setRewards(updated)
                         }}
-                        className="flex-1 accent-wine"
+                        className="flex-1 min-w-0 border border-wine/15 bg-card rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
                       />
-                      <span className="text-sm font-medium text-ink/70 w-10 text-right">{reward.probabilite}%</span>
                     </div>
-                    <input
-                      type="color"
-                      value={reward.couleur}
-                      onChange={e => {
-                        const updated = [...rewards]
-                        updated[index].couleur = e.target.value
-                        setRewards(updated)
-                      }}
-                      className="w-8 h-8 rounded cursor-pointer border-0"
-                    />
-                    {rewards.length > 2 && (
-                      <button
-                        onClick={() => setRewards(rewards.filter((_, i) => i !== index))}
-                        className="text-wine/40 hover:text-wine text-xl font-bold"
-                      >
-                        ×
-                      </button>
-                    )}
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 flex-1 sm:w-40 sm:flex-none min-w-0">
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={reward.probabilite}
+                          onChange={e => {
+                            const updated = [...rewards]
+                            updated[index].probabilite = parseInt(e.target.value)
+                            setRewards(updated)
+                          }}
+                          className="flex-1 min-w-0 accent-wine"
+                        />
+                        <span className="text-sm font-medium text-ink/70 w-10 text-right flex-shrink-0">{reward.probabilite}%</span>
+                      </div>
+                      <input
+                        type="color"
+                        value={reward.couleur}
+                        onChange={e => {
+                          const updated = [...rewards]
+                          updated[index].couleur = e.target.value
+                          setRewards(updated)
+                        }}
+                        className="w-8 h-8 rounded cursor-pointer border-0 flex-shrink-0"
+                      />
+                      {rewards.length > 2 && (
+                        <button
+                          onClick={() => setRewards(rewards.filter((_, i) => i !== index))}
+                          className="text-wine/40 hover:text-wine text-xl font-bold flex-shrink-0"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
