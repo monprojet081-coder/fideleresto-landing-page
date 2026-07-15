@@ -1274,7 +1274,21 @@ function DashboardContent() {
                           }}
                           className="flex-1 min-w-0 accent-wine"
                         />
-                        <span className="text-sm font-medium text-ink/70 w-10 text-right flex-shrink-0">{reward.probabilite}%</span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={reward.probabilite}
+                          onChange={e => {
+                            const brut = parseInt(e.target.value)
+                            const clamp = isNaN(brut) ? 0 : Math.min(100, Math.max(0, brut))
+                            const updated = [...rewards]
+                            updated[index].probabilite = clamp
+                            setRewards(updated)
+                          }}
+                          className="text-sm font-medium text-ink/70 w-12 text-right flex-shrink-0 bg-transparent border border-transparent rounded px-1 py-0.5 focus:border-wine/30 focus:outline-none focus:bg-card"
+                        />
+                        <span className="text-sm font-medium text-ink/70 flex-shrink-0">%</span>
                       </div>
                       <input
                         type="color"
