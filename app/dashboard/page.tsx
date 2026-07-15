@@ -37,7 +37,6 @@ function DashboardContent() {
     setConfirmModal({ message, onConfirm })
   }
   const [activeSection, setActiveSection] = useState("accueil")
-  const qrGenerated = useRef(false)
   const [rewards, setRewards] = useState([
     { label: "Boisson offerte 🥤", probabilite: 25, couleur: "#6b1e2e" },
     { label: "Dessert offert 🍰", probabilite: 25, couleur: "#c9962c" },
@@ -204,8 +203,7 @@ function DashboardContent() {
   }, [activeSection, user])
 
   useEffect(() => {
-    if (activeSection === "qrcode" && user && !qrGenerated.current) {
-      qrGenerated.current = true
+    if (activeSection === "qrcode" && user) {
       import('qrcode').then(QRCode => {
         const canvas = document.getElementById('qr-canvas') as HTMLCanvasElement
         if (canvas) {
