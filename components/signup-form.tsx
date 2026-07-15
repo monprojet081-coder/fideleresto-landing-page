@@ -182,20 +182,20 @@ function SignupFormContent() {
             </div>
           </div>
           <div>
-  <label className="block text-sm font-medium text-ink/80 mb-1">
-    Lien de votre page avis Google
-  </label>
-  <input
-    type="text"
-    placeholder="Ex : https://g.page/r/XXXXXXXXXXXX/review"
-    className="w-full px-4 py-2.5 border border-wine/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold"
-    value={formData.googleAvisUrl}
-    onChange={(e) => setFormData({ ...formData, googleAvisUrl: e.target.value })}
-  />
-  <p className="mt-1 text-xs text-ink/45">
-    Vous pouvez le laisser vide pour l'instant, mais pensez à l'ajouter dans Paramètres avant de commencer à utiliser la roue, sinon vos clients ne pourront pas laisser d'avis après avoir gagné.
-  </p>
-</div>
+            <label className="block text-sm font-medium text-ink/80 mb-1">
+              Lien de votre page avis Google
+            </label>
+            <input
+              type="text"
+              placeholder="Ex : https://g.page/r/XXXXXXXXXXXX/review"
+              className="w-full px-4 py-2.5 border border-wine/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+              value={formData.googleAvisUrl}
+              onChange={(e) => setFormData({ ...formData, googleAvisUrl: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-ink/45">
+              Vous pouvez le laisser vide pour l'instant, mais pensez à l'ajouter dans Paramètres avant de commencer à utiliser la roue, sinon vos clients ne pourront pas laisser d'avis après avoir gagné.
+            </p>
+          </div>
           <div>
             <label className="block text-sm font-medium text-ink/80 mb-1">
               Email professionnel
