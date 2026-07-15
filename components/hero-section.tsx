@@ -1,4 +1,4 @@
-import { ArrowRight, Star } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function HeroSection() {
@@ -14,18 +14,18 @@ export function HeroSection() {
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-1.5 text-sm font-medium text-wine-dark">
             <span className="flex size-2 rounded-full bg-gold" aria-hidden="true" />
-            Boostez vos avis, vos clients, et leur fidélité
+            L&apos;outil de fidélisation pensé pour les restaurateurs
           </span>
 
           <h1 className="mt-6 text-balance font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl md:text-6xl">
-            Fidélisez vos clients et multipliez vos{" "}
-            <span className="italic text-wine">avis Google</span>
+            Transformez chaque repas en{" "}
+            <span className="italic text-wine">client qui revient</span>
           </h1>
 
           <p className="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-ink/65">
-            FidèleResto transforme chaque visite en occasion de revenir. Un simple QR code,
-            une roue de la fidélité ludique et des récompenses qui font revenir vos clients —
-            tout en boostant votre réputation en ligne.
+            Vous tenez un restaurant ? FidèleResto installe une roue de la chance derrière un simple
+            QR code sur vos tables. Vos clients jouent, gagnent une récompense, laissent un avis Google
+            et reviennent — pendant que vous récupérez leurs coordonnées et suivez tout depuis un tableau de bord.
           </p>
 
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
@@ -35,7 +35,7 @@ export function HeroSection() {
               nativeButton={false}
               render={<a href="/inscription?plan=standard_mensuel" />}
             >
-              Commencer
+              Essayer gratuitement 14 jours
               <ArrowRight className="size-4" aria-hidden="true" />
             </Button>
             <Button
@@ -49,40 +49,9 @@ export function HeroSection() {
             </Button>
           </div>
 
-          <div className="mt-8 flex items-center gap-2 text-sm text-ink/55">
-            <span className="flex" aria-hidden="true">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className="size-4 fill-gold text-gold" />
-              ))}
-            </span>
-            Plébiscité par plus de 300 restaurateurs en France
-          </div>
-        </div>
-
-        {/* Signature : la carte de stats façon ticket de tombola, avec perforations et encoches */}
-        <div className="mx-auto mt-16 max-w-4xl">
-          <div className="relative rounded-2xl border border-wine/15 bg-card shadow-xl shadow-wine/5">
-            <div className="grid divide-y divide-dashed divide-wine/20 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-              {[
-                { value: "+38%", label: "de clients fidèles" },
-                { value: "x4", label: "plus d'avis Google" },
-                { value: "4,8/5", label: "note moyenne après 3 mois" },
-              ].map((stat, i) => (
-                <div key={stat.label} className="relative px-6 py-8 text-center">
-                  {i > 0 && (
-                    <span
-                      className="absolute top-1/2 -left-2.5 hidden size-5 -translate-y-1/2 rounded-full bg-ivory sm:block"
-                      aria-hidden="true"
-                    />
-                  )}
-                  <div className="font-display text-3xl font-semibold text-wine">
-                    {stat.value}
-                  </div>
-                  <div className="mt-1 text-sm text-ink/55">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <p className="mt-4 text-sm text-ink/45">
+            Sans engagement · Résiliable à tout moment · Aucune application à installer pour vos clients
+          </p>
         </div>
       </div>
     </section>

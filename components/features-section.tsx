@@ -1,41 +1,54 @@
-import { QrCode, Disc3, Mail, BarChart3, MessageSquareText, BellRing } from "lucide-react"
+import { Disc3, Star, CreditCard, BookOpen, Mail, BarChart3, Printer, ShieldAlert } from "lucide-react"
 
 const features = [
   {
-    icon: QrCode,
-    title: "QR code unique",
+    icon: Disc3,
+    title: "Roue de la chance",
     description:
-      "Un QR code personnalisé à votre établissement, à imprimer sur vos tables, additions ou affiches.",
+      "Vos clients scannent un QR code sur la table, tournent la roue et gagnent une récompense que vous choisissez. Un petit jeu qui leur donne une vraie raison de revenir.",
   },
   {
-    icon: Disc3,
-    title: "Roue de la fidélité",
+    icon: Star,
+    title: "Plus d'avis Google",
     description:
-      "Un jeu engageant qui récompense vos clients et les incite à revenir encore et encore.",
+      "Après avoir joué, vos clients sont invités à laisser un avis sur votre fiche Google en un clic. Votre note grimpe, votre visibilité locale aussi.",
+  },
+  {
+    icon: CreditCard,
+    title: "Carte de fidélité digitale",
+    description:
+      "Fini les cartes en carton qu'on perd. Vos clients cumulent leurs tampons sur leur téléphone et débloquent leur récompense automatiquement.",
+  },
+  {
+    icon: BookOpen,
+    title: "Menu digital",
+    description:
+      "Importez votre carte (PDF, photo ou document) et vos clients la consultent directement depuis leur téléphone, toujours à jour.",
   },
   {
     icon: Mail,
-    title: "Collecte d'emails",
+    title: "Emails de relance automatiques",
     description:
-      "Constituez une base de données clients qualifiée pour vos campagnes et promotions ciblées.",
+      "Un client n'est pas revenu depuis un moment ? FidèleResto lui envoie automatiquement une petite offre pour le faire revenir, avec son accord.",
   },
   {
     icon: BarChart3,
-    title: "Analytics",
+    title: "Tableau de bord clair",
     description:
-      "Suivez vos scans, vos récompenses distribuées et le taux de retour de vos clients en temps réel.",
+      "Suivez vos scans, vos clients collectés, vos récompenses distribuées et vos avis, tout au même endroit, en temps réel.",
   },
   {
-    icon: MessageSquareText,
-    title: "Avis Google",
+    icon: Printer,
+    title: "Flyers prêts à imprimer",
     description:
-      "Redirigez automatiquement vos clients satisfaits vers votre fiche Google pour booster votre note.",
+      "Choisissez parmi plusieurs modèles de flyers à votre nom, avec votre QR code intégré, prêts à poser sur vos tables ou votre comptoir.",
   },
   {
-    icon: BellRing,
-    title: "Alertes insatisfaction",
+    icon: ShieldAlert,
+    title: "Alerte insatisfaction",
+    badge: "Premium",
     description:
-      "Soyez alerté immédiatement en cas d'expérience négative pour réagir avant qu'un avis ne soit publié.",
+      "Un client déçu ? Son retour vous arrive directement par email au lieu d'atterrir en public sur Google. Vous rattrapez la situation avant qu'elle ne coûte cher.",
   },
 ]
 
@@ -48,10 +61,11 @@ export function FeaturesSection() {
             Fonctionnalités
           </span>
           <h2 className="mt-3 text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-            Tout ce qu&apos;il faut pour fidéliser
+            Tout ce qu&apos;il faut pour remplir votre salle
           </h2>
           <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/65">
-            Une plateforme complète qui combine fidélisation, collecte de données et gestion de votre e-réputation.
+            Une seule plateforme pour fidéliser vos clients, soigner votre réputation et garder le contact,
+            sans compétence technique.
           </p>
         </div>
 
@@ -64,7 +78,14 @@ export function FeaturesSection() {
               <div className="flex size-12 items-center justify-center rounded-xl bg-wine/8 text-wine transition-all group-hover:bg-wine group-hover:text-gold-light">
                 <feature.icon className="size-6" aria-hidden="true" />
               </div>
-              <h3 className="mt-5 font-display text-lg font-semibold text-ink">{feature.title}</h3>
+              <div className="mt-5 flex items-center gap-2">
+                <h3 className="font-display text-lg font-semibold text-ink">{feature.title}</h3>
+                {feature.badge && (
+                  <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[11px] font-semibold text-wine-dark">
+                    {feature.badge}
+                  </span>
+                )}
+              </div>
               <p className="mt-2 text-pretty leading-relaxed text-ink/65">
                 {feature.description}
               </p>

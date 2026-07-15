@@ -15,7 +15,8 @@ export function CtaSection() {
             Prêt à fidéliser vos clients dès aujourd&apos;hui ?
           </h2>
           <p className="relative mx-auto mt-4 max-w-xl text-pretty text-lg leading-relaxed opacity-85">
-            Rejoignez les centaines de restaurateurs qui boostent leur fidélité et leurs avis Google avec FidèleResto.
+            Installez FidèleResto dans votre restaurant en quelques minutes et commencez à transformer
+            vos visiteurs en habitués.
           </p>
           <div className="relative mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button
@@ -24,16 +25,16 @@ export function CtaSection() {
               nativeButton={false}
               render={<a href="/inscription?plan=standard_mensuel" />}
             >
-              Commencer gratuitement
+              Essayer gratuitement 14 jours
               <ArrowRight className="size-4" aria-hidden="true" />
             </Button>
             <Button
               size="lg"
               className="h-11 border border-gold-light/30 bg-transparent px-6 text-base text-gold-light hover:bg-gold-light/10"
               nativeButton={false}
-              render={<a href="#comment-ca-marche" />}
+              render={<a href="#tarifs" />}
             >
-              Demander une démo
+              Voir les tarifs
             </Button>
           </div>
           <p className="relative mt-6 text-sm opacity-70">

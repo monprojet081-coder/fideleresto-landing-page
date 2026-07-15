@@ -19,7 +19,6 @@ export const metadata: Metadata = {
   title: 'FidèleResto — Fidélisez vos clients et boostez vos avis Google',
   description:
     'FidèleResto aide les restaurateurs à fidéliser leurs clients et à multiplier leurs avis Google grâce à un QR code, une roue de la fidélité et des récompenses.',
-  generator: 'v0.app',
   icons: {
     icon: [
       {
