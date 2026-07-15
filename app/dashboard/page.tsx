@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck } from "lucide-react"
+import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck, Menu, X } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
 
@@ -46,6 +46,7 @@ function DashboardContent() {
   const [abonnementMessage, setAbonnementMessage] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [cancelling, setCancelling] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Menu digital
   const [uploadingMenu, setUploadingMenu] = useState(false)
@@ -699,6 +700,37 @@ function DashboardContent() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 5)
 
+  // === Statistiques avancées (Premium) ===
+  const estPremiumStats = restaurant?.plan === "premium"
+
+  // Comparaison mois en cours vs mois précédent (nombre de clients / passages)
+  const maintenant = new Date()
+  const debutMoisEnCours = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1)
+  const debutMoisPrecedent = new Date(maintenant.getFullYear(), maintenant.getMonth() - 1, 1)
+  const clientsMoisEnCours = clients.filter((c) => new Date(c.created_at) >= debutMoisEnCours).length
+  const clientsMoisPrecedent = clients.filter((c) => {
+    const d = new Date(c.created_at)
+    return d >= debutMoisPrecedent && d < debutMoisEnCours
+  }).length
+  const evolutionMois = clientsMoisPrecedent === 0
+    ? (clientsMoisEnCours > 0 ? 100 : 0)
+    : Math.round(((clientsMoisEnCours - clientsMoisPrecedent) / clientsMoisPrecedent) * 100)
+
+  // Répartition par heure de la journée (0-23h) pour repérer les heures de pointe
+  const parHeure = Array.from({ length: 24 }).map((_, h) => ({
+    heure: `${h}h`,
+    passages: clients.filter((c) => new Date(c.created_at).getHours() === h).length,
+  }))
+  const heurePointe = parHeure.reduce((max, cur) => (cur.passages > max.passages ? cur : max), parHeure[0])
+
+  // Répartition par jour de la semaine
+  const nomsJours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"]
+  const parJourSemaine = [1, 2, 3, 4, 5, 6, 0].map((jourIndex) => ({
+    jour: nomsJours[jourIndex],
+    passages: clients.filter((c) => new Date(c.created_at).getDay() === jourIndex).length,
+  }))
+  const jourPointe = parJourSemaine.reduce((max, cur) => (cur.passages > max.passages ? cur : max), parJourSemaine[0])
+
   // Compte verrouillé : abonnement résilié (arrivé à sa date de fin), impayé, ou jamais souscrit.
   // On ne coupe pas l'accès pendant une résiliation programmée (resiliation_prevue) tant que
   // la période en cours n'est pas terminée — seulement une fois que Stripe a réellement mis fin
@@ -724,15 +756,36 @@ function DashboardContent() {
   return (
     <div className="min-h-screen bg-secondary/40 flex">
 
-      <aside className="w-64 bg-wine flex flex-col fixed h-full">
+      {/* Barre supérieure mobile avec bouton menu */}
+      <div className="md:hidden fixed top-0 inset-x-0 z-40 bg-wine flex items-center justify-between px-4 h-14">
+        <div className="flex items-center gap-2">
+          <span className="flex size-7 items-center justify-center rounded-full bg-gold-light/15 text-gold-light">
+            <UtensilsCrossed className="w-3.5 h-3.5" />
+          </span>
+          <span className="text-sm font-display font-semibold text-gold-light">FidèleResto</span>
+        </div>
+        <button onClick={() => setSidebarOpen(true)} className="text-gold-light p-1" aria-label="Ouvrir le menu">
+          <Menu className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Voile sombre derrière la sidebar sur mobile */}
+      {sidebarOpen && (
+        <div className="md:hidden fixed inset-0 z-40 bg-black/40" onClick={() => setSidebarOpen(false)} aria-hidden="true" />
+      )}
+
+      <aside className={`w-64 bg-wine flex flex-col fixed h-full z-50 transition-transform md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="px-6 py-5 border-b border-gold-light/15 flex items-center gap-2.5">
           <span className="flex size-8 items-center justify-center rounded-full bg-gold-light/15 text-gold-light">
             <UtensilsCrossed className="w-4 h-4" />
           </span>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <span className="text-base font-display font-semibold text-gold-light block leading-tight">FidèleResto</span>
             <p className="text-xs text-ivory/50 truncate leading-tight">{nomResto}</p>
           </div>
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden text-ivory/60 p-1" aria-label="Fermer le menu">
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
@@ -741,7 +794,7 @@ function DashboardContent() {
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveSection(item.id)}
+                onClick={() => { setActiveSection(item.id); setSidebarOpen(false) }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   activeSection === item.id
                     ? "bg-gold text-wine-dark"
@@ -778,7 +831,7 @@ function DashboardContent() {
         </div>
       </aside>
 
-      <main className="ml-64 flex-1 p-8">
+      <main className="md:ml-64 flex-1 p-4 sm:p-8 pt-18 md:pt-8 w-full">
 
         {activeSection === "accueil" && (
           <div>
@@ -844,6 +897,60 @@ function DashboardContent() {
                     </ResponsiveContainer>
                   </div>
                 )}
+              </div>
+            )}
+
+            {estPremiumStats && (
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <h2 className="font-display font-semibold text-ink">Statistiques avancées</h2>
+                  <span className="text-[11px] font-medium bg-gold/15 text-wine-dark px-2 py-0.5 rounded-full">Premium</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
+                    <p className="text-sm text-ink/55">Ce mois-ci vs mois dernier</p>
+                    <p className={`text-2xl font-display font-semibold mt-1 ${evolutionMois >= 0 ? "text-sage" : "text-wine"}`}>
+                      {evolutionMois >= 0 ? "+" : ""}{evolutionMois}%
+                    </p>
+                    <p className="text-xs text-ink/45 mt-1">{clientsMoisEnCours} passages ce mois ({clientsMoisPrecedent} le mois dernier)</p>
+                  </div>
+                  <div className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
+                    <p className="text-sm text-ink/55">Heure de pointe</p>
+                    <p className="text-2xl font-display font-semibold text-ink mt-1">{heurePointe.passages > 0 ? heurePointe.heure : "—"}</p>
+                    <p className="text-xs text-ink/45 mt-1">{heurePointe.passages > 0 ? `${heurePointe.passages} passages à cette heure` : "Pas encore de données"}</p>
+                  </div>
+                  <div className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
+                    <p className="text-sm text-ink/55">Jour le plus actif</p>
+                    <p className="text-2xl font-display font-semibold text-ink mt-1">{jourPointe.passages > 0 ? jourPointe.jour : "—"}</p>
+                    <p className="text-xs text-ink/45 mt-1">{jourPointe.passages > 0 ? `${jourPointe.passages} passages ce jour-là` : "Pas encore de données"}</p>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
+                    <h3 className="text-sm font-medium text-ink/80 mb-3">Affluence par heure</h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={parHeure.filter((_, i) => i >= 8 && i <= 23)}>
+                        <XAxis dataKey="heure" fontSize={10} interval={1} />
+                        <YAxis allowDecimals={false} fontSize={11} />
+                        <Tooltip />
+                        <Bar dataKey="passages" fill="#6b1e2e" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
+                    <h3 className="text-sm font-medium text-ink/80 mb-3">Affluence par jour de la semaine</h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={parJourSemaine}>
+                        <XAxis dataKey="jour" fontSize={10} />
+                        <YAxis allowDecimals={false} fontSize={11} />
+                        <Tooltip />
+                        <Bar dataKey="passages" fill="#c9962c" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -968,7 +1075,7 @@ function DashboardContent() {
                 <p className="text-sm font-medium text-ink mb-4">Choisissez votre modèle</p>
 
                 <div className="grid grid-cols-3 gap-3 mb-6">
-                  {MODELES_FLYER.filter((m) => m.plan === (restaurant?.plan === "premium" ? "premium" : "standard")).map((m) => (
+                  {MODELES_FLYER.map((m) => (
                     <button
                       key={m.id}
                       onClick={() => setSelectedModele(m)}
@@ -1470,11 +1577,12 @@ function DashboardContent() {
                   totalAnnuel: 2688,
                   features: [
                     "Tout ce qui est inclus dans Standard",
+                    "Alerte insatisfaction (protège votre note Google)",
+                    "Statistiques avancées (heures de pointe, évolution)",
                     "Accompagnement prioritaire",
                     "Flyers fournis et traduits sur demande",
                     "Traduction de l'application sur demande",
-                    "Option création de site (mensuel uniquement)",
-                    "Option gestion réseaux sociaux (mensuel uniquement)",
+                    "Option création de site et gestion des réseaux",
                   ],
                 },
               ].map((offre) => {

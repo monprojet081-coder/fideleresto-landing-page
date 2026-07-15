@@ -22,6 +22,10 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [avisClique, setAvisClique] = useState(false)
   const [avisExiste, setAvisExiste] = useState(true)
   const [dejaVenu, setDejaVenu] = useState(false)
+  // Alerte insatisfaction (Premium) : on capte une note avant d'envoyer vers Google
+  const [noteAvis, setNoteAvis] = useState(0)
+  const [commentaireAvis, setCommentaireAvis] = useState("")
+  const [avisEtape, setAvisEtape] = useState<"note" | "negatif" | "positif" | "envoye">("note")
 
   // Vérifie que le restaurant existe vraiment avant d'afficher quoi que ce soit.
   // Empêche de contourner l'anti-fraude en modifiant le slug dans l'URL.
@@ -337,24 +341,23 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             </div>
             <p className="text-sm text-ink/55 mb-5">Un email avec votre récompense vient de vous être envoyé. Montrez-le au comptoir pour en profiter !</p>
 
-            <GoogleReviewButton slug={slug} onClick={() => setAvisClique(true)} onUrlChecked={setAvisExiste} />
-            {dejaVenu && avisExiste && !avisClique && (
-              <button
-                onClick={() => setAvisClique(true)}
-                className="mt-2 text-xs text-ink/45 hover:text-wine underline"
-              >
-                J'ai déjà laissé un avis
-              </button>
-            )}
-
-            {estPremium && (avisClique || !avisExiste) && (
-              <a
-                href={`/carte/${slug}`}
-                className="mt-3 block w-full border border-wine/20 text-ink font-medium text-sm py-3 rounded-lg hover:bg-wine/5 transition-colors"
-              >
-                🍽️ Voir le menu et ma carte de fidélité
-              </a>
-            )}
+            <AvisSection
+              slug={slug}
+              estPremium={estPremium}
+              prenom={prenom}
+              email={email}
+              dejaVenu={dejaVenu}
+              avisClique={avisClique}
+              setAvisClique={setAvisClique}
+              avisExiste={avisExiste}
+              setAvisExiste={setAvisExiste}
+              noteAvis={noteAvis}
+              setNoteAvis={setNoteAvis}
+              commentaireAvis={commentaireAvis}
+              setCommentaireAvis={setCommentaireAvis}
+              avisEtape={avisEtape}
+              setAvisEtape={setAvisEtape}
+            />
           </div>
         )}
 
@@ -367,24 +370,23 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
               <p className="text-sm text-ink/65">Revenez nous voir bientôt pour retenter votre chance ! 🍀</p>
             </div>
 
-            <GoogleReviewButton slug={slug} onClick={() => setAvisClique(true)} onUrlChecked={setAvisExiste} />
-            {dejaVenu && avisExiste && !avisClique && (
-              <button
-                onClick={() => setAvisClique(true)}
-                className="mt-2 text-xs text-ink/45 hover:text-wine underline"
-              >
-                J'ai déjà laissé un avis
-              </button>
-            )}
-
-            {estPremium && (avisClique || !avisExiste) && (
-              <a
-                href={`/carte/${slug}`}
-                className="mt-3 block w-full border border-wine/20 text-ink font-medium text-sm py-3 rounded-lg hover:bg-wine/5 transition-colors"
-              >
-                🍽️ Voir le menu et ma carte de fidélité
-              </a>
-            )}
+            <AvisSection
+              slug={slug}
+              estPremium={estPremium}
+              prenom={prenom}
+              email={email}
+              dejaVenu={dejaVenu}
+              avisClique={avisClique}
+              setAvisClique={setAvisClique}
+              avisExiste={avisExiste}
+              setAvisExiste={setAvisExiste}
+              noteAvis={noteAvis}
+              setNoteAvis={setNoteAvis}
+              commentaireAvis={commentaireAvis}
+              setCommentaireAvis={setCommentaireAvis}
+              avisEtape={avisEtape}
+              setAvisEtape={setAvisEtape}
+            />
           </div>
         )}
 
@@ -411,8 +413,29 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   )
 }
 
-function GoogleReviewButton({ slug, onClick, onUrlChecked }: { slug: string; onClick?: () => void; onUrlChecked?: (hasUrl: boolean) => void }) {
+function AvisSection({
+  slug, estPremium, prenom, email, dejaVenu,
+  avisClique, setAvisClique, avisExiste, setAvisExiste,
+  noteAvis, setNoteAvis, commentaireAvis, setCommentaireAvis, avisEtape, setAvisEtape,
+}: {
+  slug: string
+  estPremium: boolean
+  prenom: string
+  email: string
+  dejaVenu: boolean
+  avisClique: boolean
+  setAvisClique: (v: boolean) => void
+  avisExiste: boolean
+  setAvisExiste: (v: boolean) => void
+  noteAvis: number
+  setNoteAvis: (v: number) => void
+  commentaireAvis: string
+  setCommentaireAvis: (v: string) => void
+  avisEtape: "note" | "negatif" | "positif" | "envoye"
+  setAvisEtape: (v: "note" | "negatif" | "positif" | "envoye") => void
+}) {
   const [googleUrl, setGoogleUrl] = useState<string | null>(null)
+  const [envoiEnCours, setEnvoiEnCours] = useState(false)
 
   React.useEffect(() => {
     supabase
@@ -421,17 +444,21 @@ function GoogleReviewButton({ slug, onClick, onUrlChecked }: { slug: string; onC
       .eq("slug", slug)
       .maybeSingle()
       .then(({ data }) => {
-        if (data?.google_avis_url) {
-          setGoogleUrl(data.google_avis_url)
-        }
-        onUrlChecked?.(!!data?.google_avis_url)
+        if (data?.google_avis_url) setGoogleUrl(data.google_avis_url)
+        setAvisExiste(!!data?.google_avis_url)
       })
   }, [slug])
 
-  if (!googleUrl) return null
+  const lienCarte = (
+    <a
+      href={`/carte/${slug}`}
+      className="mt-3 block w-full border border-wine/20 text-ink font-medium text-sm py-3 rounded-lg hover:bg-wine/5 transition-colors"
+    >
+      🍽️ Voir le menu et ma carte de fidélité
+    </a>
+  )
 
-  const handleClick = () => {
-    onClick?.()
+  const trackClicGoogle = () => {
     fetch("/api/track-avis-clic", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -439,15 +466,114 @@ function GoogleReviewButton({ slug, onClick, onUrlChecked }: { slug: string; onC
     }).catch(() => {})
   }
 
+  // Aucune fiche Google configurée : on ne montre pas de bouton avis, juste la carte de fidélité
+  if (!googleUrl) {
+    return lienCarte
+  }
+
+  // Restaurant NON premium : comportement classique (bouton Google direct), sans gating
+  if (!estPremium) {
+    return (
+      <>
+        <a
+          href={googleUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => { setAvisClique(true); trackClicGoogle() }}
+          className="flex items-center justify-center gap-2 w-full bg-wine text-gold-light text-base font-semibold px-4 py-3.5 rounded-lg shadow-md shadow-wine/20 hover:bg-wine-dark transition-colors"
+        >
+          ⭐ Laisser un avis Google
+        </a>
+        {avisClique && lienCarte}
+      </>
+    )
+  }
+
+  // Restaurant PREMIUM : on demande d'abord une note (alerte insatisfaction / redirection intelligente)
+
+  // Étape 1 : on demande la note
+  if (avisEtape === "note") {
+    return (
+      <div className="text-left">
+        <p className="text-center text-sm font-medium text-ink/80 mb-3">Comment s&apos;est passée votre visite ?</p>
+        <div className="flex justify-center gap-2 mb-2">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              onClick={() => {
+                setNoteAvis(n)
+                setAvisEtape(n >= 4 ? "positif" : "negatif")
+              }}
+              className="text-3xl transition-transform hover:scale-110"
+              aria-label={`${n} étoile${n > 1 ? "s" : ""}`}
+            >
+              {n <= noteAvis ? "⭐" : "☆"}
+            </button>
+          ))}
+        </div>
+        {lienCarte}
+      </div>
+    )
+  }
+
+  // Étape 2a : bonne note → on invite à publier sur Google
+  if (avisEtape === "positif") {
+    return (
+      <div className="text-center">
+        <p className="text-sm text-ink/70 mb-3">Super, merci ! Partagez votre avis sur Google, ça nous aide énormément 🙏</p>
+        <a
+          href={googleUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => { setAvisClique(true); trackClicGoogle() }}
+          className="flex items-center justify-center gap-2 w-full bg-wine text-gold-light text-base font-semibold px-4 py-3.5 rounded-lg shadow-md shadow-wine/20 hover:bg-wine-dark transition-colors"
+        >
+          ⭐ Laisser un avis Google
+        </a>
+        {lienCarte}
+      </div>
+    )
+  }
+
+  // Étape 2b : note mitigée/mauvaise → retour privé, pas de redirection Google
+  if (avisEtape === "negatif") {
+    return (
+      <div className="text-left">
+        <p className="text-center text-sm text-ink/70 mb-3">Merci pour votre honnêteté. Qu&apos;est-ce qui n&apos;a pas été ? Votre retour va directement au restaurant.</p>
+        <textarea
+          value={commentaireAvis}
+          onChange={(e) => setCommentaireAvis(e.target.value)}
+          rows={3}
+          placeholder="Votre commentaire (facultatif)"
+          className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold mb-3"
+        />
+        <button
+          onClick={async () => {
+            setEnvoiEnCours(true)
+            await fetch("/api/feedback-insatisfaction", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ slug, note: noteAvis, commentaire: commentaireAvis, prenom, email }),
+            }).catch(() => {})
+            setEnvoiEnCours(false)
+            setAvisEtape("envoye")
+          }}
+          disabled={envoiEnCours}
+          className="w-full bg-wine text-gold-light text-base font-semibold px-4 py-3 rounded-lg hover:bg-wine-dark transition-colors disabled:opacity-50"
+        >
+          {envoiEnCours ? "Envoi..." : "Envoyer mon retour"}
+        </button>
+        {lienCarte}
+      </div>
+    )
+  }
+
+  // Étape 3 : retour envoyé
   return (
-    <a
-      href={googleUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={handleClick}
-      className="flex items-center justify-center gap-2 w-full bg-wine text-gold-light text-base font-semibold px-4 py-3.5 rounded-lg shadow-md shadow-wine/20 hover:bg-wine-dark transition-colors"
-    >
-      ⭐ Laisser un avis Google
-    </a>
+    <div className="text-center">
+      <p className="text-sm text-ink/70 mb-1">Merci beaucoup 🙏</p>
+      <p className="text-xs text-ink/50 mb-2">Votre retour a bien été transmis au restaurant.</p>
+      {lienCarte}
+    </div>
   )
 }
