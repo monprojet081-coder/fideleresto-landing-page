@@ -20,6 +20,17 @@ function DashboardContent() {
   const searchParams = useSearchParams()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [toast, setToast] = useState<{ message: string; type: "succes" | "erreur" } | null>(null)
+  const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void } | null>(null)
+
+  const afficherToast = (message: string, type: "succes" | "erreur" = "succes") => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3500)
+  }
+
+  const demanderConfirmation = (message: string, onConfirm: () => void) => {
+    setConfirmModal({ message, onConfirm })
+  }
   const [activeSection, setActiveSection] = useState("accueil")
   const qrGenerated = useRef(false)
   const [rewards, setRewards] = useState([
@@ -242,17 +253,23 @@ function DashboardContent() {
       if (data.url) {
         window.location.href = data.url
       } else {
-        alert("Erreur : " + (data.error || "impossible de démarrer le paiement"))
+        afficherToast("Erreur : " + (data.error || "impossible de démarrer le paiement"), "erreur")
         setSubscribing(null)
       }
     } catch (err) {
-      alert("Erreur lors de la connexion au paiement")
+      afficherToast("Erreur lors de la connexion au paiement", "erreur")
       setSubscribing(null)
     }
   }
 
-  const handleCancelSubscription = async () => {
-    if (!confirm("Résilier votre abonnement ? Il restera actif jusqu'à la fin de la période en cours (ou de votre essai gratuit), puis s'arrêtera automatiquement sans prélèvement.")) return
+  const handleCancelSubscription = () => {
+    demanderConfirmation(
+      "Résilier votre abonnement ? Il restera actif jusqu'à la fin de la période en cours (ou de votre essai gratuit), puis s'arrêtera automatiquement sans prélèvement.",
+      executerResiliation
+    )
+  }
+
+  const executerResiliation = async () => {
     setCancelling(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -265,10 +282,10 @@ function DashboardContent() {
         setRestaurant({ ...restaurant, resiliation_prevue: true, fin_periode_actuelle: data.finPeriode })
         setAbonnementMessage("Résiliation programmée. Votre abonnement reste actif jusqu'à la fin de la période en cours.")
       } else {
-        alert("Erreur : " + (data.error || "impossible de résilier"))
+        afficherToast("Erreur : " + (data.error || "impossible de résilier"), "erreur")
       }
     } catch {
-      alert("Erreur lors de la résiliation")
+      afficherToast("Erreur lors de la résiliation", "erreur")
     }
     setCancelling(false)
   }
@@ -286,28 +303,30 @@ function DashboardContent() {
         setRestaurant({ ...restaurant, resiliation_prevue: false })
         setAbonnementMessage("Résiliation annulée, votre abonnement continue normalement.")
       } else {
-        alert("Erreur : " + (data.error || "impossible d'annuler la résiliation"))
+        afficherToast("Erreur : " + (data.error || "impossible d'annuler la résiliation"), "erreur")
       }
     } catch {
-      alert("Erreur lors de l'annulation de la résiliation")
+      afficherToast("Erreur lors de l'annulation de la résiliation", "erreur")
     }
     setCancelling(false)
   }
 
-  const handleSupprimerAvisPrive = async (id: string) => {
-    if (!confirm("Supprimer ce retour client ? Cette action est définitive.")) return
-    const slug = user.id.slice(0, 8)
-    const { data: { session } } = await supabase.auth.getSession()
-    const res = await fetch(`/api/avis-prives?slug=${slug}&id=${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${session?.access_token}` },
+  const handleSupprimerAvisPrive = (id: string) => {
+    demanderConfirmation("Supprimer ce retour client ? Cette action est définitive.", async () => {
+      const slug = user.id.slice(0, 8)
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch(`/api/avis-prives?slug=${slug}&id=${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      })
+      const data = await res.json()
+      if (data.success) {
+        setAvisPrives(avisPrives.filter((a) => a.id !== id))
+        afficherToast("Retour supprimé")
+      } else {
+        afficherToast("Erreur : " + (data.error || "impossible de supprimer"), "erreur")
+      }
     })
-    const data = await res.json()
-    if (data.success) {
-      setAvisPrives(avisPrives.filter((a) => a.id !== id))
-    } else {
-      alert("Erreur : " + (data.error || "impossible de supprimer"))
-    }
   }
 
   const saveRewards = async () => {
@@ -319,7 +338,7 @@ function DashboardContent() {
       .eq("restaurant_id", slug)
     if (deleteError) {
       console.error("Erreur delete:", deleteError)
-      alert("Erreur lors de la sauvegarde : " + deleteError.message)
+      afficherToast("Erreur lors de la sauvegarde : " + deleteError.message, "erreur")
       setSaving(false)
       return
     }
@@ -328,12 +347,12 @@ function DashboardContent() {
       .insert(rewards.map(r => ({ ...r, restaurant_id: slug })))
     if (insertError) {
       console.error("Erreur insert:", insertError)
-      alert("Erreur lors de la sauvegarde : " + insertError.message)
+      afficherToast("Erreur lors de la sauvegarde : " + insertError.message, "erreur")
       setSaving(false)
       return
     }
     setSaving(false)
-    alert("Roue sauvegardée !")
+    afficherToast("Roue sauvegardée !")
   }
 
   const handleMenuUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -495,7 +514,7 @@ function DashboardContent() {
 
       doc.save(`flyer-${selectedModele.id}-${slug}.pdf`)
     } catch (err) {
-      alert("Erreur lors de la génération du flyer.")
+      afficherToast("Erreur lors de la génération du flyer.", "erreur")
       console.error(err)
     }
     setGeneratingFlyer(false)
@@ -514,10 +533,10 @@ function DashboardContent() {
       .eq("slug", slug)
 
     if (error) {
-      alert("Erreur : " + error.message)
+      afficherToast("Erreur : " + error.message, "erreur")
     } else {
       setRestaurant({ ...restaurant, fidelite_tampons_requis: tamponsRequis, fidelite_montant_min: montantMin, fidelite_recompense: recompenseFidelite })
-      alert("Réglages sauvegardés !")
+      afficherToast("Réglages sauvegardés !")
     }
     setSavingFidelite(false)
   }
@@ -668,7 +687,7 @@ function DashboardContent() {
       })
       .eq("slug", slug)
     if (error) {
-      alert("Erreur lors de la sauvegarde : " + error.message)
+      afficherToast("Erreur lors de la sauvegarde : " + error.message, "erreur")
     } else {
       setRestaurant({
         ...restaurant,
@@ -678,7 +697,7 @@ function DashboardContent() {
         relance_jours_inactivite: relanceJours,
         relance_pourcentage: relancePourcentage,
       })
-      alert("Paramètres sauvegardés !")
+      afficherToast("Paramètres sauvegardés !")
     }
     setSavingParams(false)
   }
@@ -1878,6 +1897,43 @@ function DashboardContent() {
         )}
 
       </main>
+
+      {/* Notification discrète en bas à droite, remplace les alert() natifs du navigateur */}
+      {toast && (
+        <div
+          className={`fixed bottom-5 right-5 z-[60] flex items-center gap-2.5 rounded-xl px-4 py-3 shadow-lg text-sm font-medium text-white animate-in fade-in slide-in-from-bottom-2 ${
+            toast.type === "erreur" ? "bg-wine" : "bg-sage"
+          }`}
+        >
+          {toast.type === "erreur" ? "⚠️" : "✓"} {toast.message}
+        </div>
+      )}
+
+      {/* Modal de confirmation, remplace les confirm() natifs du navigateur */}
+      {confirmModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-card rounded-2xl shadow-xl max-w-sm w-full p-6 border border-wine/10">
+            <p className="text-sm text-ink/80 leading-relaxed">{confirmModal.message}</p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmModal(null)}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-ink/60 hover:bg-secondary/60 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => {
+                  confirmModal.onConfirm()
+                  setConfirmModal(null)
+                }}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-wine text-gold-light hover:bg-wine-dark transition-colors"
+              >
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
