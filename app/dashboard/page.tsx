@@ -133,7 +133,7 @@ function DashboardContent() {
           setRelanceJours(restoData.relance_jours_inactivite || 10)
           setRelancePourcentage(restoData.relance_pourcentage || 10)
         } else {
-          const { data: newResto } = await supabase
+          const { data: newResto, error: erreurInsert } = await supabase
             .from("restaurants")
             .insert([{
               user_id: user.id,
@@ -146,6 +146,9 @@ function DashboardContent() {
             }])
             .select()
             .single()
+          if (erreurInsert) {
+            console.error("Erreur création restaurant (dashboard fallback):", erreurInsert.message)
+          }
           if (newResto) {
             setRestaurant(newResto)
             setGoogleAvisUrl(newResto.google_avis_url || "")
@@ -159,7 +162,7 @@ function DashboardContent() {
   }, [])
 
   useEffect(() => {
-    const compteVerrouille = restaurant && (!restaurant.plan || restaurant.statut_abonnement === "annule")
+    const compteVerrouille = restaurant && (!restaurant.plan || !["actif", "essai"].includes(restaurant.statut_abonnement))
     if (compteVerrouille && activeSection !== "abonnement") {
       setActiveSection("abonnement")
     }
@@ -696,11 +699,12 @@ function DashboardContent() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 5)
 
-  // Compte verrouillé : abonnement résilié (arrivé à sa date de fin) ou jamais souscrit.
+  // Compte verrouillé : abonnement résilié (arrivé à sa date de fin), impayé, ou jamais souscrit.
   // On ne coupe pas l'accès pendant une résiliation programmée (resiliation_prevue) tant que
   // la période en cours n'est pas terminée — seulement une fois que Stripe a réellement mis fin
-  // à l'abonnement (statut_abonnement passe à "annule" via le webhook customer.subscription.deleted)
-  const compteVerrouille = !restaurant?.plan || restaurant?.statut_abonnement === "annule"
+  // à l'abonnement (statut_abonnement passe à "annule" via le webhook customer.subscription.deleted).
+  // Même logique que la page roue (/r/[slug]) : tout statut qui n'est pas "actif" ou "essai" verrouille.
+  const compteVerrouille = !restaurant?.plan || !["actif", "essai"].includes(restaurant?.statut_abonnement)
 
   const navItems = compteVerrouille
     ? [{ id: "abonnement", label: "Abonnement", icon: CreditCard }]

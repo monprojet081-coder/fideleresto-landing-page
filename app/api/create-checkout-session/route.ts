@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     const { data: userData } = await supabase.auth.admin.getUserById(userId)
 
     if (!restaurant) {
-      const { data: newResto } = await supabase
+      const { data: newResto, error: erreurInsert } = await supabase
         .from('restaurants')
         .insert([{
           user_id: userId,
@@ -53,6 +53,9 @@ export async function POST(req: NextRequest) {
         }])
         .select()
         .single()
+      if (erreurInsert) {
+        console.error('Erreur création restaurant (create-checkout-session):', erreurInsert.message)
+      }
       restaurant = newResto
     }
 
