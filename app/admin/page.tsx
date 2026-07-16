@@ -62,6 +62,7 @@ export default function AdminPage() {
   const [nouveauVille, setNouveauVille] = useState("")
   const [ajoutEnCours, setAjoutEnCours] = useState(false)
   const [filtreStatut, setFiltreStatut] = useState<string>("tous")
+  const [filtreVille, setFiltreVille] = useState<string>("toutes")
 
   const getToken = async () => {
     const { data: { session } } = await supabase.auth.getSession()
@@ -203,7 +204,17 @@ export default function AdminPage() {
     )
   }
 
-  const prospectsAffiches = filtreStatut === "tous" ? prospects : prospects.filter(p => p.statut === filtreStatut)
+  const villesDisponibles = Array.from(new Set(prospects.map(p => p.ville).filter(Boolean))).sort() as string[]
+
+  const prospectsAffiches = prospects
+    .filter(p => filtreStatut === "tous" || p.statut === filtreStatut)
+    .filter(p => filtreVille === "toutes" || p.ville === filtreVille)
+    .sort((a, b) => {
+      const villeA = a.ville || "zzz"
+      const villeB = b.ville || "zzz"
+      if (villeA !== villeB) return villeA.localeCompare(villeB)
+      return a.nom.localeCompare(b.nom)
+    })
 
   return (
     <div className="min-h-screen bg-ivory px-4 py-10">
@@ -346,40 +357,74 @@ export default function AdminPage() {
               ))}
             </div>
 
-            {/* Liste des prospects */}
+            {/* Filtre par ville */}
+            {villesDisponibles.length > 0 && (
+              <div className="flex items-center gap-2 mb-6 flex-wrap">
+                <button
+                  onClick={() => setFiltreVille("toutes")}
+                  className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+                    filtreVille === "toutes" ? "bg-wine-dark text-gold-light border-wine-dark" : "bg-card border-wine/10 text-ink/60"
+                  }`}
+                >
+                  🗺️ Toutes les villes ({prospects.length})
+                </button>
+                {villesDisponibles.map(ville => (
+                  <button
+                    key={ville}
+                    onClick={() => setFiltreVille(ville)}
+                    className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+                      filtreVille === ville ? "bg-wine-dark text-gold-light border-wine-dark" : "bg-card border-wine/10 text-ink/60"
+                    }`}
+                  >
+                    {ville} ({prospects.filter(p => p.ville === ville).length})
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Liste des prospects, groupée par ville */}
             <div className="bg-card rounded-xl border border-wine/10 shadow-sm divide-y divide-wine/10">
               {loadingProspects ? (
                 <p className="p-6 text-sm text-ink/50">Chargement...</p>
               ) : prospectsAffiches.length === 0 ? (
                 <p className="p-6 text-sm text-ink/50">Aucun contact pour ce filtre.</p>
               ) : (
-                prospectsAffiches.map((p) => {
+                prospectsAffiches.map((p, index) => {
                   const statutInfo = STATUTS_PROSPECT.find(s => s.value === p.statut) || STATUTS_PROSPECT[0]
+                  const villePrecedente = index > 0 ? prospectsAffiches[index - 1].ville : null
+                  const nouvelleVille = filtreVille === "toutes" && p.ville !== villePrecedente
                   return (
-                    <div key={p.id} className="flex items-center justify-between gap-4 px-5 py-4">
-                      <div className="min-w-0">
-                        <p className="font-medium text-ink truncate">{p.nom}</p>
-                        <p className="text-xs text-ink/50 truncate">
-                          {p.email}{p.telephone ? ` · ${p.telephone}` : ""}{p.ville ? ` · ${p.ville}` : ""}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <select
-                          value={p.statut}
-                          onChange={e => changerStatut(p.id, e.target.value)}
-                          className={`text-xs font-medium rounded-full px-3 py-1.5 border-0 cursor-pointer ${statutInfo.couleur}`}
-                        >
-                          {STATUTS_PROSPECT.map(s => (
-                            <option key={s.value} value={s.value}>{s.label}</option>
-                          ))}
-                        </select>
-                        <button
-                          onClick={() => supprimerProspect(p.id)}
-                          className="text-ink/30 hover:text-wine p-1"
-                          aria-label="Supprimer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                    <div key={p.id}>
+                      {nouvelleVille && (
+                        <div className="px-5 py-2 bg-secondary/50 text-xs font-semibold text-wine-dark uppercase tracking-wide">
+                          {p.ville || "Ville non renseignée"}
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between gap-4 px-5 py-4">
+                        <div className="min-w-0">
+                          <p className="font-medium text-ink truncate">{p.nom}</p>
+                          <p className="text-xs text-ink/50 truncate">
+                            {p.email}{p.telephone ? ` · ${p.telephone}` : ""}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <select
+                            value={p.statut}
+                            onChange={e => changerStatut(p.id, e.target.value)}
+                            className={`text-xs font-medium rounded-full px-3 py-1.5 border-0 cursor-pointer ${statutInfo.couleur}`}
+                          >
+                            {STATUTS_PROSPECT.map(s => (
+                              <option key={s.value} value={s.value}>{s.label}</option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={() => supprimerProspect(p.id)}
+                            className="text-ink/30 hover:text-wine p-1"
+                            aria-label="Supprimer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )
