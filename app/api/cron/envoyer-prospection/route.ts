@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
-import { getResend } from '@/lib/resend'
+import { getGmailTransporter } from '@/lib/gmailSender'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fideleresto.fr'
 
-// Réglages de la campagne : combien par lot, plafond quotidien, plage horaire autorisée
-// Le plan gratuit Resend limite à 100 emails/jour TOUS TYPES CONFONDUS (recompenses,
-// relances, notifications admin partagent le meme compteur). On plafonne donc bien en
-// dessous pour laisser de la marge a ces autres emails plutot que de risquer un blocage
-// silencieux de Resend au-dela du 100e email du jour.
-const TAILLE_LOT = 6
-const PLAFOND_QUOTIDIEN = 70
+// Réglages de la campagne : combien par lot, plafond quotidien, plage horaire autorisée.
+// Envoyé via Gmail (lib/gmailSender.ts), un canal totalement separe de Resend : la
+// prospection ne peut donc jamais consommer le quota partage par les emails transactionnels
+// (recompenses roue, relances clients) qui sont, eux, critiques pour les clients payants.
+// Gmail tolere environ 500 emails/jour ; on reste tres en dessous par prudence de reputation.
+const TAILLE_LOT = 15
+const PLAFOND_QUOTIDIEN = 100
 const HEURE_DEBUT = 8   // 8h heure de Paris
 const HEURE_FIN = 20    // 20h heure de Paris
 
@@ -19,7 +19,7 @@ const HEURE_FIN = 20    // 20h heure de Paris
 // La route se protège elle-même : hors plage horaire ou plafond du jour atteint, elle ne
 // fait rien plutôt que de compter sur le déclencheur pour respecter le rythme.
 export async function GET(req: NextRequest) {
-  const resend = getResend()
+  const transporteur = getGmailTransporter()
   const supabaseAdmin = getSupabaseAdmin()
 
   const authHeader = req.headers.get('authorization')
@@ -87,15 +87,15 @@ export async function GET(req: NextRequest) {
         </div>
       `
 
-      const { error: sendError } = await resend.emails.send({
-        from: 'FidèleResto <contact@fideleresto.fr>',
-        to: [prospect.email],
-        subject: prospect.sujet_email,
-        html,
-      })
-
-      if (sendError) {
-        erreurs.push({ email: prospect.email, error: sendError })
+      try {
+        await transporteur.sendMail({
+          from: `FidèleResto <${process.env.GMAIL_USER}>`,
+          to: prospect.email,
+          subject: prospect.sujet_email,
+          html,
+        })
+      } catch (sendError: any) {
+        erreurs.push({ email: prospect.email, error: sendError.message })
         continue
       }
 
