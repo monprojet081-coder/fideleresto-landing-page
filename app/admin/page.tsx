@@ -33,7 +33,10 @@ type Prospect = {
   ville: string | null
   statut: string
   notes: string | null
+  sujet_email: string | null
+  corps_email: string | null
   created_at: string
+  updated_at: string
 }
 
 const STATUTS_PROSPECT = [
@@ -43,6 +46,7 @@ const STATUTS_PROSPECT = [
   { value: "repondu", label: "A répondu", couleur: "bg-sage/15 text-sage" },
   { value: "pas_interesse", label: "Pas intéressé", couleur: "bg-wine/10 text-wine" },
   { value: "client", label: "Devenu client 🎉", couleur: "bg-sage text-white" },
+  { value: "desabonne", label: "Désabonné", couleur: "bg-wine/5 text-ink/40" },
 ]
 
 export default function AdminPage() {
@@ -267,6 +271,44 @@ export default function AdminPage() {
 
         {onglet === "prospection" && (
           <div>
+
+            {/* Progression de la campagne d'envoi */}
+            {(() => {
+              const debutAujourdhui = new Date()
+              debutAujourdhui.setHours(0, 0, 0, 0)
+              const envoyesAujourdhui = prospects.filter(p => p.statut === "envoye" && new Date(p.updated_at || p.created_at) >= debutAujourdhui).length
+              const totalEnvoyes = prospects.filter(p => ["envoye", "en_attente", "repondu", "client"].includes(p.statut)).length
+              const avecMessage = prospects.filter(p => p.sujet_email && p.corps_email).length
+              const restants = prospects.filter(p => p.statut === "a_contacter").length
+              return (
+                <div className="bg-card rounded-xl border border-wine/10 shadow-sm p-5 mb-6">
+                  <p className="text-sm font-medium text-ink mb-3">📤 Campagne d'envoi automatique</p>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <p className="text-2xl font-display font-semibold text-wine">{envoyesAujourdhui}</p>
+                      <p className="text-xs text-ink/50 mt-0.5">Envoyés aujourd'hui</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-display font-semibold text-ink">{totalEnvoyes}</p>
+                      <p className="text-xs text-ink/50 mt-0.5">Envoyés au total</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-display font-semibold text-ink">{restants}</p>
+                      <p className="text-xs text-ink/50 mt-0.5">Restants à contacter</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-wine transition-all"
+                      style={{ width: `${prospects.length > 0 ? (totalEnvoyes / prospects.length) * 100 : 0}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-ink/40 mt-2">
+                    ~12 envois/heure entre 8h et 20h · {avecMessage} contact{avecMessage > 1 ? "s" : ""} sur {prospects.length} ont un message prêt à envoyer
+                  </p>
+                </div>
+              )
+            })()}
 
             {/* Filtre par statut */}
             <div className="flex items-center gap-2 mb-4 flex-wrap">
