@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { ArrowRight, ShieldCheck, Users, Contact, Trash2, Plus } from "lucide-react"
+import { ArrowRight, ShieldCheck, Users, Contact, Trash2 } from "lucide-react"
 
 type RestaurantAdmin = {
   id: string
@@ -56,11 +56,6 @@ export default function AdminPage() {
 
   const [prospects, setProspects] = useState<Prospect[]>([])
   const [loadingProspects, setLoadingProspects] = useState(false)
-  const [nouveauNom, setNouveauNom] = useState("")
-  const [nouveauEmail, setNouveauEmail] = useState("")
-  const [nouveauTelephone, setNouveauTelephone] = useState("")
-  const [nouveauVille, setNouveauVille] = useState("")
-  const [ajoutEnCours, setAjoutEnCours] = useState(false)
   const [filtreStatut, setFiltreStatut] = useState<string>("tous")
   const [filtreVille, setFiltreVille] = useState<string>("toutes")
 
@@ -110,26 +105,6 @@ export default function AdminPage() {
       chargerProspects()
     }
   }, [onglet, accesRefuse])
-
-  const ajouterProspect = async () => {
-    if (!nouveauNom.trim() || !nouveauEmail.trim()) return
-    setAjoutEnCours(true)
-    const token = await getToken()
-    const res = await fetch("/api/admin/prospects", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ nom: nouveauNom, email: nouveauEmail, telephone: nouveauTelephone, ville: nouveauVille }),
-    })
-    const result = await res.json()
-    if (result.prospect) {
-      setProspects([result.prospect, ...prospects])
-      setNouveauNom("")
-      setNouveauEmail("")
-      setNouveauTelephone("")
-      setNouveauVille("")
-    }
-    setAjoutEnCours(false)
-  }
 
   const changerStatut = async (id: string, statut: string) => {
     setProspects(prospects.map(p => p.id === id ? { ...p, statut } : p))
@@ -292,47 +267,6 @@ export default function AdminPage() {
 
         {onglet === "prospection" && (
           <div>
-            {/* Formulaire d'ajout rapide */}
-            <div className="bg-card rounded-xl border border-wine/10 shadow-sm p-5 mb-6">
-              <p className="text-sm font-medium text-ink mb-3">Ajouter un contact</p>
-              <div className="grid sm:grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  placeholder="Nom du restaurant"
-                  value={nouveauNom}
-                  onChange={e => setNouveauNom(e.target.value)}
-                  className="border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={nouveauEmail}
-                  onChange={e => setNouveauEmail(e.target.value)}
-                  className="border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-                <input
-                  type="text"
-                  placeholder="Téléphone (facultatif)"
-                  value={nouveauTelephone}
-                  onChange={e => setNouveauTelephone(e.target.value)}
-                  className="border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-                <input
-                  type="text"
-                  placeholder="Ville (facultatif)"
-                  value={nouveauVille}
-                  onChange={e => setNouveauVille(e.target.value)}
-                  className="border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-              </div>
-              <button
-                onClick={ajouterProspect}
-                disabled={ajoutEnCours || !nouveauNom.trim() || !nouveauEmail.trim()}
-                className="mt-3 flex items-center gap-1.5 text-sm bg-wine hover:bg-wine-dark text-gold-light font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
-              >
-                <Plus className="w-3.5 h-3.5" /> {ajoutEnCours ? "Ajout..." : "Ajouter"}
-              </button>
-            </div>
 
             {/* Filtre par statut */}
             <div className="flex items-center gap-2 mb-4 flex-wrap">
