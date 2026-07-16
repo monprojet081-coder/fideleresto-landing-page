@@ -5,8 +5,12 @@ import { getResend } from '@/lib/resend'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fideleresto.fr'
 
 // Réglages de la campagne : combien par lot, plafond quotidien, plage horaire autorisée
-const TAILLE_LOT = 12
-const PLAFOND_QUOTIDIEN = 144
+// Le plan gratuit Resend limite à 100 emails/jour TOUS TYPES CONFONDUS (recompenses,
+// relances, notifications admin partagent le meme compteur). On plafonne donc bien en
+// dessous pour laisser de la marge a ces autres emails plutot que de risquer un blocage
+// silencieux de Resend au-dela du 100e email du jour.
+const TAILLE_LOT = 6
+const PLAFOND_QUOTIDIEN = 70
 const HEURE_DEBUT = 8   // 8h heure de Paris
 const HEURE_FIN = 20    // 20h heure de Paris
 
