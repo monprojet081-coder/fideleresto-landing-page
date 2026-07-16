@@ -67,9 +67,14 @@ export async function GET(req: NextRequest) {
     for (const prospect of lot) {
       const lienDesabonnement = `${SITE_URL}/api/prospection/desabonner?id=${prospect.id}`
 
+      const corpsHtml = (prospect.corps_email || '')
+        .split(/\n{2,}/)
+        .map((paragraphe: string) => `<p style="margin: 0 0 16px;">${paragraphe.replace(/\n/g, '<br/>')}</p>`)
+        .join('')
+
       const html = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #241914;">
-          ${prospect.corps_email}
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #241914; line-height: 1.5;">
+          ${corpsHtml}
           <hr style="border: 1px solid #e5e7eb; margin: 24px 0;" />
           <p style="color: #9ca3af; font-size: 12px;">
             FidèleResto — <a href="${SITE_URL}" style="color: #9ca3af;">fideleresto.fr</a><br/>
