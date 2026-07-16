@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { ArrowRight, ShieldCheck } from "lucide-react"
+import { ArrowRight, ShieldCheck, Users, Contact, Trash2, Plus } from "lucide-react"
 
 type RestaurantAdmin = {
   id: string
@@ -25,13 +25,48 @@ type RestaurantAdmin = {
   created_at: string
 }
 
+type Prospect = {
+  id: string
+  nom: string
+  email: string
+  telephone: string | null
+  ville: string | null
+  statut: string
+  notes: string | null
+  created_at: string
+}
+
+const STATUTS_PROSPECT = [
+  { value: "a_contacter", label: "Pas encore envoyé", couleur: "bg-secondary text-ink/60" },
+  { value: "envoye", label: "Envoyé", couleur: "bg-gold/15 text-wine-dark" },
+  { value: "en_attente", label: "En attente de réponse", couleur: "bg-gold/25 text-wine-dark" },
+  { value: "repondu", label: "A répondu", couleur: "bg-sage/15 text-sage" },
+  { value: "pas_interesse", label: "Pas intéressé", couleur: "bg-wine/10 text-wine" },
+  { value: "client", label: "Devenu client 🎉", couleur: "bg-sage text-white" },
+]
+
 export default function AdminPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [accesRefuse, setAccesRefuse] = useState(false)
+  const [onglet, setOnglet] = useState<"restaurants" | "prospection">("restaurants")
   const [restaurants, setRestaurants] = useState<RestaurantAdmin[]>([])
   const [entreeEnCours, setEntreeEnCours] = useState<string | null>(null)
   const [erreur, setErreur] = useState("")
+
+  const [prospects, setProspects] = useState<Prospect[]>([])
+  const [loadingProspects, setLoadingProspects] = useState(false)
+  const [nouveauNom, setNouveauNom] = useState("")
+  const [nouveauEmail, setNouveauEmail] = useState("")
+  const [nouveauTelephone, setNouveauTelephone] = useState("")
+  const [nouveauVille, setNouveauVille] = useState("")
+  const [ajoutEnCours, setAjoutEnCours] = useState(false)
+  const [filtreStatut, setFiltreStatut] = useState<string>("tous")
+
+  const getToken = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    return session?.access_token
+  }
 
   useEffect(() => {
     const charger = async () => {
@@ -57,6 +92,66 @@ export default function AdminPage() {
     }
     charger()
   }, [router])
+
+  const chargerProspects = async () => {
+    setLoadingProspects(true)
+    const token = await getToken()
+    const res = await fetch("/api/admin/prospects", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const result = await res.json()
+    setProspects(result.prospects || [])
+    setLoadingProspects(false)
+  }
+
+  useEffect(() => {
+    if (onglet === "prospection" && !accesRefuse) {
+      chargerProspects()
+    }
+  }, [onglet, accesRefuse])
+
+  const ajouterProspect = async () => {
+    if (!nouveauNom.trim() || !nouveauEmail.trim()) return
+    setAjoutEnCours(true)
+    const token = await getToken()
+    const res = await fetch("/api/admin/prospects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ nom: nouveauNom, email: nouveauEmail, telephone: nouveauTelephone, ville: nouveauVille }),
+    })
+    const result = await res.json()
+    if (result.prospect) {
+      setProspects([result.prospect, ...prospects])
+      setNouveauNom("")
+      setNouveauEmail("")
+      setNouveauTelephone("")
+      setNouveauVille("")
+    }
+    setAjoutEnCours(false)
+  }
+
+  const changerStatut = async (id: string, statut: string) => {
+    setProspects(prospects.map(p => p.id === id ? { ...p, statut } : p))
+    const token = await getToken()
+    await fetch("/api/admin/prospects", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ id, statut }),
+    })
+  }
+
+  const supprimerProspect = async (id: string) => {
+    if (!confirm("Supprimer ce contact ?")) return
+    const token = await getToken()
+    const res = await fetch(`/api/admin/prospects?id=${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const result = await res.json()
+    if (result.success) {
+      setProspects(prospects.filter(p => p.id !== id))
+    }
+  }
 
   const accederAuCompte = async (restaurant: RestaurantAdmin) => {
     setErreur("")
@@ -108,58 +203,191 @@ export default function AdminPage() {
     )
   }
 
+  const prospectsAffiches = filtreStatut === "tous" ? prospects : prospects.filter(p => p.statut === filtreStatut)
+
   return (
     <div className="min-h-screen bg-ivory px-4 py-10">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center gap-2 mb-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center gap-2 mb-6">
           <ShieldCheck className="w-6 h-6 text-wine" />
-          <h1 className="text-2xl font-display font-semibold text-ink">Espace admin — Tous les restaurants</h1>
+          <h1 className="text-2xl font-display font-semibold text-ink">Espace admin</h1>
+        </div>
+
+        <div className="inline-flex items-center rounded-full border border-wine/15 bg-card p-1 mb-8">
+          <button
+            onClick={() => setOnglet("restaurants")}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              onglet === "restaurants" ? "bg-wine text-gold-light" : "text-ink/60"
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" /> Restaurants
+          </button>
+          <button
+            onClick={() => setOnglet("prospection")}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              onglet === "prospection" ? "bg-wine text-gold-light" : "text-ink/60"
+            }`}
+          >
+            <Contact className="w-3.5 h-3.5" /> Prospection
+          </button>
         </div>
 
         {erreur && <p className="text-wine text-sm mb-4">{erreur}</p>}
 
-        <div className="bg-card rounded-xl border border-wine/10 shadow-sm divide-y divide-wine/10">
-          {restaurants.length === 0 && (
-            <p className="p-6 text-sm text-ink/50">Aucun restaurant pour le moment.</p>
-          )}
-          {restaurants.map((r) => (
-            <div key={r.id} className="flex items-center justify-between px-5 py-4">
-              <div>
-                <p className="font-medium text-ink">{r.nom_restaurant || "(sans nom)"}</p>
-                <p className="text-xs text-ink/50">
-                  {r.email} · plan {r.plan || "aucun"} · {r.statut_abonnement || "statut inconnu"}
-                </p>
-                {(r.telephone || r.ville) && (
-                  <p className="text-xs text-ink/40 mt-0.5">
-                    {[r.telephone, r.ville].filter(Boolean).join(" · ")}
+        {onglet === "restaurants" && (
+          <div className="bg-card rounded-xl border border-wine/10 shadow-sm divide-y divide-wine/10">
+            {restaurants.length === 0 && (
+              <p className="p-6 text-sm text-ink/50">Aucun restaurant pour le moment.</p>
+            )}
+            {restaurants.map((r) => (
+              <div key={r.id} className="flex items-center justify-between px-5 py-4">
+                <div>
+                  <p className="font-medium text-ink">{r.nom_restaurant || "(sans nom)"}</p>
+                  <p className="text-xs text-ink/50">
+                    {r.email} · plan {r.plan || "aucun"} · {r.statut_abonnement || "statut inconnu"}
                   </p>
-                )}
-                {(r.option_site || r.option_reseaux) && (
-                  <div className="flex gap-1.5 mt-1.5">
-                    {r.option_site && (
-                      <span className="text-[11px] font-medium bg-gold/15 text-wine-dark px-2 py-0.5 rounded-full">
-                        🔔 Création de site
-                      </span>
-                    )}
-                    {r.option_reseaux && (
-                      <span className="text-[11px] font-medium bg-gold/15 text-wine-dark px-2 py-0.5 rounded-full">
-                        🔔 Réseaux sociaux
-                      </span>
-                    )}
-                  </div>
-                )}
+                  {(r.telephone || r.ville) && (
+                    <p className="text-xs text-ink/40 mt-0.5">
+                      {[r.telephone, r.ville].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
+                  {(r.option_site || r.option_reseaux) && (
+                    <div className="flex gap-1.5 mt-1.5">
+                      {r.option_site && (
+                        <span className="text-[11px] font-medium bg-gold/15 text-wine-dark px-2 py-0.5 rounded-full">
+                          🔔 Création de site
+                        </span>
+                      )}
+                      {r.option_reseaux && (
+                        <span className="text-[11px] font-medium bg-gold/15 text-wine-dark px-2 py-0.5 rounded-full">
+                          🔔 Réseaux sociaux
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => accederAuCompte(r)}
+                  disabled={entreeEnCours === r.id}
+                  className="flex items-center gap-1.5 text-sm bg-wine hover:bg-wine-dark text-gold-light font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-60 flex-shrink-0"
+                >
+                  {entreeEnCours === r.id ? "Connexion..." : "Accéder"}
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {onglet === "prospection" && (
+          <div>
+            {/* Formulaire d'ajout rapide */}
+            <div className="bg-card rounded-xl border border-wine/10 shadow-sm p-5 mb-6">
+              <p className="text-sm font-medium text-ink mb-3">Ajouter un contact</p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  placeholder="Nom du restaurant"
+                  value={nouveauNom}
+                  onChange={e => setNouveauNom(e.target.value)}
+                  className="border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={nouveauEmail}
+                  onChange={e => setNouveauEmail(e.target.value)}
+                  className="border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                />
+                <input
+                  type="text"
+                  placeholder="Téléphone (facultatif)"
+                  value={nouveauTelephone}
+                  onChange={e => setNouveauTelephone(e.target.value)}
+                  className="border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                />
+                <input
+                  type="text"
+                  placeholder="Ville (facultatif)"
+                  value={nouveauVille}
+                  onChange={e => setNouveauVille(e.target.value)}
+                  className="border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                />
               </div>
               <button
-                onClick={() => accederAuCompte(r)}
-                disabled={entreeEnCours === r.id}
-                className="flex items-center gap-1.5 text-sm bg-wine hover:bg-wine-dark text-gold-light font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-60"
+                onClick={ajouterProspect}
+                disabled={ajoutEnCours || !nouveauNom.trim() || !nouveauEmail.trim()}
+                className="mt-3 flex items-center gap-1.5 text-sm bg-wine hover:bg-wine-dark text-gold-light font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
               >
-                {entreeEnCours === r.id ? "Connexion..." : "Accéder"}
-                <ArrowRight className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5" /> {ajoutEnCours ? "Ajout..." : "Ajouter"}
               </button>
             </div>
-          ))}
-        </div>
+
+            {/* Filtre par statut */}
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <button
+                onClick={() => setFiltreStatut("tous")}
+                className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                  filtreStatut === "tous" ? "bg-wine text-gold-light" : "bg-card border border-wine/10 text-ink/60"
+                }`}
+              >
+                Tous ({prospects.length})
+              </button>
+              {STATUTS_PROSPECT.map(s => (
+                <button
+                  key={s.value}
+                  onClick={() => setFiltreStatut(s.value)}
+                  className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                    filtreStatut === s.value ? "bg-wine text-gold-light" : "bg-card border border-wine/10 text-ink/60"
+                  }`}
+                >
+                  {s.label} ({prospects.filter(p => p.statut === s.value).length})
+                </button>
+              ))}
+            </div>
+
+            {/* Liste des prospects */}
+            <div className="bg-card rounded-xl border border-wine/10 shadow-sm divide-y divide-wine/10">
+              {loadingProspects ? (
+                <p className="p-6 text-sm text-ink/50">Chargement...</p>
+              ) : prospectsAffiches.length === 0 ? (
+                <p className="p-6 text-sm text-ink/50">Aucun contact pour ce filtre.</p>
+              ) : (
+                prospectsAffiches.map((p) => {
+                  const statutInfo = STATUTS_PROSPECT.find(s => s.value === p.statut) || STATUTS_PROSPECT[0]
+                  return (
+                    <div key={p.id} className="flex items-center justify-between gap-4 px-5 py-4">
+                      <div className="min-w-0">
+                        <p className="font-medium text-ink truncate">{p.nom}</p>
+                        <p className="text-xs text-ink/50 truncate">
+                          {p.email}{p.telephone ? ` · ${p.telephone}` : ""}{p.ville ? ` · ${p.ville}` : ""}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <select
+                          value={p.statut}
+                          onChange={e => changerStatut(p.id, e.target.value)}
+                          className={`text-xs font-medium rounded-full px-3 py-1.5 border-0 cursor-pointer ${statutInfo.couleur}`}
+                        >
+                          {STATUTS_PROSPECT.map(s => (
+                            <option key={s.value} value={s.value}>{s.label}</option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => supprimerProspect(p.id)}
+                          className="text-ink/30 hover:text-wine p-1"
+                          aria-label="Supprimer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
