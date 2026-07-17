@@ -320,7 +320,7 @@ export default function AdminPage() {
                     />
                   </div>
                   <p className="text-xs text-ink/40 mt-2">
-                    ~15 envois/heure entre 8h et 20h (max 100/jour, via Gmail, séparé de vos emails produit) · {avecMessage} contact{avecMessage > 1 ? "s" : ""} sur {prospects.length} ont un message prêt à envoyer
+                    ~6 envois/heure entre 8h et 20h (max 70/jour, marge gardée pour vos emails produit) · {avecMessage} contact{avecMessage > 1 ? "s" : ""} sur {prospects.length} ont un message prêt à envoyer
                   </p>
                 </div>
               )
