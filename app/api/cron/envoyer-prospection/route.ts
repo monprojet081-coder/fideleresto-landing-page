@@ -75,15 +75,22 @@ export async function GET(req: NextRequest) {
         .split(/\n{2,}/)
         .map((paragraphe: string) => `<p style="margin: 0 0 16px;">${paragraphe.replace(/\n/g, '<br/>')}</p>`)
         .join('')
+        // Transforme les URL en texte brut en liens cliquables trackés (le clic passe
+        // par /api/prospection/clic avant d'arriver à la vraie destination)
+        .replace(/(https?:\/\/[^\s<]+)/g, (urlBrute: string) => {
+          const lienTracke = `${SITE_URL}/api/prospection/clic?id=${prospect.id}&url=${encodeURIComponent(urlBrute)}`
+          return `<a href="${lienTracke}" style="color: #6b1e2e;">${urlBrute}</a>`
+        })
 
       const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #241914; line-height: 1.5;">
           ${corpsHtml}
           <hr style="border: 1px solid #e5e7eb; margin: 24px 0;" />
           <p style="color: #9ca3af; font-size: 12px;">
-            FidèleResto — <a href="${SITE_URL}" style="color: #9ca3af;">fideleresto.fr</a><br/>
+            FidèleResto — <a href="${SITE_URL}/api/prospection/clic?id=${prospect.id}&url=${encodeURIComponent(SITE_URL)}" style="color: #9ca3af;">fideleresto.fr</a><br/>
             <a href="${lienDesabonnement}" style="color: #9ca3af;">Se désinscrire de ces emails</a>
           </p>
+          <img src="${SITE_URL}/api/prospection/pixel?id=${prospect.id}" width="1" height="1" style="display:none" alt="" />
         </div>
       `
 

@@ -35,6 +35,8 @@ type Prospect = {
   notes: string | null
   sujet_email: string | null
   corps_email: string | null
+  ouvert_le: string | null
+  clique_le: string | null
   created_at: string
   updated_at: string
 }
@@ -280,6 +282,10 @@ export default function AdminPage() {
               const totalEnvoyes = prospects.filter(p => ["envoye", "en_attente", "repondu", "client"].includes(p.statut)).length
               const avecMessage = prospects.filter(p => p.sujet_email && p.corps_email).length
               const restants = prospects.filter(p => p.statut === "a_contacter").length
+              const ouverts = prospects.filter(p => p.ouvert_le).length
+              const cliques = prospects.filter(p => p.clique_le).length
+              const tauxOuverture = totalEnvoyes > 0 ? Math.round((ouverts / totalEnvoyes) * 100) : 0
+              const tauxClic = totalEnvoyes > 0 ? Math.round((cliques / totalEnvoyes) * 100) : 0
               return (
                 <div className="bg-card rounded-xl border border-wine/10 shadow-sm p-5 mb-6">
                   <p className="text-sm font-medium text-ink mb-3">📤 Campagne d'envoi automatique</p>
@@ -295,6 +301,16 @@ export default function AdminPage() {
                     <div>
                       <p className="text-2xl font-display font-semibold text-ink">{restants}</p>
                       <p className="text-xs text-ink/50 mt-0.5">Restants à contacter</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-center mt-4 pt-4 border-t border-wine/10">
+                    <div>
+                      <p className="text-xl font-display font-semibold text-sage">👁️ {ouverts} <span className="text-sm text-ink/40 font-normal">({tauxOuverture}%)</span></p>
+                      <p className="text-xs text-ink/50 mt-0.5">Ont ouvert l'email</p>
+                    </div>
+                    <div>
+                      <p className="text-xl font-display font-semibold text-sage">🖱️ {cliques} <span className="text-sm text-ink/40 font-normal">({tauxClic}%)</span></p>
+                      <p className="text-xs text-ink/50 mt-0.5">Ont cliqué sur un lien</p>
                     </div>
                   </div>
                   <div className="mt-3 h-1.5 w-full bg-secondary rounded-full overflow-hidden">
@@ -382,6 +398,20 @@ export default function AdminPage() {
                           <p className="text-xs text-ink/50 truncate">
                             {p.email}{p.telephone ? ` · ${p.telephone}` : ""}
                           </p>
+                          {(p.ouvert_le || p.clique_le) && (
+                            <div className="flex gap-1.5 mt-1">
+                              {p.ouvert_le && (
+                                <span className="text-[10px] font-medium bg-sage/10 text-sage px-1.5 py-0.5 rounded-full">
+                                  👁️ Ouvert
+                                </span>
+                              )}
+                              {p.clique_le && (
+                                <span className="text-[10px] font-medium bg-sage/15 text-sage px-1.5 py-0.5 rounded-full">
+                                  🖱️ Cliqué
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <select
