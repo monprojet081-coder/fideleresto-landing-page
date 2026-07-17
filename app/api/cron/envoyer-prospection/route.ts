@@ -9,8 +9,14 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fideleresto.fr'
 // transactionnels : recompenses roue, relances clients, notifications admin). On plafonne
 // donc bien en dessous de 100 pour laisser de la marge a ces emails prioritaires -- a
 // reevaluer (passage Resend Pro, ou sous-domaine dedie) une fois les premiers clients payants.
-const TAILLE_LOT = 6
-const PLAFOND_QUOTIDIEN = 70
+// Réglages de la campagne : combien par lot, plafond quotidien, plage horaire autorisée.
+// Envoyé via Resend (compte gratuit, 100 emails/jour TOUS TYPES CONFONDUS avec les emails
+// transactionnels : recompenses roue, relances clients, notifications admin). Tant qu'il n'y
+// a pas encore de client payant actif, le volume transactionnel reel est proche de zero, donc
+// on remonte le plafond a 90 (petite marge de securite de 10, pas plus). A rebaisser -- ou
+// mieux, passer sur Resend Pro -- des le premier client actif avec du vrai trafic.
+const TAILLE_LOT = 10
+const PLAFOND_QUOTIDIEN = 90
 const HEURE_DEBUT = 8   // 8h heure de Paris
 const HEURE_FIN = 20    // 20h heure de Paris
 
