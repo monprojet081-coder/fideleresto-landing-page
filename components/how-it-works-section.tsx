@@ -1,5 +1,11 @@
-import { Star } from "lucide-react"
+import { ArrowRight, Star } from "lucide-react"
 import { PhoneMockup } from "./phone-mockup"
+
+// Motif QR stylisé avec des "coins de repérage" pleins (comme un vrai QR code), purement décoratif
+const qrCells = new Set([
+  0, 1, 2, 3, 4, 5, 9, 10, 14, 15, 19,
+  20, 21, 22, 23, 24, 8, 13, 18, 6, 16,
+])
 
 const steps = [
   {
@@ -8,12 +14,9 @@ const steps = [
       "Posé sur la table, l'addition ou la vitrine. Pas d'application à installer, ça s'ouvre directement dans son navigateur.",
     visual: (
       <PhoneMockup>
-        <div className="grid grid-cols-4 gap-[2px] p-3" aria-hidden="true">
-          {Array.from({ length: 16 }).map((_, i) => (
-            <span
-              key={i}
-              className={`aspect-square rounded-[1px] ${[0, 1, 3, 4, 6, 9, 10, 12, 13, 15].includes(i) ? "bg-ink" : "bg-ivory"}`}
-            />
+        <div className="grid size-16 grid-cols-5 grid-rows-5 gap-[3px] rounded-md bg-ivory p-1.5" aria-hidden="true">
+          {Array.from({ length: 25 }).map((_, i) => (
+            <span key={i} className={`rounded-[1px] ${qrCells.has(i) ? "bg-ink" : "bg-ink/0"}`} />
           ))}
         </div>
       </PhoneMockup>
@@ -77,22 +80,29 @@ export function HowItWorksSection() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-10 md:grid-cols-3">
+        <div className="mt-14 flex flex-col gap-10 md:flex-row md:items-start md:gap-0">
           {steps.map((step, index) => (
-            <div key={step.title} className="relative flex flex-col items-center text-center">
-              {index < steps.length - 1 && (
-                <div className="absolute left-1/2 top-20 hidden h-px w-full translate-x-12 border-t border-dashed border-gold/50 md:block" />
-              )}
-              <div className="relative">
-                {step.visual}
-                <span className="absolute -right-2 -top-2 flex size-7 items-center justify-center rounded-full border-2 border-secondary bg-gold text-xs font-bold text-wine-dark shadow-sm">
-                  {index + 1}
-                </span>
+            <div key={step.title} className="contents">
+              <div className="flex flex-1 flex-col items-center px-4 text-center">
+                <div className="relative">
+                  {step.visual}
+                  <span className="absolute -right-2 -top-2 flex size-7 items-center justify-center rounded-full border-2 border-secondary bg-gold text-xs font-bold text-wine-dark shadow-sm">
+                    {index + 1}
+                  </span>
+                </div>
+                <h3 className="mt-6 font-display text-xl font-semibold text-ink">{step.title}</h3>
+                <p className="mt-3 text-pretty leading-relaxed text-ink/65">
+                  {step.description}
+                </p>
               </div>
-              <h3 className="mt-6 font-display text-xl font-semibold text-ink">{step.title}</h3>
-              <p className="mt-3 text-pretty leading-relaxed text-ink/65">
-                {step.description}
-              </p>
+
+              {index < steps.length - 1 && (
+                <div className="hidden shrink-0 items-center justify-center pt-20 md:flex">
+                  <span className="flex size-8 items-center justify-center rounded-full bg-gold/15 text-gold">
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </span>
+                </div>
+              )}
             </div>
           ))}
         </div>
