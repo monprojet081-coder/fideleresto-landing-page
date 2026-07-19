@@ -1,11 +1,30 @@
-import { ArrowRight, Star } from "lucide-react"
+import { ArrowRight, Gift, Star } from "lucide-react"
 import { PhoneMockup } from "./phone-mockup"
 
-// Motif QR stylisé avec des "coins de repérage" pleins (comme un vrai QR code), purement décoratif
-const qrCells = new Set([
-  0, 1, 2, 3, 4, 5, 9, 10, 14, 15, 19,
-  20, 21, 22, 23, 24, 8, 13, 18, 6, 16,
-])
+// Vrai motif de QR code stylisé : 3 carrés de repérage (coins) + modules de données,
+// construit sur une grille 15x15, en pur SVG (aucune image générée).
+const qrRows = [
+  "111111101111111",
+  "100000101000001",
+  "101110101011101",
+  "101110101011101",
+  "101110101011101",
+  "100000101000001",
+  "111111101111111",
+  "000000000000000",
+  "111111100101101",
+  "100000101101011",
+  "101110100110101",
+  "101110101011010",
+  "101110100101101",
+  "100000101010110",
+  "111111100110101",
+]
+
+const qrModules = qrRows.flatMap((row, y) =>
+  [...row].flatMap((cell, x) => (cell === "1" ? [{ x, y }] : []))
+)
+const qrModuleSize = 100 / qrRows.length
 
 const steps = [
   {
@@ -14,10 +33,19 @@ const steps = [
       "Posé sur la table, l'addition ou la vitrine. Pas d'application à installer, ça s'ouvre directement dans son navigateur.",
     visual: (
       <PhoneMockup>
-        <div className="grid size-16 grid-cols-5 grid-rows-5 gap-[3px] rounded-md bg-ivory p-1.5" aria-hidden="true">
-          {Array.from({ length: 25 }).map((_, i) => (
-            <span key={i} className={`rounded-[1px] ${qrCells.has(i) ? "bg-ink" : "bg-ink/0"}`} />
-          ))}
+        <div className="rounded-md bg-white p-2 shadow-sm">
+          <svg viewBox="0 0 100 100" className="size-16" aria-hidden="true">
+            {qrModules.map(({ x, y }) => (
+              <rect
+                key={`${x}-${y}`}
+                x={x * qrModuleSize}
+                y={y * qrModuleSize}
+                width={qrModuleSize}
+                height={qrModuleSize}
+                fill="var(--ink)"
+              />
+            ))}
+          </svg>
         </div>
       </PhoneMockup>
     ),
@@ -28,17 +56,21 @@ const steps = [
       "Café offert, dessert, réduction… en quelques secondes, il repart avec une vraie raison de revenir.",
     visual: (
       <PhoneMockup>
-        <svg viewBox="0 0 100 100" className="size-20" aria-hidden="true">
-          <circle cx="50" cy="50" r="42" fill="none" stroke="var(--wine)" strokeWidth="3" />
-          {Array.from({ length: 8 }).map((_, i) => {
-            const angle = (i * 360) / 8
-            const x2 = 50 + 42 * Math.cos((angle * Math.PI) / 180)
-            const y2 = 50 + 42 * Math.sin((angle * Math.PI) / 180)
-            return <line key={i} x1="50" y1="50" x2={x2} y2={y2} stroke="var(--gold)" strokeWidth="1.5" opacity="0.6" />
-          })}
-          <circle cx="50" cy="50" r="6" fill="var(--gold)" />
-          <path d="M50 4 L45 14 L55 14 Z" fill="var(--wine)" />
-        </svg>
+        <div className="relative flex items-center justify-center">
+          <span
+            className="absolute -top-1.5 z-10 size-0 border-x-[6px] border-b-[9px] border-x-transparent border-b-wine"
+            aria-hidden="true"
+          />
+          <div
+            className="size-20 rounded-full border-[3px] border-wine-dark shadow-inner"
+            style={{
+              background:
+                "conic-gradient(var(--wine) 0deg 45deg, var(--gold) 45deg 90deg, var(--sage) 90deg 135deg, var(--wine) 135deg 180deg, var(--gold) 180deg 225deg, var(--sage) 225deg 270deg, var(--wine) 270deg 315deg, var(--gold) 315deg 360deg)",
+            }}
+            aria-hidden="true"
+          />
+          <span className="absolute size-5 rounded-full border-2 border-wine-dark bg-gold-light" aria-hidden="true" />
+        </div>
       </PhoneMockup>
     ),
   },
@@ -54,7 +86,8 @@ const steps = [
               <Star key={i} className="size-3.5 fill-gold text-gold" />
             ))}
           </div>
-          <span className="rounded-full bg-sage/15 px-2.5 py-1 text-[9px] font-semibold text-sage">
+          <span className="flex items-center gap-1.5 rounded-full bg-sage/15 px-2.5 py-1 text-[9px] font-semibold text-sage">
+            <Gift className="size-3" aria-hidden="true" />
             Récompense débloquée
           </span>
         </div>
