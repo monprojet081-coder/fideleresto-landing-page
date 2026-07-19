@@ -49,6 +49,7 @@ const STATUTS_PROSPECT = [
   { value: "pas_interesse", label: "Pas intéressé", couleur: "bg-wine/10 text-wine" },
   { value: "client", label: "Devenu client 🎉", couleur: "bg-sage text-white" },
   { value: "desabonne", label: "Désabonné", couleur: "bg-wine/5 text-ink/40" },
+  { value: "email_invalide", label: "Email invalide (rebond)", couleur: "bg-wine/15 text-wine" },
 ]
 
 export default function AdminPage() {
@@ -284,8 +285,10 @@ export default function AdminPage() {
               const restants = prospects.filter(p => p.statut === "a_contacter").length
               const ouverts = prospects.filter(p => p.ouvert_le).length
               const cliques = prospects.filter(p => p.clique_le).length
+              const invalides = prospects.filter(p => p.statut === "email_invalide").length
               const tauxOuverture = totalEnvoyes > 0 ? Math.round((ouverts / totalEnvoyes) * 100) : 0
               const tauxClic = totalEnvoyes > 0 ? Math.round((cliques / totalEnvoyes) * 100) : 0
+              const tauxRebond = totalEnvoyes > 0 ? Math.round((invalides / totalEnvoyes) * 100) : 0
               return (
                 <div className="bg-card rounded-xl border border-wine/10 shadow-sm p-5 mb-6">
                   <p className="text-sm font-medium text-ink mb-3">📤 Campagne d'envoi automatique</p>
@@ -303,7 +306,7 @@ export default function AdminPage() {
                       <p className="text-xs text-ink/50 mt-0.5">Restants à contacter</p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 text-center mt-4 pt-4 border-t border-wine/10">
+                  <div className="grid grid-cols-3 gap-4 text-center mt-4 pt-4 border-t border-wine/10">
                     <div>
                       <p className="text-xl font-display font-semibold text-sage">👁️ {ouverts} <span className="text-sm text-ink/40 font-normal">({tauxOuverture}%)</span></p>
                       <p className="text-xs text-ink/50 mt-0.5">Ont ouvert l'email</p>
@@ -312,7 +315,16 @@ export default function AdminPage() {
                       <p className="text-xl font-display font-semibold text-sage">🖱️ {cliques} <span className="text-sm text-ink/40 font-normal">({tauxClic}%)</span></p>
                       <p className="text-xs text-ink/50 mt-0.5">Ont cliqué sur un lien</p>
                     </div>
+                    <div>
+                      <p className={`text-xl font-display font-semibold ${tauxRebond > 10 ? "text-wine" : "text-ink"}`}>⚠️ {invalides} <span className="text-sm text-ink/40 font-normal">({tauxRebond}%)</span></p>
+                      <p className="text-xs text-ink/50 mt-0.5">Emails invalides (rebond)</p>
+                    </div>
                   </div>
+                  {tauxRebond > 10 && totalEnvoyes >= 10 && (
+                    <p className="mt-3 text-xs text-wine bg-wine/5 rounded-lg px-3 py-2">
+                      Taux de rebond élevé ({tauxRebond}%) — vérifiez la qualité de vos listes avant de continuer, ça abîme la réputation d'envoi.
+                    </p>
+                  )}
                   <div className="mt-3 h-1.5 w-full bg-secondary rounded-full overflow-hidden">
                     <div
                       className="h-full bg-wine transition-all"
