@@ -1,30 +1,75 @@
-import { Disc3, Star, CreditCard, BookOpen, Mail, BarChart3, Printer, ShieldAlert } from "lucide-react"
+import { Star, CreditCard, Mail, BarChart3, Printer, ShieldAlert } from "lucide-react"
 
-const features = [
+const coreFeatures = [
   {
-    icon: Disc3,
     title: "Roue de la chance",
     description:
-      "Vos clients scannent un QR code sur la table, tournent la roue et gagnent une récompense que vous choisissez. Un petit jeu qui leur donne une vraie raison de revenir.",
+      "Vos clients scannent un QR code sur la table, tournent la roue et gagnent une récompense que vous choisissez.",
+    visual: (
+      <svg viewBox="0 0 100 100" className="size-16" aria-hidden="true">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="var(--wine)" strokeWidth="3" />
+        {Array.from({ length: 8 }).map((_, i) => {
+          const angle = (i * 360) / 8
+          const x2 = 50 + 42 * Math.cos((angle * Math.PI) / 180)
+          const y2 = 50 + 42 * Math.sin((angle * Math.PI) / 180)
+          return <line key={i} x1="50" y1="50" x2={x2} y2={y2} stroke="var(--gold)" strokeWidth="1.5" opacity="0.6" />
+        })}
+        <circle cx="50" cy="50" r="6" fill="var(--gold)" />
+        <path d="M50 4 L45 14 L55 14 Z" fill="var(--wine)" />
+      </svg>
+    ),
   },
   {
-    icon: Star,
     title: "Plus d'avis Google",
     description:
-      "Après avoir joué, vos clients sont invités à laisser un avis sur votre fiche Google en un clic. Votre note grimpe, votre visibilité locale aussi.",
+      "Après avoir joué, vos clients laissent un avis sur votre fiche Google en un clic. Votre note grimpe, votre visibilité aussi.",
+    visual: (
+      <div className="flex flex-col items-center gap-2" aria-hidden="true">
+        <div className="flex gap-1">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star key={i} className="size-5 fill-gold text-gold" />
+          ))}
+        </div>
+        <span className="font-display text-2xl font-semibold text-wine">4.8</span>
+      </div>
+    ),
   },
   {
-    icon: CreditCard,
     title: "Carte de fidélité digitale",
     description:
-      "Fini les cartes en carton qu'on perd. Vos clients cumulent leurs tampons sur leur téléphone et débloquent leur récompense automatiquement.",
+      "Fini les cartes en carton qu'on perd. Vos clients cumulent leurs tampons sur leur téléphone, sans rien à faire de votre côté.",
+    visual: (
+      <div className="grid grid-cols-4 gap-1.5" aria-hidden="true">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <span
+            key={i}
+            className={`flex size-5 items-center justify-center rounded-full border-2 ${
+              i < 5 ? "border-wine bg-wine text-gold-light" : "border-wine/25 text-wine/25"
+            }`}
+          >
+            <CreditCard className="size-2.5" />
+          </span>
+        ))}
+      </div>
+    ),
   },
   {
-    icon: BookOpen,
     title: "Menu digital",
     description:
-      "Importez votre carte (PDF, photo ou document) et vos clients la consultent directement depuis leur téléphone, toujours à jour.",
+      "Importez votre carte (PDF, photo ou document) et vos clients la consultent depuis leur téléphone, toujours à jour.",
+    visual: (
+      <div className="w-full space-y-1.5 px-2" aria-hidden="true">
+        <div className="h-1.5 w-3/4 rounded-full bg-wine/40" />
+        <div className="h-1.5 w-full rounded-full bg-ink/15" />
+        <div className="h-1.5 w-2/3 rounded-full bg-ink/15" />
+        <div className="mt-2 h-1.5 w-3/5 rounded-full bg-wine/40" />
+        <div className="h-1.5 w-full rounded-full bg-ink/15" />
+      </div>
+    ),
   },
+]
+
+const secondaryFeatures = [
   {
     icon: Mail,
     title: "Emails de relance automatiques",
@@ -48,7 +93,7 @@ const features = [
     title: "Alerte insatisfaction",
     badge: "Premium",
     description:
-      "Un client déçu ? Son retour vous arrive directement par email au lieu d'atterrir en public sur Google. Vous rattrapez la situation avant qu'elle ne coûte cher.",
+      "Un client déçu ? Son retour vous arrive directement par email au lieu d'atterrir en public sur Google.",
   },
 ]
 
@@ -69,24 +114,45 @@ export function FeaturesSection() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature) => (
+        {/* 4 fonctionnalités principales, avec mockup visuel */}
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {coreFeatures.map((feature) => (
             <div
               key={feature.title}
-              className="group relative rounded-2xl border border-wine/12 bg-card p-6 transition-all hover:border-gold/40 hover:shadow-xl hover:shadow-wine/5"
+              className="group relative overflow-hidden rounded-2xl border border-wine/12 bg-card transition-all hover:border-gold/40 hover:shadow-xl hover:shadow-wine/5"
             >
-              <div className="flex size-12 items-center justify-center rounded-xl bg-wine/8 text-wine transition-all group-hover:bg-wine group-hover:text-gold-light">
-                <feature.icon className="size-6" aria-hidden="true" />
+              <div className="flex h-32 items-center justify-center border-b border-dashed border-wine/15 bg-secondary/40">
+                {feature.visual}
               </div>
-              <div className="mt-5 flex items-center gap-2">
-                <h3 className="font-display text-lg font-semibold text-ink">{feature.title}</h3>
+              <div className="p-5">
+                <h3 className="font-display text-base font-semibold text-ink">{feature.title}</h3>
+                <p className="mt-2 text-pretty text-sm leading-relaxed text-ink/65">
+                  {feature.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* 4 fonctionnalités complémentaires, format compact */}
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {secondaryFeatures.map((feature) => (
+            <div
+              key={feature.title}
+              className="rounded-2xl border border-wine/12 bg-card p-5 transition-all hover:border-gold/40"
+            >
+              <div className="flex size-10 items-center justify-center rounded-lg bg-wine/8 text-wine">
+                <feature.icon className="size-5" aria-hidden="true" />
+              </div>
+              <div className="mt-4 flex items-center gap-2">
+                <h3 className="font-display text-sm font-semibold text-ink">{feature.title}</h3>
                 {feature.badge && (
-                  <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[11px] font-semibold text-wine-dark">
+                  <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-semibold text-wine-dark">
                     {feature.badge}
                   </span>
                 )}
               </div>
-              <p className="mt-2 text-pretty leading-relaxed text-ink/65">
+              <p className="mt-1.5 text-pretty text-xs leading-relaxed text-ink/60">
                 {feature.description}
               </p>
             </div>
