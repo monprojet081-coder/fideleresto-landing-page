@@ -121,6 +121,9 @@ export async function POST(req: NextRequest) {
       success_url: `${origin}/dashboard?abonnement=succes`,
       cancel_url: `${origin}/dashboard?abonnement=annule`,
       customer: customerId,
+      // Langue fixée en français : tous les clients sont des restaurateurs français,
+      // pas la peine de laisser ça dépendre de la langue du navigateur de chacun
+      locale: 'fr',
       // Adresse de facturation obligatoire : elle apparaît sur les factures et évite
       // les rejets de finalisation si Stripe Tax est activé un jour
       billing_address_collection: 'required',
