@@ -63,6 +63,28 @@ export async function POST(req: NextRequest) {
 
     const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'https://fideleresto-landing-page-9dhz.vercel.app'
 
+    // On s'assure que le client Stripe a un nom (celui du restaurant), pas juste un email :
+    // sans ça, les factures Stripe n'affichent qu'une adresse email comme identification client.
+    let customerId = restaurant.stripe_customer_id as string | null
+    if (!customerId) {
+      const nouveauClient = await stripe.customers.create({
+        email: userData?.user?.email,
+        name: restaurant.nom_restaurant || undefined,
+        metadata: { slug },
+      })
+      customerId = nouveauClient.id
+
+      // Sauvegardé tout de suite (pas seulement dans le webhook après paiement) pour éviter
+      // de recréer un nouveau client Stripe à chaque tentative si le premier essai est abandonné
+      const { error: erreurCustomerId } = await supabase
+        .from('restaurants')
+        .update({ stripe_customer_id: customerId })
+        .eq('slug', slug)
+      if (erreurCustomerId) {
+        console.error('Erreur sauvegarde stripe_customer_id (non bloquant):', erreurCustomerId.message)
+      }
+    }
+
     const lineItems: { price: string; quantity: number }[] = [
       { price: STRIPE_PRICES[plan], quantity: 1 },
     ]
@@ -90,7 +112,6 @@ export async function POST(req: NextRequest) {
       // On garde une trace du restaurant concerné : récupéré dans le webhook
       // pour savoir quel restaurant mettre à jour une fois le paiement confirmé
       client_reference_id: slug,
-      customer_email: restaurant.stripe_customer_id ? undefined : userData?.user?.email,
       metadata: { slug, plan },
       subscription_data: {
         metadata: { slug, plan },
@@ -99,8 +120,12 @@ export async function POST(req: NextRequest) {
       },
       success_url: `${origin}/dashboard?abonnement=succes`,
       cancel_url: `${origin}/dashboard?abonnement=annule`,
-      // Si le restaurant a déjà un client Stripe (résilié puis reparti par ex.), on le réutilise
-      customer: restaurant.stripe_customer_id || undefined,
+      customer: customerId,
+      // Adresse de facturation obligatoire : elle apparaît sur les factures et évite
+      // les rejets de finalisation si Stripe Tax est activé un jour
+      billing_address_collection: 'required',
+      // Si le client existait déjà, on garde son adresse à jour avec celle saisie au paiement
+      customer_update: { address: 'auto' },
     })
 
     return NextResponse.json({ url: session.url })
