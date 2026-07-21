@@ -70,6 +70,9 @@ export async function POST(req: NextRequest) {
       const nouveauClient = await stripe.customers.create({
         email: userData?.user?.email,
         name: restaurant.nom_restaurant || undefined,
+        // C'est CE champ (pas la locale de la session Checkout) qui determine la langue
+        // des factures PDF generees par Stripe pour ce client
+        preferred_locales: ['fr'],
         metadata: { slug },
       })
       customerId = nouveauClient.id
@@ -82,6 +85,14 @@ export async function POST(req: NextRequest) {
         .eq('slug', slug)
       if (erreurCustomerId) {
         console.error('Erreur sauvegarde stripe_customer_id (non bloquant):', erreurCustomerId.message)
+      }
+    } else {
+      // Client deja existant (ex: cree avant ce correctif) : on force quand meme le francais,
+      // au cas ou il aurait ete enregistre avec une autre langue lors d'un test precedent
+      try {
+        await stripe.customers.update(customerId, { preferred_locales: ['fr'] })
+      } catch (err) {
+        console.error('Erreur mise a jour preferred_locale (non bloquant):', err)
       }
     }
 
