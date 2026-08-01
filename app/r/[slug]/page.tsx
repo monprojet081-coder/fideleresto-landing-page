@@ -172,7 +172,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         } else {
           setStep("win")
         }
-      }, 4000)
+      }, 5500)
     }, 500)
   }
 
@@ -273,7 +273,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
         {step === "wheel" && (
           <div className="text-center">
-            <div className="relative mx-auto mb-6" style={{ width: 280, height: 280 }}>
+            <div className="relative mx-auto mb-6" style={{ width: 320, height: 320 }}>
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3 z-10">
                 <div className="w-0 h-0" style={{
                   borderLeft: "9px solid transparent",
@@ -284,19 +284,19 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
               </div>
               <canvas
                 id="wheel-canvas"
-                width={280}
-                height={280}
+                width={320}
+                height={320}
                 ref={(canvas) => {
                   if (!canvas || rewards.length === 0) return
                   const ctx = canvas.getContext("2d")
                   if (!ctx) return
                   const numSegments = rewards.length
                   const arc = (2 * Math.PI) / numSegments
-                  const centerX = 140
-                  const centerY = 140
-                  const radius = 120
+                  const centerX = 160
+                  const centerY = 160
+                  const radius = 138
 
-                  ctx.clearRect(0, 0, 280, 280)
+                  ctx.clearRect(0, 0, 320, 320)
 
                   // Anneau exterieur dore
                   ctx.beginPath()
@@ -335,14 +335,14 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                     ctx.rotate(startAngle + arc / 2)
                     ctx.textAlign = "right"
                     ctx.fillStyle = "#faf3e8"
-                    ctx.font = "bold 12px sans-serif"
-                    ctx.fillText(reward.label, radius - 12, 5)
+                    ctx.font = "bold 15px sans-serif"
+                    ctx.fillText(reward.label, radius - 14, 5)
                     ctx.restore()
                   })
 
                   // Hub central : fourchette + couteau croises (logo de la marque)
                   ctx.beginPath()
-                  ctx.arc(centerX, centerY, 22, 0, 2 * Math.PI)
+                  ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI)
                   ctx.fillStyle = "#6b1e2e"
                   ctx.fill()
                   ctx.strokeStyle = "#c9962c"
@@ -353,15 +353,15 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                   ctx.lineWidth = 2.5
                   ctx.lineCap = "round"
                   ctx.beginPath()
-                  ctx.moveTo(centerX - 9, centerY - 9)
-                  ctx.lineTo(centerX + 9, centerY + 9)
-                  ctx.moveTo(centerX + 9, centerY - 9)
-                  ctx.lineTo(centerX - 9, centerY + 9)
+                  ctx.moveTo(centerX - 10, centerY - 10)
+                  ctx.lineTo(centerX + 10, centerY + 10)
+                  ctx.moveTo(centerX + 10, centerY - 10)
+                  ctx.lineTo(centerX - 10, centerY + 10)
                   ctx.stroke()
                 }}
                 style={{
                   transform: `rotate(${rotation}deg)`,
-                  transition: spinning ? "transform 4000ms cubic-bezier(0.17, 0.67, 0.12, 0.99)" : "none",
+                  transition: spinning ? "transform 5500ms cubic-bezier(0.1, 0.65, 0.05, 1)" : "none",
                   borderRadius: "50%",
                   boxShadow: "0 4px 20px rgba(107,30,46,0.25)"
                 }}
