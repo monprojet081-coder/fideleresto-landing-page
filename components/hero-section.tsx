@@ -18,8 +18,8 @@ export function HeroSection() {
           </span>
 
           <h1 className="mt-6 text-balance font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl md:text-6xl">
-            Transformez chaque repas en{" "}
-            <span className="italic text-wine">client qui revient</span>
+            Donnez à vos clients une raison de revenir,{" "}
+            <span className="italic text-wine">avant que vos concurrents n&apos;adoptent FidèleResto</span>.
           </h1>
 
           <p className="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-ink/65">
