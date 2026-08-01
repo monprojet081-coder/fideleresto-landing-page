@@ -1,4 +1,4 @@
-import { Star, CreditCard, Mail, BarChart3, Printer, ShieldAlert } from "lucide-react"
+import { Star, CreditCard, Mail, BarChart3, Printer, ShieldAlert, UtensilsCrossed } from "lucide-react"
 
 const coreFeatures = [
   {
@@ -58,12 +58,25 @@ const coreFeatures = [
     description:
       "Importez votre carte (PDF, photo ou document) et vos clients la consultent depuis leur téléphone, toujours à jour.",
     visual: (
-      <div className="w-full space-y-1.5 px-2" aria-hidden="true">
-        <div className="h-1.5 w-3/4 rounded-full bg-wine/40" />
-        <div className="h-1.5 w-full rounded-full bg-ink/15" />
-        <div className="h-1.5 w-2/3 rounded-full bg-ink/15" />
-        <div className="mt-2 h-1.5 w-3/5 rounded-full bg-wine/40" />
-        <div className="h-1.5 w-full rounded-full bg-ink/15" />
+      <div className="w-full space-y-2.5 px-3" aria-hidden="true">
+        <div className="flex items-center justify-between">
+          <div className="h-2 w-16 rounded-full bg-wine/50" />
+          <UtensilsCrossed className="size-3.5 text-gold" />
+        </div>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="h-1.5 w-16 rounded-full bg-ink/15" />
+            <span className="shrink-0 text-[9px] font-semibold text-wine">12€</span>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <div className="h-1.5 w-20 rounded-full bg-ink/15" />
+            <span className="shrink-0 text-[9px] font-semibold text-wine">8€</span>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <div className="h-1.5 w-14 rounded-full bg-ink/15" />
+            <span className="shrink-0 text-[9px] font-semibold text-wine">15€</span>
+          </div>
+        </div>
       </div>
     ),
   },

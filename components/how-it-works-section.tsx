@@ -28,7 +28,7 @@ const qrModuleSize = 100 / qrRows.length
 
 // Roue de la chance : segments bordeaux/ivoire alternes, bordure doree pointillee,
 // logo fourchette-couteau au centre. Genere en pur SVG (memes valeurs que le visuel de marque).
-const wheelPrizes = ["Dessert", "-10%", "Boisson", "-5€", "Café", "-15%", "Plat"]
+const wheelPrizes = ["Dessert", "-10%", "Boisson", "-5€", "Café", "-15%", "Plat", "Rejouez"]
 
 function polarPoint(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180
