@@ -274,11 +274,12 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         {step === "wheel" && (
           <div className="text-center">
             <div className="relative mx-auto mb-6" style={{ width: 280, height: 280 }}>
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-10">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3 z-10">
                 <div className="w-0 h-0" style={{
-                  borderLeft: "10px solid transparent",
-                  borderRight: "10px solid transparent",
-                  borderTop: "20px solid #6b1e2e"
+                  borderLeft: "9px solid transparent",
+                  borderRight: "9px solid transparent",
+                  borderTop: "18px solid #c9962c",
+                  filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.25))"
                 }} />
               </div>
               <canvas
@@ -293,8 +294,29 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                   const arc = (2 * Math.PI) / numSegments
                   const centerX = 140
                   const centerY = 140
-                  const radius = 130
+                  const radius = 120
 
+                  ctx.clearRect(0, 0, 280, 280)
+
+                  // Anneau exterieur dore
+                  ctx.beginPath()
+                  ctx.arc(centerX, centerY, radius + 8, 0, 2 * Math.PI)
+                  ctx.fillStyle = "#c9962c"
+                  ctx.fill()
+
+                  // Pastilles reparties sur l'anneau, comme la roue physique de la marque
+                  const dotCount = 28
+                  for (let d = 0; d < dotCount; d++) {
+                    const dotAngle = (2 * Math.PI * d) / dotCount
+                    const dx = centerX + (radius + 8) * Math.cos(dotAngle)
+                    const dy = centerY + (radius + 8) * Math.sin(dotAngle)
+                    ctx.beginPath()
+                    ctx.arc(dx, dy, 2, 0, 2 * Math.PI)
+                    ctx.fillStyle = "rgba(107,30,46,0.45)"
+                    ctx.fill()
+                  }
+
+                  // Segments (couleurs personnalisables par le restaurateur, inchangees)
                   rewards.forEach((reward, i) => {
                     const startAngle = i * arc - Math.PI / 2
                     const endAngle = startAngle + arc
@@ -304,8 +326,8 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                     ctx.closePath()
                     ctx.fillStyle = reward.couleur
                     ctx.fill()
-                    ctx.strokeStyle = "#faf3e8"
-                    ctx.lineWidth = 2
+                    ctx.strokeStyle = "#c9962c"
+                    ctx.lineWidth = 1.5
                     ctx.stroke()
 
                     ctx.save()
@@ -314,23 +336,34 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                     ctx.textAlign = "right"
                     ctx.fillStyle = "#faf3e8"
                     ctx.font = "bold 12px sans-serif"
-                    ctx.fillText(reward.label, radius - 10, 5)
+                    ctx.fillText(reward.label, radius - 12, 5)
                     ctx.restore()
                   })
 
+                  // Hub central : fourchette + couteau croises (logo de la marque)
                   ctx.beginPath()
-                  ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI)
+                  ctx.arc(centerX, centerY, 22, 0, 2 * Math.PI)
                   ctx.fillStyle = "#6b1e2e"
                   ctx.fill()
                   ctx.strokeStyle = "#c9962c"
                   ctx.lineWidth = 3
+                  ctx.stroke()
+
+                  ctx.strokeStyle = "#f4e4c1"
+                  ctx.lineWidth = 2.5
+                  ctx.lineCap = "round"
+                  ctx.beginPath()
+                  ctx.moveTo(centerX - 9, centerY - 9)
+                  ctx.lineTo(centerX + 9, centerY + 9)
+                  ctx.moveTo(centerX + 9, centerY - 9)
+                  ctx.lineTo(centerX - 9, centerY + 9)
                   ctx.stroke()
                 }}
                 style={{
                   transform: `rotate(${rotation}deg)`,
                   transition: spinning ? "transform 4000ms cubic-bezier(0.17, 0.67, 0.12, 0.99)" : "none",
                   borderRadius: "50%",
-                  boxShadow: "0 4px 20px rgba(107,30,46,0.2)"
+                  boxShadow: "0 4px 20px rgba(107,30,46,0.25)"
                 }}
               />
             </div>
@@ -459,7 +492,7 @@ function AvisSection({
   const lienCarte = (
     <a
       href={`/carte/${slug}`}
-      className="mt-3 block w-full border border-wine/20 text-ink font-medium text-sm py-3 rounded-lg hover:bg-wine/5 transition-colors"
+      className="mt-3 block w-full border border-wine/20 text-ink font-medium text-sm py-3 rounded-lg hover:bg-wine/5 transition-colors text-center"
     >
       🍽️ Voir le menu et ma carte de fidélité
     </a>
