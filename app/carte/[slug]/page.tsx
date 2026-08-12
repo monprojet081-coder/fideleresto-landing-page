@@ -6,6 +6,7 @@
 export const dynamic = 'force-dynamic'
 
 import React, { useState } from "react"
+import { UtensilsCrossed } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 
 type Step = "checking" | "not_found" | "no_access" | "auth" | "compte"
@@ -169,9 +170,10 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
       <div className={`bg-card rounded-2xl shadow-sm border border-wine/10 w-full p-8 ${step === "compte" ? "max-w-4xl" : "max-w-md"}`}>
 
         <div className="text-center mb-8">
-          <span className="flex size-12 items-center justify-center rounded-full bg-wine text-gold-light mx-auto mb-4">
-            🍽️
+          <span className="flex size-12 items-center justify-center rounded-full bg-wine text-gold-light mx-auto mb-3">
+            <UtensilsCrossed className="size-5.5" aria-hidden="true" />
           </span>
+          <p className="text-xs font-medium tracking-wide text-ink/40 uppercase mb-1">FidèleResto</p>
           <h1 className="text-2xl font-display font-semibold text-ink">{restaurant?.nom_restaurant}</h1>
           <p className="text-ink/55 text-sm mt-2">Menu et carte de fidélité</p>
         </div>
@@ -238,31 +240,37 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
         {step === "compte" && restaurant && (
           <div className="grid gap-8 md:grid-cols-[300px_1fr] items-start">
             {/* Carte de fidélité */}
-            <div className="rounded-xl border border-gold/30 bg-gold/8 p-5">
-              <p className="text-sm font-medium text-wine-dark mb-3">Votre carte de fidélité</p>
+            <div className="overflow-hidden rounded-xl border border-gold/30 bg-gold/8">
+              <div className="h-1.5 bg-gradient-to-r from-gold via-wine to-gold" aria-hidden="true" />
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <UtensilsCrossed className="size-4 text-wine" aria-hidden="true" />
+                  <p className="text-sm font-medium text-wine-dark">Votre carte de fidélité</p>
+                </div>
 
-              <div className="flex justify-center mb-4">
-                <canvas id="qr-carte-canvas" className="rounded-lg bg-card p-2" />
-              </div>
-              <p className="text-xs text-ink/50 text-center mb-4">
-                Montrez ce QR code au comptoir au moment de payer
-              </p>
+                <div className="flex justify-center mb-4">
+                  <canvas id="qr-carte-canvas" className="rounded-lg bg-card p-2 shadow-sm" />
+                </div>
+                <p className="text-xs text-ink/50 text-center mb-4">
+                  Montrez ce QR code au comptoir au moment de payer
+                </p>
 
-              <div className="flex gap-1.5 flex-wrap mb-3">
-                {Array.from({ length: restaurant.fidelite_tampons_requis }).map((_, i) => (
-                  <span
-                    key={i}
-                    className={`flex size-8 items-center justify-center rounded-full text-sm ${
-                      i < tampons ? "bg-wine text-gold-light" : "bg-card border border-wine/15 text-ink/20"
-                    }`}
-                  >
-                    {i < tampons ? "★" : ""}
-                  </span>
-                ))}
+                <div className="flex gap-1.5 flex-wrap mb-3">
+                  {Array.from({ length: restaurant.fidelite_tampons_requis }).map((_, i) => (
+                    <span
+                      key={i}
+                      className={`flex size-8 items-center justify-center rounded-full text-sm transition-colors ${
+                        i < tampons ? "bg-wine text-gold-light shadow-sm" : "bg-card border border-wine/15 text-ink/20"
+                      }`}
+                    >
+                      {i < tampons ? "★" : ""}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-xs text-ink/60">
+                  {tampons} / {restaurant.fidelite_tampons_requis} — Récompense : <span className="font-medium">{restaurant.fidelite_recompense}</span>
+                </p>
               </div>
-              <p className="text-xs text-ink/60">
-                {tampons} / {restaurant.fidelite_tampons_requis} — Récompense : <span className="font-medium">{restaurant.fidelite_recompense}</span>
-              </p>
             </div>
 
             {/* Menu */}

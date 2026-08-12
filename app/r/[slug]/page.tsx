@@ -93,7 +93,11 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
     setLoading(true)
     setError("")
 
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    // Reinitialisation au jour calendaire (minuit), pas une fenetre glissante de 24h :
+    // sinon quelqu'un venu lundi 13h ne pourrait pas retenter sa chance mardi a 12h
+    const debutJour = new Date()
+    debutJour.setHours(0, 0, 0, 0)
+    const since = debutJour.toISOString()
     const { data: existing } = await supabase
       .from("clients")
       .select("id, created_at")
@@ -212,13 +216,15 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
     <div className="min-h-screen bg-ivory flex flex-col items-center justify-center p-4">
       <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8">
 
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-wine rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">🎡</span>
+        {step === "form" && (
+          <div className="text-center mb-8">
+            <div className="w-12 h-12 bg-wine rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">🎡</span>
+            </div>
+            <h1 className="text-2xl font-display font-semibold text-ink">Tentez votre chance !</h1>
+            <p className="text-ink/55 text-sm mt-2">Remplissez vos infos et tournez la roue pour gagner une récompense</p>
           </div>
-          <h1 className="text-2xl font-display font-semibold text-ink">Tentez votre chance !</h1>
-          <p className="text-ink/55 text-sm mt-2">Remplissez vos infos et tournez la roue pour gagner une récompense</p>
-        </div>
+        )}
 
         {step === "form" && (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -436,7 +442,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <h2 className="text-2xl font-display font-semibold text-ink mb-2">Déjà joué !</h2>
             <p className="text-ink/55 mb-6">Vous avez déjà participé avec cet email aujourd'hui.</p>
             <div className="bg-gold/10 border border-gold/30 rounded-xl p-6">
-              <p className="text-sm text-wine-dark font-medium">Revenez dans 24h pour retenter votre chance ! 🍀</p>
+              <p className="text-sm text-wine-dark font-medium">La roue se réinitialise chaque jour — revenez demain pour retenter votre chance ! 🍀</p>
             </div>
           </div>
         )}
@@ -489,7 +495,7 @@ function AvisSection({
       })
   }, [slug])
 
-  const lienCarte = (
+  const lienCarteNeutre = (
     <a
       href={`/carte/${slug}`}
       className="mt-3 block w-full border border-wine/20 text-ink font-medium text-sm py-3 rounded-lg hover:bg-wine/5 transition-colors text-center"
@@ -497,6 +503,24 @@ function AvisSection({
       🍽️ Voir le menu et ma carte de fidélité
     </a>
   )
+
+  // Tant que l'avis n'est pas laisse, on met le lien vers la carte/menu bien en evidence
+  // (incitation claire), pour ne pas que cette fonctionnalite reste trop discrete
+  const lienCarteIncitatif = (
+    <div className="mt-4 rounded-xl border-2 border-gold/40 bg-gold/10 p-3.5 text-center">
+      <p className="text-xs font-medium text-wine-dark mb-2.5">
+        🔓 Une fois votre avis laissé, accédez à votre carte de fidélité et au menu du restaurant !
+      </p>
+      <a
+        href={`/carte/${slug}`}
+        className="block w-full bg-card border border-wine/20 text-ink font-medium text-sm py-2.5 rounded-lg hover:bg-wine/5 transition-colors text-center"
+      >
+        🍽️ Voir le menu et ma carte de fidélité
+      </a>
+    </div>
+  )
+
+  const lienCarte = avisClique ? lienCarteNeutre : lienCarteIncitatif
 
   const trackClicGoogle = () => {
     fetch("/api/track-avis-clic", {
@@ -506,9 +530,9 @@ function AvisSection({
     }).catch(() => {})
   }
 
-  // Aucune fiche Google configurée : on ne montre pas de bouton avis, juste la carte de fidélité
+  // Aucune fiche Google configurée : rien à "débloquer" via un avis, on montre direct le lien neutre
   if (!googleUrl) {
-    return lienCarte
+    return lienCarteNeutre
   }
 
   // Restaurant NON premium : comportement classique (bouton Google direct), sans gating
@@ -608,12 +632,12 @@ function AvisSection({
     )
   }
 
-  // Étape 3 : retour envoyé
+  // Étape 3 : retour envoyé (avis laissé en privé, considéré comme complété)
   return (
     <div className="text-center">
       <p className="text-sm text-ink/70 mb-1">Merci beaucoup 🙏</p>
       <p className="text-xs text-ink/50 mb-2">Votre retour a bien été transmis au restaurant.</p>
-      {lienCarte}
+      {lienCarteNeutre}
     </div>
   )
 }

@@ -18,7 +18,7 @@ export function HeroSection() {
           </span>
 
           <h1 className="mt-6 text-balance font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl md:text-6xl">
-            Donnez à vos clients <span className="italic text-wine">une raison de revenir</span>.
+            Augmentez <span className="italic text-wine">votre chiffre d&apos;affaires</span> avec FidèleResto.
           </h1>
 
           <p className="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-ink/65">
