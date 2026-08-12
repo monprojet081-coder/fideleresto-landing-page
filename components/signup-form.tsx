@@ -91,13 +91,16 @@ function SignupFormContent() {
         window.location.href = checkoutData.url
         return
       }
+      console.error("Erreur redirection paiement:", checkoutData.error)
     } catch (err) {
       console.error("Erreur redirection paiement:", err)
     }
 
-    // Si le paiement n'a pas pu démarrer pour une raison quelconque, on ne bloque pas
-    // l'utilisateur : il atterrit sur le dashboard et pourra payer depuis l'onglet Abonnement
-    router.push("/dashboard")
+    // Le paiement n'a pas pu démarrer : on ne bloque pas la création du compte (déjà faite),
+    // mais on prévient clairement plutôt que de rediriger en silence vers le dashboard
+    setError("Votre compte est créé, mais le paiement n'a pas pu démarrer. Vous pouvez réessayer depuis l'onglet Abonnement de votre tableau de bord.")
+    setLoading(false)
+    setTimeout(() => router.push("/dashboard"), 3000)
   }
 
   return (
