@@ -1609,7 +1609,7 @@ function DashboardContent() {
 
             {compteVerrouille && (
               <div className="mb-6 max-w-2xl rounded-lg border border-wine/20 bg-wine/5 px-4 py-3 text-sm text-wine">
-                {restaurant?.plan
+                {restaurant?.stripe_subscription_id
                   ? <>Votre abonnement est terminé, l&apos;accès aux fonctionnalités (roue, clients, flyer...) est suspendu. Choisissez un plan ci-dessous pour tout réactiver immédiatement.</>
                   : <>Bienvenue sur FidèleResto ! Choisissez un plan ci-dessous pour activer votre compte et accéder à toutes les fonctionnalités.</>
                 }
