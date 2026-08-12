@@ -441,9 +441,15 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <div className="text-6xl mb-4">⏳</div>
             <h2 className="text-2xl font-display font-semibold text-ink mb-2">Déjà joué !</h2>
             <p className="text-ink/55 mb-6">Vous avez déjà participé avec cet email aujourd'hui.</p>
-            <div className="bg-gold/10 border border-gold/30 rounded-xl p-6">
+            <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 mb-3">
               <p className="text-sm text-wine-dark font-medium">La roue se réinitialise chaque jour — revenez demain pour retenter votre chance ! 🍀</p>
             </div>
+            <a
+              href={`/carte/${slug}`}
+              className="block w-full border border-wine/20 text-ink font-medium text-sm py-3 rounded-lg hover:bg-wine/5 transition-colors text-center"
+            >
+              🍽️ Voir le menu et ma carte de fidélité
+            </a>
           </div>
         )}
 
