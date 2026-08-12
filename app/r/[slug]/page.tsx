@@ -385,7 +385,8 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 mb-6">
               <p className="text-xl font-display font-semibold text-wine-dark">{result.label}</p>
             </div>
-            <p className="text-sm text-ink/55 mb-5">Un email avec votre récompense vient de vous être envoyé. Montrez-le au comptoir pour en profiter !</p>
+            <p className="text-sm text-ink/55 mb-2">Un email avec votre récompense vient de vous être envoyé. Montrez-le au comptoir pour en profiter !</p>
+            <p className="text-xs text-ink/40 mb-5">Vous pourrez retenter votre chance demain 🎡</p>
 
             <AvisSection
               slug={slug}
@@ -554,7 +555,7 @@ function AvisSection({
         >
           ⭐ Laisser un avis Google
         </a>
-        {avisClique && lienCarte}
+        {lienCarte}
       </>
     )
   }
