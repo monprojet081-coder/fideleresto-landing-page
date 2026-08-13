@@ -28,6 +28,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
   const [user, setUser] = useState<any>(null)
 
   const [mode, setMode] = useState<"connexion" | "inscription">("inscription")
+  const [prenom, setPrenom] = useState("")
   const [email, setEmail] = useState("")
   const [motDePasse, setMotDePasse] = useState("")
   const [loading, setLoading] = useState(false)
@@ -65,7 +66,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
     init()
   }, [slug])
 
-  const chargerCarte = async (clientId: string) => {
+  const chargerCarte = async (clientId: string, prenomAFournir?: string) => {
     const { data: carte } = await supabase
       .from("cartes_fidelite")
       .select("tampons")
@@ -79,7 +80,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
       // Première visite de ce client sur ce restaurant : on crée la carte à 0
       await supabase
         .from("cartes_fidelite")
-        .insert([{ client_id: clientId, restaurant_slug: slug, tampons: 0 }])
+        .insert([{ client_id: clientId, restaurant_slug: slug, tampons: 0, prenom: prenomAFournir || null }])
       setTampons(0)
     }
   }
@@ -114,7 +115,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
       }
       if (data.user) {
         setUser(data.user)
-        await chargerCarte(data.user.id)
+        await chargerCarte(data.user.id, prenom)
         setStep("compte")
       }
     } else {
@@ -204,6 +205,18 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
             </p>
 
             <form onSubmit={handleAuth} className="space-y-4">
+              {mode === "inscription" && (
+                <div>
+                  <label className="block text-sm font-medium text-ink/80 mb-1">Prénom</label>
+                  <input
+                    type="text"
+                    required
+                    value={prenom}
+                    onChange={e => setPrenom(e.target.value)}
+                    className="w-full border border-wine/15 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+                  />
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-ink/80 mb-1">Email</label>
                 <input

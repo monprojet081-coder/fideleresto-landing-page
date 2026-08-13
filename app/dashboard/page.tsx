@@ -85,6 +85,8 @@ function DashboardContent() {
   const [savingFidelite, setSavingFidelite] = useState(false)
   const [rechercheEmail, setRechercheEmail] = useState("")
   const [clientTrouve, setClientTrouve] = useState<any>(null)
+  const [clientsFidelite, setClientsFidelite] = useState<{ client_id: string; prenom: string | null; tampons: number; updated_at: string }[]>([])
+  const [chargementClientsFidelite, setChargementClientsFidelite] = useState(false)
   const [rechercheLoading, setRechercheLoading] = useState(false)
   const [rechercheError, setRechercheError] = useState("")
   const [montantPassage, setMontantPassage] = useState("")
@@ -222,6 +224,20 @@ function DashboardContent() {
       setTamponsRequis(restaurant.fidelite_tampons_requis ?? 8)
       setMontantMin(restaurant.fidelite_montant_min ?? 1)
       setRecompenseFidelite(restaurant.fidelite_recompense ?? "Un plat offert")
+
+      setChargementClientsFidelite(true)
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
+        try {
+          const slug = user.id.slice(0, 8)
+          const res = await fetch(`/api/fidelite/liste-clients?slug=${slug}`, {
+            headers: { Authorization: `Bearer ${session?.access_token}` },
+          })
+          const data = await res.json()
+          setClientsFidelite(data.clients || [])
+        } finally {
+          setChargementClientsFidelite(false)
+        }
+      })
     }
 
     if (activeSection !== "fidelite" && streamRef.current) {
@@ -1548,6 +1564,42 @@ function DashboardContent() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Liste des clients avec leur progression */}
+            <div className="mt-6 bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-4xl">
+              <p className="text-sm font-medium text-ink mb-4">
+                Clients ({clientsFidelite.length})
+              </p>
+
+              {chargementClientsFidelite ? (
+                <p className="text-sm text-ink/50">Chargement...</p>
+              ) : clientsFidelite.length === 0 ? (
+                <p className="text-sm text-ink/50">Aucun client n&apos;a encore créé de carte de fidélité.</p>
+              ) : (
+                <div className="space-y-3">
+                  {clientsFidelite.map((c) => (
+                    <div key={c.client_id} className="flex items-center justify-between gap-4 flex-wrap py-2 border-b border-wine/5 last:border-0">
+                      <p className="text-sm font-medium text-ink min-w-[120px]">
+                        {c.prenom || "Client anonyme"}
+                      </p>
+                      <div className="flex gap-1 flex-wrap">
+                        {Array.from({ length: tamponsRequis }).map((_, i) => (
+                          <span
+                            key={i}
+                            className={`flex size-6 items-center justify-center rounded-full text-xs ${
+                              i < c.tampons ? "bg-wine text-gold-light" : "bg-secondary/50 border border-wine/15 text-ink/20"
+                            }`}
+                          >
+                            {i < c.tampons ? "★" : ""}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="text-xs text-ink/50 whitespace-nowrap">{c.tampons} / {tamponsRequis}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
