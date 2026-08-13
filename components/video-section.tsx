@@ -14,7 +14,7 @@ export function VideoSection() {
         <div className="rounded-2xl border border-wine/10 bg-card p-2 shadow-xl shadow-wine/5 sm:p-3">
           <div className="relative w-full overflow-hidden rounded-xl" style={{ paddingTop: "56.25%" }}>
             <iframe
-              src="https://www.youtube.com/embed/9Dm5AImbNfY"
+              src="https://www.youtube.com/embed/xX-oyx3o0gw"
               title="Présentation de FidèleResto"
               className="absolute inset-0 h-full w-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

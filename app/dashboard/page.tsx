@@ -903,7 +903,7 @@ function DashboardContent() {
             {videoVisible && (
               <div className="mb-8 bg-card rounded-xl border border-wine/10 shadow-sm overflow-hidden max-w-2xl">
                 <div className="flex items-center justify-between px-5 pt-4">
-                  <p className="text-sm font-medium text-ink">🎬 Découvrez FidèleResto en 1min23</p>
+                  <p className="text-sm font-medium text-ink">🎬 Guide de mise en place de FidèleResto</p>
                   <button
                     onClick={() => setVideoVisible(false)}
                     className="text-ink/40 hover:text-wine text-lg leading-none"
