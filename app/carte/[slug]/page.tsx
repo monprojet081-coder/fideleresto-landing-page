@@ -57,8 +57,8 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
       const { data: { user: currentUser } } = await supabase.auth.getUser()
       if (currentUser) {
         setUser(currentUser)
-        await chargerCarte(currentUser.id)
-        setStep("compte")
+        const ok = await chargerCarte(currentUser.id)
+        setStep(ok ? "compte" : "auth")
       } else {
         setStep("auth")
       }
@@ -66,31 +66,45 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
     init()
   }, [slug])
 
-  const chargerCarte = async (clientId: string, prenomAFournir?: string) => {
-    const { data: carte } = await supabase
+  const chargerCarte = async (clientId: string, prenomAFournir?: string): Promise<boolean> => {
+    const { data: carte, error: erreurLecture } = await supabase
       .from("cartes_fidelite")
       .select("tampons, prenom")
       .eq("client_id", clientId)
       .eq("restaurant_slug", slug)
       .maybeSingle()
 
+    if (erreurLecture) {
+      console.error("Erreur lecture carte:", erreurLecture.message)
+      setError("Impossible de charger votre carte de fidélité. Réessayez dans un instant.")
+      return false
+    }
+
     if (carte) {
       setTampons(carte.tampons)
       // Carte existante mais sans prenom enregistre (ancien compte cree avant l'ajout de ce champ) :
       // on le complete si on en a un a fournir
       if (prenomAFournir && !carte.prenom) {
-        await supabase
+        const { error: erreurMaj } = await supabase
           .from("cartes_fidelite")
           .update({ prenom: prenomAFournir })
           .eq("client_id", clientId)
           .eq("restaurant_slug", slug)
+        if (erreurMaj) console.error("Erreur mise a jour prenom:", erreurMaj.message)
       }
+      return true
     } else {
       // Première visite de ce client sur ce restaurant : on crée la carte à 0
-      await supabase
+      const { error: erreurCreation } = await supabase
         .from("cartes_fidelite")
         .insert([{ client_id: clientId, restaurant_slug: slug, tampons: 0, prenom: prenomAFournir || null }])
+      if (erreurCreation) {
+        console.error("Erreur creation carte:", erreurCreation.message)
+        setError("Votre compte est créé, mais votre carte de fidélité n'a pas pu être enregistrée. Contactez le restaurant.")
+        return false
+      }
       setTampons(0)
+      return true
     }
   }
 
@@ -124,8 +138,8 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
       }
       if (data.user) {
         setUser(data.user)
-        await chargerCarte(data.user.id, prenom)
-        setStep("compte")
+        const ok = await chargerCarte(data.user.id, prenom)
+        if (ok) setStep("compte")
       }
     } else {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password: motDePasse })
@@ -136,8 +150,8 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
       }
       if (data.user) {
         setUser(data.user)
-        await chargerCarte(data.user.id)
-        setStep("compte")
+        const ok = await chargerCarte(data.user.id)
+        if (ok) setStep("compte")
       }
     }
     setLoading(false)
