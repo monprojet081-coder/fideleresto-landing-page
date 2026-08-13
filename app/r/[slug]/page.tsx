@@ -27,6 +27,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [avisClique, setAvisClique] = useState(false)
   const [avisExiste, setAvisExiste] = useState(true)
   const [dejaVenu, setDejaVenu] = useState(false)
+  const [frequenceJours, setFrequenceJours] = useState(1)
   // Alerte insatisfaction (Premium) : on capte une note avant d'envoyer vers Google
   const [noteAvis, setNoteAvis] = useState(0)
   const [commentaireAvis, setCommentaireAvis] = useState("")
@@ -100,6 +101,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
     }
 
     if (data.dejaJoue) {
+      setFrequenceJours(data.frequenceJours || 1)
       setStep("already_played")
       setLoading(false)
       return
@@ -398,9 +400,15 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
           <div className="text-center">
             <div className="text-6xl mb-4">⏳</div>
             <h2 className="text-2xl font-display font-semibold text-ink mb-2">Déjà joué !</h2>
-            <p className="text-ink/55 mb-6">Vous avez déjà participé avec cet email aujourd'hui.</p>
+            <p className="text-ink/55 mb-6">Vous avez déjà participé{frequenceJours === 1 ? " aujourd'hui" : ""}.</p>
             <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 mb-3">
-              <p className="text-sm text-wine-dark font-medium">La roue se réinitialise chaque jour — revenez demain pour retenter votre chance ! 🍀</p>
+              <p className="text-sm text-wine-dark font-medium">
+                {frequenceJours === 1 && "La roue se réinitialise chaque jour — revenez demain pour retenter votre chance ! 🍀"}
+                {frequenceJours === 7 && "La roue se réinitialise chaque semaine — revenez la semaine prochaine pour retenter votre chance ! 🍀"}
+                {frequenceJours === 14 && "La roue se réinitialise toutes les 2 semaines — revenez dans 2 semaines pour retenter votre chance ! 🍀"}
+                {frequenceJours === 30 && "La roue se réinitialise une fois par mois — revenez le mois prochain pour retenter votre chance ! 🍀"}
+                {![1, 7, 14, 30].includes(frequenceJours) && `La roue se réinitialise tous les ${frequenceJours} jours — revenez plus tard pour retenter votre chance ! 🍀`}
+              </p>
             </div>
             <a
               href={`/carte/${slug}`}

@@ -85,6 +85,7 @@ function DashboardContent() {
   const [savingFidelite, setSavingFidelite] = useState(false)
   const [rechercheEmail, setRechercheEmail] = useState("")
   const [clientTrouve, setClientTrouve] = useState<any>(null)
+  const [roueFrequenceJours, setRoueFrequenceJours] = useState(1)
   const [clientsFidelite, setClientsFidelite] = useState<{ client_id: string; prenom: string | null; tampons: number; updated_at: string }[]>([])
   const [chargementClientsFidelite, setChargementClientsFidelite] = useState(false)
   const [rechercheLoading, setRechercheLoading] = useState(false)
@@ -150,6 +151,7 @@ function DashboardContent() {
           setRestaurant(restoData)
           setGoogleAvisUrl(restoData.google_avis_url || "")
           setNomRestaurantInput(restoData.nom_restaurant || "")
+          setRoueFrequenceJours(restoData.roue_frequence_jours || 1)
           setRelanceActive(restoData.relance_active || false)
           setRelanceJours(restoData.relance_jours_inactivite || 10)
           setRelancePourcentage(restoData.relance_pourcentage || 10)
@@ -370,6 +372,15 @@ function DashboardContent() {
       afficherToast("Erreur lors de la sauvegarde : " + insertError.message, "erreur")
       setSaving(false)
       return
+    }
+    const { error: freqError } = await supabase
+      .from("restaurants")
+      .update({ roue_frequence_jours: roueFrequenceJours })
+      .eq("slug", slug)
+    if (freqError) {
+      console.error("Erreur frequence:", freqError)
+    } else {
+      setRestaurant({ ...restaurant, roue_frequence_jours: roueFrequenceJours })
     }
     setSaving(false)
     afficherToast("Roue sauvegardée !")
@@ -1375,6 +1386,27 @@ function DashboardContent() {
                 >
                   + Ajouter
                 </button>
+              </div>
+
+              <div className="p-4 bg-secondary/40 rounded-lg mb-6">
+                <label className="block text-sm font-medium text-ink/80 mb-2">
+                  Un client peut retenter sa chance...
+                </label>
+                <select
+                  value={roueFrequenceJours}
+                  onChange={e => setRoueFrequenceJours(parseInt(e.target.value))}
+                  className="w-full border border-wine/15 bg-card rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                >
+                  <option value={1}>Tous les jours</option>
+                  <option value={2}>Tous les 2 jours</option>
+                  <option value={3}>Tous les 3 jours</option>
+                  <option value={7}>Toutes les semaines</option>
+                  <option value={14}>Toutes les 2 semaines</option>
+                  <option value={30}>Une fois par mois</option>
+                </select>
+                <p className="text-xs text-ink/45 mt-2">
+                  Utile si vous préférez limiter le nombre de récompenses offertes chaque jour.
+                </p>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-secondary/40 rounded-lg mb-6">

@@ -34,10 +34,20 @@ export async function POST(req: NextRequest) {
     const emailNormalise = String(email).trim().toLowerCase()
 
     // Anti-triche : reinitialisation au jour calendaire (minuit), pas une fenetre
-    // glissante de 24h. Verifie cote serveur, avec la cle admin -- impossible a
-    // contourner depuis la console du navigateur.
-    const debutJour = new Date()
-    debutJour.setHours(0, 0, 0, 0)
+    // glissante en heures -- sinon quelqu'un venu lundi 13h ne pourrait pas retenter
+    // sa chance mardi a 12h. La frequence (tous les combien de jours) est reglable
+    // par le restaurateur, utile pour les petits etablissements qui veulent limiter
+    // le nombre de recompenses offertes.
+    const { data: restoConfig } = await supabase
+      .from('restaurants')
+      .select('roue_frequence_jours')
+      .eq('slug', slug)
+      .maybeSingle()
+    const frequenceJours = restoConfig?.roue_frequence_jours || 1
+
+    const debutFenetre = new Date()
+    debutFenetre.setHours(0, 0, 0, 0)
+    debutFenetre.setDate(debutFenetre.getDate() - (frequenceJours - 1))
 
     if (!EMAILS_TEST.includes(emailNormalise)) {
       const { data: existing } = await supabase
@@ -45,10 +55,10 @@ export async function POST(req: NextRequest) {
         .select('id')
         .eq('email', emailNormalise)
         .eq('restaurant_slug', slug)
-        .gte('created_at', debutJour.toISOString())
+        .gte('created_at', debutFenetre.toISOString())
 
       if (existing && existing.length > 0) {
-        return NextResponse.json({ dejaJoue: true })
+        return NextResponse.json({ dejaJoue: true, frequenceJours })
       }
     }
 
