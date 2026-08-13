@@ -7,7 +7,7 @@ export function VideoSection() {
             Voyez FidèleResto en action
           </h2>
           <p className="mt-3 text-pretty text-ink/60">
-            1min23 pour tout comprendre : la roue, le boost d&apos;avis Google, le menu digital et la carte de fidélité.
+            1min36 pour tout comprendre : la roue, le boost d&apos;avis Google, le menu digital et la carte de fidélité.
           </p>
         </div>
 
