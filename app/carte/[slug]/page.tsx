@@ -69,13 +69,22 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
   const chargerCarte = async (clientId: string, prenomAFournir?: string) => {
     const { data: carte } = await supabase
       .from("cartes_fidelite")
-      .select("tampons")
+      .select("tampons, prenom")
       .eq("client_id", clientId)
       .eq("restaurant_slug", slug)
       .maybeSingle()
 
     if (carte) {
       setTampons(carte.tampons)
+      // Carte existante mais sans prenom enregistre (ancien compte cree avant l'ajout de ce champ) :
+      // on le complete si on en a un a fournir
+      if (prenomAFournir && !carte.prenom) {
+        await supabase
+          .from("cartes_fidelite")
+          .update({ prenom: prenomAFournir })
+          .eq("client_id", clientId)
+          .eq("restaurant_slug", slug)
+      }
     } else {
       // Première visite de ce client sur ce restaurant : on crée la carte à 0
       await supabase
