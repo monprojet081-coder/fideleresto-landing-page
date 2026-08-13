@@ -85,11 +85,10 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
       // Carte existante mais sans prenom enregistre (ancien compte cree avant l'ajout de ce champ) :
       // on le complete si on en a un a fournir
       if (prenomAFournir && !carte.prenom) {
-        const { error: erreurMaj } = await supabase
-          .from("cartes_fidelite")
-          .update({ prenom: prenomAFournir })
-          .eq("client_id", clientId)
-          .eq("restaurant_slug", slug)
+        const { error: erreurMaj } = await supabase.rpc("completer_prenom_carte", {
+          p_restaurant_slug: slug,
+          p_prenom: prenomAFournir,
+        })
         if (erreurMaj) console.error("Erreur mise a jour prenom:", erreurMaj.message)
       }
       return true
