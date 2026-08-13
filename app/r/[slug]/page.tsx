@@ -65,15 +65,8 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
       })
   }, [slug])
 
-  const getResult = (rewardsList: { label: string; probabilite: number; couleur: string }[]) => {
-    const rand = Math.random() * 100
-    let cumulative = 0
-    for (const reward of rewardsList) {
-      cumulative += reward.probabilite
-      if (rand < cumulative) return reward
-    }
-    return rewardsList[rewardsList.length - 1]
-  }
+  // Le tirage au sort de la recompense se fait desormais cote serveur (/api/roue/jouer),
+  // impossible a manipuler depuis la console du navigateur.
 
   // Calcule l'angle pour que la flèche (en haut) pointe sur la bonne case
   const getTargetRotation = (
@@ -93,64 +86,28 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
     setLoading(true)
     setError("")
 
-    // Reinitialisation au jour calendaire (minuit), pas une fenetre glissante de 24h :
-    // sinon quelqu'un venu lundi 13h ne pourrait pas retenter sa chance mardi a 12h
-    const debutJour = new Date()
-    debutJour.setHours(0, 0, 0, 0)
-    const since = debutJour.toISOString()
-    const { data: existing } = await supabase
-      .from("clients")
-      .select("id, created_at")
-      .eq("email", email)
-      .eq("restaurant_slug", slug)
-      .gte("created_at", since)
+    const res = await fetch("/api/roue/jouer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug, prenom, email, consentementMarketing }),
+    })
+    const data = await res.json()
 
-    if (existing && existing.length > 0 && email !== "cokillage67@gmail.com" && email !== "monprojet081@gmail.com") {
+    if (!res.ok) {
+      setError(data.error || "Une erreur est survenue, réessayez.")
+      setLoading(false)
+      return
+    }
+
+    if (data.dejaJoue) {
       setStep("already_played")
       setLoading(false)
       return
     }
 
-    // Détecte si ce client est déjà venu au moins une fois avant aujourd'hui
-    // (utile pour ne proposer "j'ai déjà laissé un avis" qu'aux habitués, pas aux nouveaux clients)
-    const { count: visitesPrecedentes } = await supabase
-      .from("clients")
-      .select("id", { count: "exact", head: true })
-      .eq("email", email)
-      .eq("restaurant_slug", slug)
-    setDejaVenu((visitesPrecedentes || 0) > 0)
-
-    const { data: roueData } = await supabase
-      .from("roue_config")
-      .select("label, probabilite, couleur")
-      .filter("restaurant_id", "like", `${slug}%`)
-
-    const rewardsList = roueData && roueData.length > 0 ? roueData : [
-      { label: "Boisson offerte 🥤", probabilite: 25, couleur: "#6b1e2e" },
-      { label: "Dessert offert 🍰", probabilite: 25, couleur: "#c9962c" },
-      { label: "10% de réduction 🏷️", probabilite: 25, couleur: "#3f6b4f" },
-      { label: "Perdu 😢", probabilite: 25, couleur: "#a8536a" },
-    ]
-
-    setRewards(rewardsList)
-    const reward = getResult(rewardsList)
-
-    const { error: insertError } = await supabase
-      .from("clients")
-      .insert([{
-        prenom,
-        email,
-        restaurant_slug: slug,
-        a_gagne: reward.label !== "Perdu 😢",
-        recompense: reward.label,
-        consentement_marketing: consentementMarketing
-      }])
-
-    if (insertError) {
-      setError(insertError.message)
-      setLoading(false)
-      return
-    }
+    setDejaVenu(data.dejaVenu)
+    setRewards(data.rewardsList)
+    const reward = data.reward
 
     if (reward.label !== "Perdu 😢") {
       await fetch("/api/send-reward-email", {
@@ -166,7 +123,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
     setTimeout(() => {
       setSpinning(true)
-      const targetAngle = getTargetRotation(rewardsList, reward)
+      const targetAngle = getTargetRotation(data.rewardsList, reward)
       setRotation(targetAngle)
 
       setTimeout(() => {
