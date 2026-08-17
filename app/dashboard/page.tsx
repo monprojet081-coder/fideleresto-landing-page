@@ -165,6 +165,7 @@ function DashboardContent() {
               google_avis_url: user.user_metadata?.google_avis_url || null,
               telephone: user.user_metadata?.telephone || null,
               ville: user.user_metadata?.ville || null,
+              parrain: user.user_metadata?.parrain || null,
               scan_qr: 0,
             }])
             .select()

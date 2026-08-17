@@ -48,6 +48,8 @@ function SignupFormContent() {
 
     setLoading(true)
 
+    const parrain = typeof window !== "undefined" ? localStorage.getItem("fideleresto_parrain") : null
+
     const { data, error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.motDePasse,
@@ -58,6 +60,7 @@ function SignupFormContent() {
           ville: formData.ville,
           telephone: formData.telephone,
           google_avis_url: formData.googleAvisUrl,
+          parrain: parrain || null,
         }
       }
     })
@@ -72,6 +75,10 @@ function SignupFormContent() {
       // Cas rare : confirmation par email requise, pas de session immédiate
       router.push("/dashboard")
       return
+    }
+
+    if (parrain && typeof window !== "undefined") {
+      localStorage.removeItem("fideleresto_parrain")
     }
 
     // Redirection directe vers le paiement Stripe pour le plan choisi

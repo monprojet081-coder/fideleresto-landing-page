@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono, Fraunces } from 'next/font/google'
+import { ReferralTracker } from '@/components/referral-tracker'
 import './globals.css'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
@@ -91,6 +92,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased">
+        <ReferralTracker />
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
