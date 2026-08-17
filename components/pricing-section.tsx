@@ -128,13 +128,21 @@ export function PricingSection() {
                     {plan.nom}
                   </p>
                   <div className="mt-3 flex items-end justify-center gap-1 font-display">
-                    <span className="text-5xl font-semibold">{prixAffiche}€</span>
-                    <span className="mb-1 text-lg opacity-80">/mois</span>
+                    {periode === "trimestriel" ? (
+                      <>
+                        <span className="text-5xl font-semibold">{totalPeriode}€</span>
+                        <span className="mb-1 text-lg opacity-80">/3 mois</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-5xl font-semibold">{prixAffiche}€</span>
+                        <span className="mb-1 text-lg opacity-80">/mois</span>
+                      </>
+                    )}
                   </div>
-                  {totalPeriode && (
+                  {totalPeriode && periode !== "trimestriel" && (
                     <p className="mt-1 text-xs opacity-75">
                       soit {totalPeriode}€ facturés {
-                        periode === "trimestriel" ? "tous les 3 mois" :
                         periode === "semestriel" ? "tous les 6 mois" :
                         "1x/an"
                       }
