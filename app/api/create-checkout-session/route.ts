@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
           google_avis_url: userData?.user?.user_metadata?.google_avis_url || null,
           telephone: userData?.user?.user_metadata?.telephone || null,
           ville: userData?.user?.user_metadata?.ville || null,
+          parrain: userData?.user?.user_metadata?.parrain || null,
           scan_qr: 0,
         }])
         .select()
