@@ -4,16 +4,18 @@ import { useState } from "react"
 import { Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-type Periode = "mensuel" | "trimestriel" | "annuel"
+type Periode = "mensuel" | "trimestriel" | "semestriel" | "annuel"
 
 const plans = [
   {
     nom: "Standard",
     key: "standard",
     prixMensuel: 180,
-    prixTrimestriel: 162,
+    prixTrimestriel: 180,
+    prixSemestriel: 162,
     prixAnnuel: 144,
-    totalTrimestriel: 486,
+    totalTrimestriel: 540,
+    totalSemestriel: 972,
     totalAnnuel: 1728,
     description: "Tout pour fidéliser vos clients et booster vos avis",
     highlight: false,
@@ -31,9 +33,11 @@ const plans = [
     nom: "Premium",
     key: "premium",
     prixMensuel: 280,
-    prixTrimestriel: 252,
+    prixTrimestriel: 280,
+    prixSemestriel: 252,
     prixAnnuel: 224,
-    totalTrimestriel: 756,
+    totalTrimestriel: 840,
+    totalSemestriel: 1512,
     totalAnnuel: 2688,
     description: "Pour être accompagné plutôt que livré à vous-même",
     highlight: true,
@@ -72,7 +76,8 @@ export function PricingSection() {
           <div className="inline-flex items-center rounded-full border border-wine/15 bg-card p-1">
             {([
               { key: "mensuel", label: "Mensuel" },
-              { key: "trimestriel", label: "Trimestriel", badge: "-10%" },
+              { key: "trimestriel", label: "Trimestriel" },
+              { key: "semestriel", label: "Semestriel", badge: "-10%" },
               { key: "annuel", label: "Annuel", badge: "-20%" },
             ] as const).map((opt) => (
               <button
@@ -94,9 +99,11 @@ export function PricingSection() {
             const prixAffiche =
               periode === "mensuel" ? plan.prixMensuel :
               periode === "trimestriel" ? plan.prixTrimestriel :
+              periode === "semestriel" ? plan.prixSemestriel :
               plan.prixAnnuel
             const totalPeriode =
               periode === "trimestriel" ? plan.totalTrimestriel :
+              periode === "semestriel" ? plan.totalSemestriel :
               periode === "annuel" ? plan.totalAnnuel :
               null
             const planParam = `${plan.key}_${periode}`
@@ -126,7 +133,11 @@ export function PricingSection() {
                   </div>
                   {totalPeriode && (
                     <p className="mt-1 text-xs opacity-75">
-                      soit {totalPeriode}€ facturés {periode === "trimestriel" ? "tous les 3 mois" : "1x/an"}
+                      soit {totalPeriode}€ facturés {
+                        periode === "trimestriel" ? "tous les 3 mois" :
+                        periode === "semestriel" ? "tous les 6 mois" :
+                        "1x/an"
+                      }
                     </p>
                   )}
                   <p className="mt-2 text-sm opacity-80">{plan.description}</p>
