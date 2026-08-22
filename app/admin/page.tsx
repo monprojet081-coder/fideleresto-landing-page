@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { ArrowRight, ShieldCheck, Users, Contact, Trash2 } from "lucide-react"
+import { ArrowRight, ShieldCheck, Users, Contact, Trash2, Handshake } from "lucide-react"
 
 type RestaurantAdmin = {
   id: string
@@ -22,6 +22,7 @@ type RestaurantAdmin = {
   telephone: string | null
   ville: string | null
   email: string | null
+  parrain: string | null
   created_at: string
 }
 
@@ -56,7 +57,7 @@ export default function AdminPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [accesRefuse, setAccesRefuse] = useState(false)
-  const [onglet, setOnglet] = useState<"restaurants" | "prospection">("restaurants")
+  const [onglet, setOnglet] = useState<"restaurants" | "prospection" | "parrainage">("restaurants")
   const [restaurants, setRestaurants] = useState<RestaurantAdmin[]>([])
   const [entreeEnCours, setEntreeEnCours] = useState<string | null>(null)
   const [erreur, setErreur] = useState("")
@@ -222,6 +223,14 @@ export default function AdminPage() {
             }`}
           >
             <Contact className="w-3.5 h-3.5" /> Prospection
+          </button>
+          <button
+            onClick={() => setOnglet("parrainage")}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              onglet === "parrainage" ? "bg-wine text-gold-light" : "text-ink/60"
+            }`}
+          >
+            <Handshake className="w-3.5 h-3.5" /> Parrainage
           </button>
         </div>
 
@@ -451,6 +460,73 @@ export default function AdminPage() {
             </div>
           </div>
         )}
+        {onglet === "parrainage" && (() => {
+          const parraines = restaurants.filter(r => r.parrain)
+          const parrains = Array.from(new Set(parraines.map(r => r.parrain))).sort() as string[]
+
+          if (parrains.length === 0) {
+            return (
+              <div className="bg-card rounded-xl border border-wine/10 shadow-sm p-6">
+                <p className="text-sm text-ink/50">
+                  Aucun restaurant apporté par un lien de parrainage pour le moment. Les liens du type{" "}
+                  <code className="bg-secondary/60 px-1.5 py-0.5 rounded text-xs">fideleresto.fr/?ref=code</code>{" "}
+                  apparaîtront ici dès qu'un restaurateur s'inscrira grâce à eux.
+                </p>
+              </div>
+            )
+          }
+
+          const STATUTS_PAYANTS = ["actif", "essai"]
+
+          return (
+            <div className="space-y-6">
+              {parrains.map(parrain => {
+                const restosDuParrain = parraines.filter(r => r.parrain === parrain)
+                const actifs = restosDuParrain.filter(r => STATUTS_PAYANTS.includes(r.statut_abonnement || ""))
+                return (
+                  <div key={parrain} className="bg-card rounded-xl border border-wine/10 shadow-sm overflow-hidden">
+                    <div className="flex items-center justify-between px-5 py-4 bg-secondary/40">
+                      <div className="flex items-center gap-2">
+                        <Handshake className="w-4 h-4 text-wine" />
+                        <p className="font-medium text-ink">{parrain}</p>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs">
+                        <span className="text-ink/50">{restosDuParrain.length} inscrit{restosDuParrain.length > 1 ? "s" : ""}</span>
+                        <span className="font-medium bg-sage/15 text-sage px-2 py-1 rounded-full">
+                          {actifs.length} payant{actifs.length > 1 ? "s" : ""}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="divide-y divide-wine/10">
+                      {restosDuParrain.map(r => (
+                        <div key={r.id} className="flex items-center justify-between gap-4 px-5 py-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-ink truncate">{r.nom_restaurant || "(sans nom)"}</p>
+                            <p className="text-xs text-ink/50 truncate">
+                              {r.email} · inscrit le {new Date(r.created_at).toLocaleDateString("fr-FR")}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="text-xs font-medium bg-secondary text-ink/60 px-2 py-1 rounded-full">
+                              {r.plan || "aucun plan"}
+                            </span>
+                            <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                              STATUTS_PAYANTS.includes(r.statut_abonnement || "")
+                                ? "bg-sage/15 text-sage"
+                                : "bg-wine/10 text-wine"
+                            }`}>
+                              {r.statut_abonnement || "aucun"}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()}
       </div>
     </div>
   )
