@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { ArrowRight, ShieldCheck, Users, Contact, Trash2, Handshake } from "lucide-react"
+import { ArrowRight, ShieldCheck, Users, Contact, Trash2, Handshake, BarChart3 } from "lucide-react"
 
 type RestaurantAdmin = {
   id: string
@@ -57,7 +57,7 @@ export default function AdminPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [accesRefuse, setAccesRefuse] = useState(false)
-  const [onglet, setOnglet] = useState<"restaurants" | "prospection" | "parrainage">("restaurants")
+  const [onglet, setOnglet] = useState<"restaurants" | "prospection" | "parrainage" | "stats">("restaurants")
   const [restaurants, setRestaurants] = useState<RestaurantAdmin[]>([])
   const [entreeEnCours, setEntreeEnCours] = useState<string | null>(null)
   const [erreur, setErreur] = useState("")
@@ -67,6 +67,8 @@ export default function AdminPage() {
   const [filtreStatut, setFiltreStatut] = useState<string>("tous")
   const [filtreVille, setFiltreVille] = useState<string>("toutes")
   const [erreursCheckout, setErreursCheckout] = useState<{ id: string; slug: string | null; plan: string | null; message: string; created_at: string }[]>([])
+  const [stats, setStats] = useState<any>(null)
+  const [loadingStats, setLoadingStats] = useState(false)
 
   const getToken = async () => {
     const { data: { session } } = await supabase.auth.getSession()
@@ -118,6 +120,19 @@ export default function AdminPage() {
   useEffect(() => {
     if (onglet === "prospection" && !accesRefuse) {
       chargerProspects()
+    }
+    if (onglet === "stats" && !accesRefuse) {
+      const chargerStats = async () => {
+        setLoadingStats(true)
+        const token = await getToken()
+        const res = await fetch("/api/admin/stats", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const result = await res.json()
+        setStats(result)
+        setLoadingStats(false)
+      }
+      chargerStats()
     }
   }, [onglet, accesRefuse])
 
@@ -256,6 +271,14 @@ export default function AdminPage() {
             }`}
           >
             <Handshake className="w-3.5 h-3.5" /> Parrainage
+          </button>
+          <button
+            onClick={() => setOnglet("stats")}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              onglet === "stats" ? "bg-wine text-gold-light" : "text-ink/60"
+            }`}
+          >
+            <BarChart3 className="w-3.5 h-3.5" /> Stats
           </button>
         </div>
 
@@ -552,6 +575,92 @@ export default function AdminPage() {
             </div>
           )
         })()}
+        {onglet === "stats" && (
+          <div className="space-y-6">
+            {loadingStats || !stats ? (
+              <p className="text-sm text-ink/50">Chargement...</p>
+            ) : (
+              <>
+                <div className="bg-card rounded-xl border border-wine/10 shadow-sm p-5">
+                  <p className="text-sm font-medium text-ink mb-4">👀 Visites du site</p>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <p className="text-2xl font-display font-semibold text-wine">{stats.visites.j1}</p>
+                      <p className="text-xs text-ink/50 mt-0.5">Dernières 24h</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-display font-semibold text-wine">{stats.visites.j7}</p>
+                      <p className="text-xs text-ink/50 mt-0.5">7 derniers jours</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-display font-semibold text-wine">{stats.visites.j30}</p>
+                      <p className="text-xs text-ink/50 mt-0.5">30 derniers jours</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-card rounded-xl border border-wine/10 shadow-sm p-5">
+                  <p className="text-sm font-medium text-ink mb-4">🔑 Connexions (7 derniers jours)</p>
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <p className="text-2xl font-display font-semibold text-sage">{stats.connexions.reussies7j}</p>
+                      <p className="text-xs text-ink/50 mt-0.5">Réussies</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-display font-semibold text-wine">{stats.connexions.echouees7j}</p>
+                      <p className="text-xs text-ink/50 mt-0.5">Échouées</p>
+                    </div>
+                  </div>
+                  {stats.connexions.echouees7j > stats.connexions.reussies7j * 3 && stats.connexions.echouees7j > 15 && (
+                    <p className="mt-3 text-xs text-wine bg-wine/5 rounded-lg px-3 py-2">
+                      Beaucoup plus d'échecs que de réussites — surveille qu'il ne s'agit pas d'une tentative de piratage par force brute.
+                    </p>
+                  )}
+                </div>
+
+                <div className="bg-card rounded-xl border border-wine/10 shadow-sm p-5">
+                  <p className="text-sm font-medium text-ink mb-4">🍽️ Restaurants</p>
+                  <div className="grid grid-cols-2 gap-4 text-center mb-4">
+                    <div>
+                      <p className="text-2xl font-display font-semibold text-ink">{stats.restaurants.total}</p>
+                      <p className="text-xs text-ink/50 mt-0.5">Comptes créés au total</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-display font-semibold text-ink">{stats.restaurants.inscriptionsSemaine}</p>
+                      <p className="text-xs text-ink/50 mt-0.5">Nouveaux cette semaine</p>
+                    </div>
+                  </div>
+                  <div className="border-t border-wine/10 pt-4">
+                    <p className="text-xs font-medium text-ink/60 mb-2">Par plan</p>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {Object.entries(stats.restaurants.parPlan).map(([plan, n]) => (
+                        <span key={plan} className="text-xs font-medium bg-secondary text-ink/70 px-2.5 py-1 rounded-full">
+                          {plan} : {n as number}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-xs font-medium text-ink/60 mb-2">Par statut</p>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(stats.restaurants.parStatut).map(([statut, n]) => (
+                        <span key={statut} className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                          statut === "actif" || statut === "essai" ? "bg-sage/15 text-sage" : "bg-wine/10 text-wine"
+                        }`}>
+                          {statut} : {n as number}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-card rounded-xl border border-wine/10 shadow-sm p-5">
+                  <p className="text-sm font-medium text-ink mb-2">👥 Clients collectés sur toute la plateforme</p>
+                  <p className="text-2xl font-display font-semibold text-wine">{stats.clientsTotal}</p>
+                  <p className="text-xs text-ink/50 mt-0.5">Tous restaurants confondus (via la roue de la fidélité)</p>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

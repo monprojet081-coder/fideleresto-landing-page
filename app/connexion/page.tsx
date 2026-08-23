@@ -23,6 +23,14 @@ export default function ConnexionPage() {
 
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
+    // Trace la tentative (succes ou echec) pour le suivi admin -- ne bloque jamais
+    // la connexion si ca echoue, c'est juste un log en tache de fond
+    fetch("/api/auth/log-tentative", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, succes: !error }),
+    }).catch(() => {})
+
     if (error) {
       setError("Email ou mot de passe incorrect.")
       setLoading(false)
