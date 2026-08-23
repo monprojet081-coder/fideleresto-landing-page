@@ -15,6 +15,8 @@ import {
 export async function POST(req: NextRequest) {
   const supabase = getSupabaseAdmin()
   const stripe = getStripe()
+  let slugPourLog: string | null = null
+  let planPourLog: string | null = null
   try {
     const { userId, plan, avecCreationSite, avecReseaux } = await req.json() as {
       userId: string
@@ -22,12 +24,14 @@ export async function POST(req: NextRequest) {
       avecCreationSite?: boolean
       avecReseaux?: boolean
     }
+    planPourLog = plan
 
     if (!userId || !plan || !STRIPE_PRICES[plan]) {
       return NextResponse.json({ error: 'Paramètres invalides' }, { status: 400 })
     }
 
     const slug = userId.slice(0, 8)
+    slugPourLog = slug
 
     let { data: restaurant } = await supabase
       .from('restaurants')
@@ -146,6 +150,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: session.url })
   } catch (err: any) {
     console.error('Erreur create-checkout-session:', err)
+    // Trace l'echec en base pour pouvoir le detecter proactivement depuis l'admin,
+    // sans avoir a attendre qu'un restaurateur se plaigne de rester bloque
+    try {
+      await supabase.from('checkout_erreurs').insert([{
+        slug: slugPourLog,
+        plan: planPourLog,
+        message: err?.message || 'Erreur inconnue',
+      }])
+    } catch (logErr) {
+      console.error('Impossible de logger l\'erreur checkout:', logErr)
+    }
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }
 }

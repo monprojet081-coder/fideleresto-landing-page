@@ -66,6 +66,7 @@ export default function AdminPage() {
   const [loadingProspects, setLoadingProspects] = useState(false)
   const [filtreStatut, setFiltreStatut] = useState<string>("tous")
   const [filtreVille, setFiltreVille] = useState<string>("toutes")
+  const [erreursCheckout, setErreursCheckout] = useState<{ id: string; slug: string | null; plan: string | null; message: string; created_at: string }[]>([])
 
   const getToken = async () => {
     const { data: { session } } = await supabase.auth.getSession()
@@ -93,6 +94,12 @@ export default function AdminPage() {
       const result = await res.json()
       setRestaurants(result.restaurants || [])
       setLoading(false)
+
+      const resErreurs = await fetch("/api/admin/checkout-erreurs", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      const resultErreurs = await resErreurs.json()
+      setErreursCheckout(resultErreurs.erreurs || [])
     }
     charger()
   }, [router])
@@ -206,6 +213,24 @@ export default function AdminPage() {
           <ShieldCheck className="w-6 h-6 text-wine" />
           <h1 className="text-2xl font-display font-semibold text-ink">Espace admin</h1>
         </div>
+
+        {erreursCheckout.length > 0 && (
+          <div className="mb-6 rounded-xl border border-wine/30 bg-wine/5 p-4">
+            <p className="text-sm font-semibold text-wine">
+              ⚠️ {erreursCheckout.length} restaurateur{erreursCheckout.length > 1 ? "s ont" : " a"} été bloqué{erreursCheckout.length > 1 ? "s" : ""} en essayant de payer, ces 7 derniers jours
+            </p>
+            <div className="mt-2 space-y-1">
+              {erreursCheckout.slice(0, 5).map(e => (
+                <p key={e.id} className="text-xs text-wine/80">
+                  {new Date(e.created_at).toLocaleString("fr-FR")} · plan {e.plan || "?"} · {e.message}
+                </p>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-ink/50">
+              Vérifie que tes prix Stripe et tes variables Vercel sont bien à jour (voir historique des bugs précédents sur ce point).
+            </p>
+          </div>
+        )}
 
         <div className="inline-flex items-center rounded-full border border-wine/15 bg-card p-1 mb-8">
           <button
