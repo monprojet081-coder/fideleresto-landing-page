@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getResend } from '@/lib/resend'
+import QRCode from 'qrcode'
 
+const DUREE_VALIDITE_JOURS = 10
 
 export async function POST(req: NextRequest) {
   const resend = getResend()
   try {
-    const { prenom, email, recompense, restaurantNom, slug } = await req.json();
+    const { prenom, email, recompense, restaurantNom, slug, clientRowId } = await req.json();
 
     if (!prenom || !email || !recompense) {
       return NextResponse.json(
@@ -16,6 +18,23 @@ export async function POST(req: NextRequest) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fideleresto.fr'
     const lienCarte = slug ? `${siteUrl}/carte/${slug}` : null
+
+    // QR code unique par recompense : le restaurateur le scanne en caisse pour la valider.
+    // Empeche qu'un meme gain soit presente plusieurs fois (le QR est invalide des qu'il a
+    // ete scanne une fois) et donne au restaurateur une tracabilite complete (qui a gagne
+    // quoi, et quand c'est utilise).
+    let qrCodeDataUrl: string | null = null
+    if (clientRowId) {
+      try {
+        qrCodeDataUrl = await QRCode.toDataURL(`fideleresto:recompense:${clientRowId}`, {
+          width: 220,
+          margin: 1,
+          color: { dark: '#241914', light: '#ffffff' },
+        })
+      } catch (qrErr) {
+        console.error('Erreur generation QR recompense:', qrErr)
+      }
+    }
 
     const { data, error } = await resend.emails.send({
       from: 'FidèleResto <contact@fideleresto.fr>',
@@ -29,7 +48,15 @@ export async function POST(req: NextRequest) {
           <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0;">
             <p style="font-size: 24px; font-weight: bold; color: #92400e; margin: 0;">${recompense}</p>
           </div>
+          ${qrCodeDataUrl ? `
+          <div style="text-align: center; margin: 24px 0;">
+            <p style="font-size: 14px; color: #4b5563; margin-bottom: 10px;">Présentez ce code au comptoir lors de votre prochaine visite :</p>
+            <img src="${qrCodeDataUrl}" alt="QR code de votre récompense" width="180" height="180" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px;" />
+            <p style="font-size: 13px; color: #9ca3af; margin-top: 10px;">Valable ${DUREE_VALIDITE_JOURS} jours, utilisable une seule fois.</p>
+          </div>
+          ` : `
           <p>Présentez simplement cet email au restaurant pour bénéficier de votre récompense.</p>
+          `}
           ${lienCarte ? `
           <div style="text-align: center; margin: 28px 0;">
             <a href="${lienCarte}" style="display: inline-block; background: #6b1e2e; color: #f5e6c8; text-decoration: none; font-weight: bold; padding: 14px 28px; border-radius: 8px;">

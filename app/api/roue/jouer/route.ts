@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     // Tirage au sort reellement cote serveur : impossible a manipuler depuis le navigateur
     const reward = tirerRecompense(rewardsList)
 
-    const { error: insertError } = await supabase
+    const { data: nouveauClient, error: insertError } = await supabase
       .from('clients')
       .insert([{
         prenom,
@@ -89,13 +89,15 @@ export async function POST(req: NextRequest) {
         recompense: reward.label,
         consentement_marketing: !!consentementMarketing,
       }])
+      .select('id')
+      .single()
 
     if (insertError) {
       console.error('Erreur insertion client:', insertError.message)
       return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
     }
 
-    return NextResponse.json({ dejaJoue: false, dejaVenu, reward, rewardsList })
+    return NextResponse.json({ dejaJoue: false, dejaVenu, reward, rewardsList, clientRowId: nouveauClient?.id })
   } catch (err: any) {
     console.error('Erreur roue/jouer:', err)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })

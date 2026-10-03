@@ -117,7 +117,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
       await fetch("/api/send-reward-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prenom, email, recompense: reward.label, restaurantNom: nomRestaurant, slug }),
+        body: JSON.stringify({ prenom, email, recompense: reward.label, restaurantNom: nomRestaurant, slug, clientRowId: data.clientRowId }),
       })
     }
 

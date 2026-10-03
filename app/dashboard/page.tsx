@@ -94,6 +94,11 @@ function DashboardContent() {
   const [montantPassage, setMontantPassage] = useState("")
   const [validationLoading, setValidationLoading] = useState(false)
   const [validationMessage, setValidationMessage] = useState("")
+  const [recompenseScanResult, setRecompenseScanResult] = useState<{ success: boolean; prenom?: string; recompense?: string; error?: string } | null>(null)
+  const [rechercheRecompenseEmail, setRechercheRecompenseEmail] = useState("")
+  const [recompensesTrouvees, setRecompensesTrouvees] = useState<any[]>([])
+  const [rechercheRecompenseLoading, setRechercheRecompenseLoading] = useState(false)
+  const [rechercheRecompenseError, setRechercheRecompenseError] = useState("")
   const [scanning, setScanning] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const scanCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -640,7 +645,15 @@ function DashboardContent() {
           if (code && code.data.startsWith("fideleresto:client:")) {
             const clientId = code.data.replace("fideleresto:client:", "")
             arreterScan()
+            setRecompenseScanResult(null)
             rechercherClientParId(clientId)
+            return
+          }
+          if (code && code.data.startsWith("fideleresto:recompense:")) {
+            const clientRowId = code.data.replace("fideleresto:recompense:", "")
+            arreterScan()
+            setClientTrouve(null)
+            validerRecompenseParId(clientRowId)
             return
           }
         }
@@ -673,6 +686,40 @@ function DashboardContent() {
       setClientTrouve(result)
     }
     setRechercheLoading(false)
+  }
+
+  const validerRecompenseParId = async (clientRowId: string) => {
+    const slug = user.id.slice(0, 8)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch("/api/roue/valider-recompense", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ slug, clientRowId }),
+    })
+    const result = await res.json()
+    setRecompenseScanResult(result)
+  }
+
+  const rechercherRecompense = async () => {
+    setRechercheRecompenseError("")
+    setRecompensesTrouvees([])
+    if (!rechercheRecompenseEmail.trim()) return
+    setRechercheRecompenseLoading(true)
+    const slug = user.id.slice(0, 8)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch(`/api/roue/rechercher-recompense?slug=${slug}&email=${encodeURIComponent(rechercheRecompenseEmail.trim())}`, {
+      headers: { "Authorization": `Bearer ${session?.access_token}` },
+    })
+    const result = await res.json()
+    if (result.error) {
+      setRechercheRecompenseError(result.error)
+    } else {
+      setRecompensesTrouvees(result.recompenses || [])
+      if ((result.recompenses || []).length === 0) {
+        setRechercheRecompenseError("Aucune récompense trouvée pour cet email")
+      }
+    }
+    setRechercheRecompenseLoading(false)
   }
 
   const validerPassage = async () => {
@@ -1545,7 +1592,7 @@ function DashboardContent() {
                     className="w-full flex items-center justify-center gap-2 bg-wine hover:bg-wine-dark text-gold-light font-medium py-3 rounded-lg text-sm mb-4"
                   >
                     <QrCode className="size-4" />
-                    Scanner la carte du client
+                    Scanner (carte fidélité ou récompense roue)
                   </button>
                 )}
 
@@ -1598,6 +1645,70 @@ function DashboardContent() {
                     {validationMessage && <p className="text-sm text-sage mt-3">{validationMessage}</p>}
                   </div>
                 )}
+
+                {/* Resultat d'une recompense de roue scannee */}
+                {recompenseScanResult && (
+                  <div className={`rounded-lg p-4 mt-4 ${recompenseScanResult.success ? "bg-sage/10" : "bg-wine/5"}`}>
+                    {recompenseScanResult.success ? (
+                      <p className="text-sm text-sage">
+                        ✓ Récompense validée pour <span className="font-medium">{recompenseScanResult.prenom}</span> : {recompenseScanResult.recompense}
+                      </p>
+                    ) : (
+                      <div>
+                        <p className="text-sm text-wine">{recompenseScanResult.error}</p>
+                        {recompenseScanResult.prenom && (
+                          <p className="text-xs text-ink/50 mt-1">{recompenseScanResult.prenom} — {recompenseScanResult.recompense}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Recherche de secours d'une recompense par email, si pas de scanner sous la main */}
+                <details className="mt-4">
+                  <summary className="text-xs text-ink/50 cursor-pointer hover:text-ink/70">
+                    Ou retrouver une récompense par email
+                  </summary>
+                  <div className="flex gap-2 mt-2">
+                    <input
+                      type="email"
+                      placeholder="Email du client"
+                      value={rechercheRecompenseEmail}
+                      onChange={e => setRechercheRecompenseEmail(e.target.value)}
+                      className="flex-1 border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+                    />
+                    <button
+                      onClick={rechercherRecompense}
+                      disabled={rechercheRecompenseLoading}
+                      className="bg-secondary hover:bg-secondary/70 text-ink px-3 rounded-lg"
+                    >
+                      <Search className="size-4" />
+                    </button>
+                  </div>
+                  {rechercheRecompenseError && <p className="text-sm text-wine mt-2">{rechercheRecompenseError}</p>}
+                  {recompensesTrouvees.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {recompensesTrouvees.map((r) => (
+                        <div key={r.id} className="flex items-center justify-between gap-3 rounded-lg bg-secondary/40 p-3">
+                          <div className="min-w-0">
+                            <p className="text-sm text-ink truncate">{r.recompense}</p>
+                            <p className="text-xs text-ink/50">
+                              {new Date(r.created_at).toLocaleDateString("fr-FR")}
+                              {r.recompense_utilisee && " — déjà utilisée"}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => validerRecompenseParId(r.id)}
+                            disabled={r.recompense_utilisee}
+                            className="shrink-0 bg-wine hover:bg-wine-dark disabled:opacity-40 text-gold-light font-medium px-3 py-1.5 rounded-lg text-xs whitespace-nowrap"
+                          >
+                            Valider
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </details>
               </div>
             </div>
 
