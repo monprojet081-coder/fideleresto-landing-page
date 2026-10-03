@@ -55,7 +55,9 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
           return
         }
         setStep("form")
-        setEstPremium(data.plan === "premium")
+        // Le filtre d'avis (anciennement reserve au Premium) est desormais inclus
+        // dans les deux plans payants, essentiel comme standard
+        setEstPremium(data.plan === "essentiel" || data.plan === "standard")
         setNomRestaurant(data.nom_restaurant || "")
         // Le scan ne compte que si le restaurant existe réellement
         fetch("/api/send-reward-email/track-scan", {

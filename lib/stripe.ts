@@ -9,18 +9,19 @@ export function getStripe() {
   })
 }
 
-// Les 8 tarifs crees dans Stripe (Produits > FideleResto Standard / Premium)
-// Standard : 180E/mois, Premium : 280E/mois -- mensuel et trimestriel au prix plein,
-// semestriel -10%, annuel -20%
+// Plans FideleResto (voir lib/pricing.ts pour le detail des fonctionnalites/prix affiches) :
+// - "essentiel" (50E/mois, mensuel uniquement) : roue + alerte insatisfaction
+// - "standard" ("Complet", tout inclus) : 180E/mois normalement, 120E/mois pendant
+//   l'offre de lancement -- le prix de lancement est gere directement via la valeur
+//   de STRIPE_PRICE_STANDARD_MENSUEL (un abonnement garde pour toujours le prix auquel
+//   il a souscrit, donc il suffira de changer cette variable d'environnement vers un
+//   nouveau prix une fois l'offre terminee, sans toucher au code).
 export const STRIPE_PRICES = {
+  essentiel_mensuel: process.env.STRIPE_PRICE_ESSENTIEL_MENSUEL!,
   standard_mensuel: process.env.STRIPE_PRICE_STANDARD_MENSUEL!,
   standard_trimestriel: process.env.STRIPE_PRICE_STANDARD_TRIMESTRIEL!,
   standard_semestriel: process.env.STRIPE_PRICE_STANDARD_SEMESTRIEL!,
   standard_annuel: process.env.STRIPE_PRICE_STANDARD_ANNUEL!,
-  premium_mensuel: process.env.STRIPE_PRICE_PREMIUM_MENSUEL!,
-  premium_trimestriel: process.env.STRIPE_PRICE_PREMIUM_TRIMESTRIEL!,
-  premium_semestriel: process.env.STRIPE_PRICE_PREMIUM_SEMESTRIEL!,
-  premium_annuel: process.env.STRIPE_PRICE_PREMIUM_ANNUEL!,
 } as const
 
 // Options, disponibles sur le Premium, quel que soit le rythme choisi

@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
         const slug = session.client_reference_id
-        const plan = session.metadata?.plan?.startsWith('premium') ? 'premium' : 'standard'
+        const plan = session.metadata?.plan?.startsWith('essentiel') ? 'essentiel' : 'standard'
 
         if (slug) {
           let statut = 'actif'
@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription
         const slug = subscription.metadata?.slug
-        const plan = subscription.metadata?.plan?.startsWith('premium') ? 'premium' : 'standard'
+        const plan = subscription.metadata?.plan?.startsWith('essentiel') ? 'essentiel' : 'standard'
 
         if (slug) {
           const statut =

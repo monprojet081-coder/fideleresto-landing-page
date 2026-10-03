@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
     // l'abonnement de suivi (maintenance/gestion) est facturé au même rythme que le plan
     // principal, pour ne pas mélanger deux fréquences différentes dans un seul abonnement Stripe
     const periode = periodeDuPlan(plan)
-    const optionsDisponibles = plan.startsWith('premium')
+    const optionsDisponibles = plan.startsWith('standard')
 
     if (optionsDisponibles && avecCreationSite) {
       lineItems.push({ price: STRIPE_PRICE_FRAIS_SITE, quantity: 1 })

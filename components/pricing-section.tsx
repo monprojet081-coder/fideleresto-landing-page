@@ -3,56 +3,9 @@
 import { useState } from "react"
 import { Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { plans } from "@/lib/pricing"
 
 type Periode = "mensuel" | "trimestriel" | "semestriel" | "annuel"
-
-const plans = [
-  {
-    nom: "Standard",
-    key: "standard",
-    prixMensuel: 180,
-    prixTrimestriel: 180,
-    prixSemestriel: 162,
-    prixAnnuel: 144,
-    totalTrimestriel: 540,
-    totalSemestriel: 972,
-    totalAnnuel: 1728,
-    description: "Tout pour fidéliser vos clients et booster vos avis",
-    highlight: false,
-    essaiGratuit: true,
-    features: [
-      "Roue de la fidélité + boost avis Google",
-      "3 modèles de flyers prêts à imprimer",
-      "Emails de relance automatiques",
-      "Menu digital",
-      "Carte de fidélité digitale",
-      "Tableau de bord analytics complet",
-    ],
-  },
-  {
-    nom: "Premium",
-    key: "premium",
-    prixMensuel: 280,
-    prixTrimestriel: 280,
-    prixSemestriel: 252,
-    prixAnnuel: 224,
-    totalTrimestriel: 840,
-    totalSemestriel: 1512,
-    totalAnnuel: 2688,
-    description: "Pour être accompagné plutôt que livré à vous-même",
-    highlight: true,
-    essaiGratuit: false,
-    features: [
-      "Tout ce qui est inclus dans Standard",
-      "Alerte insatisfaction (protège votre note Google)",
-      "Statistiques avancées (heures de pointe, évolution)",
-      "Accompagnement",
-      "Flyers fournis et traduits sur demande",
-      "Traduction de l'application sur demande",
-      "Option création de site et gestion des réseaux",
-    ],
-  },
-]
 
 export function PricingSection() {
   const [periode, setPeriode] = useState<Periode>("mensuel")
@@ -89,21 +42,25 @@ export function PricingSection() {
             ))}
           </div>
         </div>
+        <p className="mt-2 text-center text-xs text-ink/40">
+          Le plan Essentiel est facturé mensuellement, quel que soit le rythme choisi ci-dessus.
+        </p>
 
         {/* Deux cartes façon ticket de tombola gagnant, avec bord perforé et encoches */}
-        <div className="mx-auto mt-10 grid max-w-4xl gap-8 sm:grid-cols-2">
+        <div className="mx-auto mt-8 grid max-w-4xl gap-8 sm:grid-cols-2">
           {plans.map((plan) => {
+            const periodeEffective: Periode = plan.periodesDisponibles ? periode : "mensuel"
             const prixAffiche =
-              periode === "mensuel" ? plan.prixMensuel :
-              periode === "trimestriel" ? plan.prixTrimestriel :
-              periode === "semestriel" ? plan.prixSemestriel :
+              periodeEffective === "mensuel" ? plan.prixMensuel :
+              periodeEffective === "trimestriel" ? plan.prixTrimestriel :
+              periodeEffective === "semestriel" ? plan.prixSemestriel :
               plan.prixAnnuel
             const totalPeriode =
-              periode === "trimestriel" ? plan.totalTrimestriel :
-              periode === "semestriel" ? plan.totalSemestriel :
-              periode === "annuel" ? plan.totalAnnuel :
+              periodeEffective === "trimestriel" ? plan.totalTrimestriel :
+              periodeEffective === "semestriel" ? plan.totalSemestriel :
+              periodeEffective === "annuel" ? plan.totalAnnuel :
               null
-            const planParam = `${plan.key}_${periode}`
+            const planParam = `${plan.key}_${periodeEffective}`
 
             return (
               <div
@@ -124,8 +81,13 @@ export function PricingSection() {
                   <p className="text-sm font-medium uppercase tracking-widest text-gold">
                     {plan.nom}
                   </p>
-                  <div className="mt-3 flex items-end justify-center gap-1 font-display">
-                    {periode === "trimestriel" ? (
+
+                  {plan.prixBarre && (
+                    <p className="mt-3 font-display text-xl text-ivory/45 line-through">{plan.prixBarre}€/mois</p>
+                  )}
+
+                  <div className={`flex items-end justify-center gap-1 font-display ${plan.prixBarre ? "mt-0.5" : "mt-3"}`}>
+                    {periodeEffective === "trimestriel" ? (
                       <>
                         <span className="text-5xl font-semibold">{totalPeriode}€</span>
                         <span className="mb-1 text-lg opacity-80">/3 mois</span>
@@ -137,10 +99,17 @@ export function PricingSection() {
                       </>
                     )}
                   </div>
-                  {totalPeriode && periode !== "trimestriel" && (
+
+                  {plan.prixBarre && (
+                    <p className="mt-2 inline-flex items-center rounded-full bg-gold px-3 py-1 text-xs font-semibold text-wine-dark">
+                      Offre de lancement
+                    </p>
+                  )}
+
+                  {totalPeriode && periodeEffective !== "trimestriel" && (
                     <p className="mt-1 text-xs opacity-75">
                       soit {totalPeriode}€ facturés {
-                        periode === "semestriel" ? "tous les 6 mois" :
+                        periodeEffective === "semestriel" ? "tous les 6 mois" :
                         "1x/an"
                       }
                     </p>
@@ -179,7 +148,7 @@ export function PricingSection() {
           })}
         </div>
         <p className="mt-8 text-center text-sm text-ink/50">
-          Options création de site et gestion des réseaux sociaux disponibles sur le Premium, quel que soit le rythme choisi.
+          Options création de site et gestion des réseaux sociaux disponibles sur le plan Complet, quel que soit le rythme choisi.
         </p>
       </div>
     </section>

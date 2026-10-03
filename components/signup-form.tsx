@@ -89,8 +89,8 @@ function SignupFormContent() {
         body: JSON.stringify({
           userId: data.user.id,
           plan,
-          avecCreationSite: plan.startsWith("premium") ? avecCreationSite : false,
-          avecReseaux: plan.startsWith("premium") ? avecReseaux : false,
+          avecCreationSite: plan.startsWith("standard") ? avecCreationSite : false,
+          avecReseaux: plan.startsWith("standard") ? avecReseaux : false,
         }),
       })
       const checkoutData = await res.json()
@@ -249,7 +249,7 @@ function SignupFormContent() {
             </div>
           </div>
 
-          {plan.startsWith("premium") && (
+          {plan.startsWith("standard") && (
             <div className="space-y-2 rounded-lg border border-wine/10 bg-secondary/40 p-4">
               <p className="text-sm font-medium text-ink/80">Options (facultatif)</p>
               <label className="flex items-start gap-2.5 text-sm text-ink/75 cursor-pointer">

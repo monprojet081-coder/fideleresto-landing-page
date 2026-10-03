@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
     // Sécurité : la fonctionnalité est réservée au Premium. Si le resto n'est pas Premium,
     // on ne fait rien (le front ne devrait de toute façon pas appeler cette route)
-    if (resto.plan !== 'premium') {
+    if (resto.plan !== 'essentiel' && resto.plan !== 'standard') {
       return NextResponse.json({ success: true, ignored: true })
     }
 

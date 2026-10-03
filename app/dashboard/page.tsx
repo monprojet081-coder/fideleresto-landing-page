@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase"
 import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck, Menu, X, Inbox } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
+import { plans } from "@/lib/pricing"
 
 export default function DashboardPage() {
   return (
@@ -55,7 +56,7 @@ function DashboardContent() {
   const [relanceActive, setRelanceActive] = useState(false)
   const [relanceJours, setRelanceJours] = useState(10)
   const [relancePourcentage, setRelancePourcentage] = useState(10)
-  const [billingPeriod, setBillingPeriod] = useState<"mensuel" | "trimestriel" | "annuel">("mensuel")
+  const [billingPeriod, setBillingPeriod] = useState<"mensuel" | "trimestriel" | "semestriel" | "annuel">("mensuel")
   const [avecCreationSite, setAvecCreationSite] = useState(false)
   const [avecReseaux, setAvecReseaux] = useState(false)
   const [subscribing, setSubscribing] = useState<string | null>(null)
@@ -268,8 +269,8 @@ function DashboardContent() {
         body: JSON.stringify({
           userId: user.id,
           plan: planKey,
-          avecCreationSite: planKey.startsWith("premium") ? avecCreationSite : false,
-          avecReseaux: planKey.startsWith("premium") ? avecReseaux : false,
+          avecCreationSite: planKey.startsWith("standard") ? avecCreationSite : false,
+          avecReseaux: planKey.startsWith("standard") ? avecReseaux : false,
         }),
       })
       const data = await res.json()
@@ -786,7 +787,8 @@ function DashboardContent() {
     .slice(0, 5)
 
   // === Statistiques avancées (Premium) ===
-  const estPremiumStats = restaurant?.plan === "premium"
+  // Les statistiques avancees restent une fonctionnalite du plan standard (Complet) uniquement
+  const estPremiumStats = restaurant?.plan === "standard"
 
   // Comparaison mois en cours vs mois précédent (nombre de clients / passages)
   const maintenant = new Date()
@@ -833,7 +835,7 @@ function DashboardContent() {
         { id: "roue", label: "Ma roue", icon: Sliders },
         { id: "menu", label: "Menu digital", icon: BookOpen },
         { id: "fidelite", label: "Carte fidélité", icon: Award },
-        ...(restaurant?.plan === "premium" ? [{ id: "retours", label: "Retours clients", icon: Inbox }] : []),
+        ...(restaurant?.plan === "essentiel" || restaurant?.plan === "standard" ? [{ id: "retours", label: "Retours clients", icon: Inbox }] : []),
         { id: "abonnement", label: "Abonnement", icon: CreditCard },
         { id: "relance", label: "Relance", icon: Mail },
         { id: "parametres", label: "Paramètres", icon: Settings },
@@ -1775,7 +1777,15 @@ function DashboardContent() {
                   billingPeriod === "trimestriel" ? "bg-wine text-gold-light" : "text-ink/60"
                 }`}
               >
-                Trimestriel <span className="opacity-75">(-10%)</span>
+                Trimestriel
+              </button>
+              <button
+                onClick={() => setBillingPeriod("semestriel")}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  billingPeriod === "semestriel" ? "bg-wine text-gold-light" : "text-ink/60"
+                }`}
+              >
+                Semestriel <span className="opacity-75">(-10%)</span>
               </button>
               <button
                 onClick={() => setBillingPeriod("annuel")}
@@ -1789,78 +1799,60 @@ function DashboardContent() {
 
 
             <div className="grid gap-6 sm:grid-cols-2 max-w-3xl">
-              {[
-                {
-                  key: "standard",
-                  nom: "Standard",
-                  prixMensuel: 180,
-                  prixTrimestriel: 162,
-                  prixAnnuel: 144,
-                  totalTrimestriel: 486,
-                  totalAnnuel: 1728,
-                  features: [
-                    "Roue de la fidélité + boost avis Google",
-                    "3 modèles de flyers prêts à imprimer",
-                    "Emails de relance automatiques",
-                    "Menu digital",
-                    "Carte de fidélité digitale",
-                    "Tableau de bord complet",
-                  ],
-                },
-                {
-                  key: "premium",
-                  nom: "Premium",
-                  prixMensuel: 280,
-                  prixTrimestriel: 252,
-                  prixAnnuel: 224,
-                  totalTrimestriel: 756,
-                  totalAnnuel: 2688,
-                  features: [
-                    "Tout ce qui est inclus dans Standard",
-                    "Alerte insatisfaction (protège votre note Google)",
-                    "Statistiques avancées (heures de pointe, évolution)",
-                    "Accompagnement",
-                    "Flyers fournis et traduits sur demande",
-                    "Traduction de l'application sur demande",
-                    "Option création de site et gestion des réseaux",
-                  ],
-                },
-              ].map((offre) => {
-                const planKey = `${offre.key}_${billingPeriod}`
+              {plans.map((offre) => {
+                const periodeEffective = offre.periodesDisponibles ? billingPeriod : "mensuel"
+                const planKey = `${offre.key}_${periodeEffective}`
                 const prixAffiche =
-                  billingPeriod === "mensuel" ? offre.prixMensuel :
-                  billingPeriod === "trimestriel" ? offre.prixTrimestriel :
+                  periodeEffective === "mensuel" ? offre.prixMensuel :
+                  periodeEffective === "trimestriel" ? offre.prixTrimestriel :
+                  periodeEffective === "semestriel" ? offre.prixSemestriel :
                   offre.prixAnnuel
                 const totalPeriode =
-                  billingPeriod === "trimestriel" ? offre.totalTrimestriel :
-                  billingPeriod === "annuel" ? offre.totalAnnuel :
+                  periodeEffective === "trimestriel" ? offre.totalTrimestriel :
+                  periodeEffective === "semestriel" ? offre.totalSemestriel :
+                  periodeEffective === "annuel" ? offre.totalAnnuel :
                   null
                 const estPlanActuel = restaurant?.plan === offre.key && ["actif", "essai"].includes(restaurant?.statut_abonnement)
                 return (
                   <div
                     key={offre.key}
                     className={`relative rounded-2xl border bg-card p-6 shadow-sm ${
-                      offre.key === "premium" ? "border-gold/50" : "border-wine/10"
+                      offre.highlight ? "border-gold/50" : "border-wine/10"
                     }`}
                   >
-                    {offre.key === "premium" && (
+                    {offre.highlight && (
                       <span className="absolute -top-3 left-6 rounded-full bg-gold px-3 py-1 text-xs font-semibold text-wine-dark">
                         Le plus complet
                       </span>
                     )}
                     <h3 className="font-display text-xl font-semibold text-ink">{offre.nom}</h3>
-                    <div className="mt-2 flex items-end gap-1">
+                    <div className="mt-2 flex items-end gap-1.5">
+                      {offre.prixBarre && (
+                        <span className="mb-1 text-lg text-ink/35 line-through">{offre.prixBarre}€</span>
+                      )}
                       <span className="font-display text-3xl font-semibold text-wine">
                         {prixAffiche}€
                       </span>
                       <span className="text-sm text-ink/50 mb-1">/mois</span>
                     </div>
-                    {totalPeriode && (
-                      <p className="mt-1 text-sm text-ink/60">
-                        soit {totalPeriode}€ facturés {billingPeriod === "trimestriel" ? "tous les 3 mois" : "1x/an"}
+                    {offre.prixBarre && (
+                      <p className="mt-1 text-xs font-semibold text-gold-light bg-wine inline-block px-2 py-0.5 rounded-full">
+                        Offre de lancement
                       </p>
                     )}
-                    {offre.key === "standard" && (
+                    {totalPeriode && (
+                      <p className="mt-1 text-sm text-ink/60">
+                        soit {totalPeriode}€ facturés {
+                          periodeEffective === "trimestriel" ? "tous les 3 mois" :
+                          periodeEffective === "semestriel" ? "tous les 6 mois" :
+                          "1x/an"
+                        }
+                      </p>
+                    )}
+                    {!offre.periodesDisponibles && (
+                      <p className="mt-1 text-xs text-ink/45">Facturation mensuelle uniquement</p>
+                    )}
+                    {offre.essaiGratuit && (
                       <p className="mt-2 inline-flex items-center rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-wine-dark">
                         14 jours d&apos;essai gratuit
                       </p>
@@ -1874,7 +1866,7 @@ function DashboardContent() {
                       ))}
                     </ul>
 
-                    {offre.key === "premium" && !estPlanActuel && (
+                    {offre.key === "standard" && !estPlanActuel && (
                       <div className="mt-4 space-y-2">
                         <label className="flex items-start gap-2.5 rounded-lg bg-secondary/50 p-3 text-sm text-ink/75 cursor-pointer">
                           <input
@@ -1887,7 +1879,7 @@ function DashboardContent() {
                             Je n&apos;ai pas encore de site, créez-moi en un
                             <span className="block text-xs text-ink/50">
                               600€ de frais uniques, puis {" "}
-                              {billingPeriod === "mensuel" ? "100€/mois" : billingPeriod === "trimestriel" ? "300€/trimestre" : "1200€/an"} de maintenance
+                              {periodeEffective === "mensuel" ? "100€/mois" : periodeEffective === "trimestriel" ? "300€/trimestre" : periodeEffective === "semestriel" ? "600€/semestre" : "1200€/an"} de maintenance
                             </span>
                           </span>
                         </label>
@@ -1902,7 +1894,7 @@ function DashboardContent() {
                             Gérez-moi mes réseaux sociaux
                             <span className="block text-xs text-ink/50">
                               400€ de frais uniques, puis {" "}
-                              {billingPeriod === "mensuel" ? "200€/mois" : billingPeriod === "trimestriel" ? "600€/trimestre" : "2400€/an"} de gestion
+                              {periodeEffective === "mensuel" ? "200€/mois" : periodeEffective === "trimestriel" ? "600€/trimestre" : periodeEffective === "semestriel" ? "1200€/semestre" : "2400€/an"} de gestion
                             </span>
                           </span>
                         </label>
@@ -1913,7 +1905,7 @@ function DashboardContent() {
                       onClick={() => handleSubscribe(planKey)}
                       disabled={estPlanActuel || subscribing !== null}
                       className={`mt-6 w-full py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-60 ${
-                        offre.key === "premium"
+                        offre.highlight
                           ? "bg-wine text-gold-light hover:bg-wine-dark"
                           : "bg-secondary text-ink hover:bg-secondary/70"
                       }`}
