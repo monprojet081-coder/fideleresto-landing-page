@@ -104,7 +104,6 @@ const secondaryFeatures = [
   {
     icon: ShieldAlert,
     title: "Alerte insatisfaction",
-    badge: "Premium",
     description:
       "Un client déçu ? Son retour vous arrive directement par email au lieu d'atterrir en public sur Google.",
   },
@@ -164,14 +163,7 @@ export function FeaturesSection() {
               <div key={feature.title} className="flex gap-4">
                 <feature.icon className="mt-0.5 size-5 shrink-0 text-wine/70" aria-hidden="true" />
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-display text-sm font-semibold text-ink">{feature.title}</h3>
-                    {feature.badge && (
-                      <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-semibold text-wine-dark">
-                        {feature.badge}
-                      </span>
-                    )}
-                  </div>
+                  <h3 className="font-display text-sm font-semibold text-ink">{feature.title}</h3>
                   <p className="mt-1 text-pretty text-sm leading-relaxed text-ink/60">{feature.description}</p>
                 </div>
               </div>

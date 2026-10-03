@@ -56,7 +56,7 @@ function DashboardContent() {
   const [relanceActive, setRelanceActive] = useState(false)
   const [relanceJours, setRelanceJours] = useState(10)
   const [relancePourcentage, setRelancePourcentage] = useState(10)
-  const [billingPeriod, setBillingPeriod] = useState<"mensuel" | "trimestriel" | "semestriel" | "annuel">("mensuel")
+  const [billingPeriod, setBillingPeriod] = useState<"mensuel" | "semestriel" | "annuel">("mensuel")
   const [avecCreationSite, setAvecCreationSite] = useState(false)
   const [avecReseaux, setAvecReseaux] = useState(false)
   const [subscribing, setSubscribing] = useState<string | null>(null)
@@ -1068,7 +1068,7 @@ function DashboardContent() {
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <h2 className="font-display font-semibold text-ink">Statistiques avancées</h2>
-                  <span className="text-[11px] font-medium bg-gold/15 text-wine-dark px-2 py-0.5 rounded-full">Premium</span>
+                  <span className="text-[11px] font-medium bg-gold/15 text-wine-dark px-2 py-0.5 rounded-full">Complet</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -1883,14 +1883,6 @@ function DashboardContent() {
                 Mensuel
               </button>
               <button
-                onClick={() => setBillingPeriod("trimestriel")}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  billingPeriod === "trimestriel" ? "bg-wine text-gold-light" : "text-ink/60"
-                }`}
-              >
-                Trimestriel
-              </button>
-              <button
                 onClick={() => setBillingPeriod("semestriel")}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   billingPeriod === "semestriel" ? "bg-wine text-gold-light" : "text-ink/60"
@@ -1915,11 +1907,9 @@ function DashboardContent() {
                 const planKey = `${offre.key}_${periodeEffective}`
                 const prixAffiche =
                   periodeEffective === "mensuel" ? offre.prixMensuel :
-                  periodeEffective === "trimestriel" ? offre.prixTrimestriel :
                   periodeEffective === "semestriel" ? offre.prixSemestriel :
                   offre.prixAnnuel
                 const totalPeriode =
-                  periodeEffective === "trimestriel" ? offre.totalTrimestriel :
                   periodeEffective === "semestriel" ? offre.totalSemestriel :
                   periodeEffective === "annuel" ? offre.totalAnnuel :
                   null
@@ -1954,7 +1944,6 @@ function DashboardContent() {
                     {totalPeriode && (
                       <p className="mt-1 text-sm text-ink/60">
                         soit {totalPeriode}€ facturés {
-                          periodeEffective === "trimestriel" ? "tous les 3 mois" :
                           periodeEffective === "semestriel" ? "tous les 6 mois" :
                           "1x/an"
                         }
@@ -1990,7 +1979,7 @@ function DashboardContent() {
                             Je n&apos;ai pas encore de site, créez-moi en un
                             <span className="block text-xs text-ink/50">
                               600€ de frais uniques, puis {" "}
-                              {periodeEffective === "mensuel" ? "100€/mois" : periodeEffective === "trimestriel" ? "300€/trimestre" : periodeEffective === "semestriel" ? "600€/semestre" : "1200€/an"} de maintenance
+                              {periodeEffective === "mensuel" ? "100€/mois" : periodeEffective === "semestriel" ? "600€/semestre" : "1200€/an"} de maintenance
                             </span>
                           </span>
                         </label>
@@ -2005,7 +1994,7 @@ function DashboardContent() {
                             Gérez-moi mes réseaux sociaux
                             <span className="block text-xs text-ink/50">
                               400€ de frais uniques, puis {" "}
-                              {periodeEffective === "mensuel" ? "200€/mois" : periodeEffective === "trimestriel" ? "600€/trimestre" : periodeEffective === "semestriel" ? "1200€/semestre" : "2400€/an"} de gestion
+                              {periodeEffective === "mensuel" ? "200€/mois" : periodeEffective === "semestriel" ? "1200€/semestre" : "2400€/an"} de gestion
                             </span>
                           </span>
                         </label>

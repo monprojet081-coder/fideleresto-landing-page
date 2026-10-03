@@ -10,16 +10,18 @@ export function getStripe() {
 }
 
 // Plans FideleResto (voir lib/pricing.ts pour le detail des fonctionnalites/prix affiches) :
-// - "essentiel" (50E/mois, mensuel uniquement) : roue + alerte insatisfaction
+// - "essentiel" (50E/mois) : roue + alerte insatisfaction
 // - "standard" ("Complet", tout inclus) : 180E/mois normalement, 120E/mois pendant
 //   l'offre de lancement -- le prix de lancement est gere directement via la valeur
 //   de STRIPE_PRICE_STANDARD_MENSUEL (un abonnement garde pour toujours le prix auquel
 //   il a souscrit, donc il suffira de changer cette variable d'environnement vers un
 //   nouveau prix une fois l'offre terminee, sans toucher au code).
+// Periodes disponibles : mensuel, semestriel (-10%), annuel (-20%). Plus de trimestriel.
 export const STRIPE_PRICES = {
   essentiel_mensuel: process.env.STRIPE_PRICE_ESSENTIEL_MENSUEL!,
+  essentiel_semestriel: process.env.STRIPE_PRICE_ESSENTIEL_SEMESTRIEL!,
+  essentiel_annuel: process.env.STRIPE_PRICE_ESSENTIEL_ANNUEL!,
   standard_mensuel: process.env.STRIPE_PRICE_STANDARD_MENSUEL!,
-  standard_trimestriel: process.env.STRIPE_PRICE_STANDARD_TRIMESTRIEL!,
   standard_semestriel: process.env.STRIPE_PRICE_STANDARD_SEMESTRIEL!,
   standard_annuel: process.env.STRIPE_PRICE_STANDARD_ANNUEL!,
 } as const
@@ -35,23 +37,20 @@ export const STRIPE_PRICE_FRAIS_RESEAUX = process.env.STRIPE_PRICE_FRAIS_RESEAUX
 // fréquences de facturation différentes dans un seul abonnement
 export const STRIPE_PRICE_MAINTENANCE_SITE = {
   mensuel: process.env.STRIPE_PRICE_MAINTENANCE_SITE_MENSUEL!,
-  trimestriel: process.env.STRIPE_PRICE_MAINTENANCE_SITE_TRIMESTRIEL!,
   semestriel: process.env.STRIPE_PRICE_MAINTENANCE_SITE_SEMESTRIEL!,
   annuel: process.env.STRIPE_PRICE_MAINTENANCE_SITE_ANNUEL!,
 } as const
 
 export const STRIPE_PRICE_GESTION_RESEAUX = {
   mensuel: process.env.STRIPE_PRICE_GESTION_RESEAUX_MENSUEL!,
-  trimestriel: process.env.STRIPE_PRICE_GESTION_RESEAUX_TRIMESTRIEL!,
   semestriel: process.env.STRIPE_PRICE_GESTION_RESEAUX_SEMESTRIEL!,
   annuel: process.env.STRIPE_PRICE_GESTION_RESEAUX_ANNUEL!,
 } as const
 
 export type PlanKey = keyof typeof STRIPE_PRICES
 
-// Périodicité déduite d'une clé de plan (ex: "standard_trimestriel" -> "trimestriel")
-export function periodeDuPlan(plan: PlanKey): 'mensuel' | 'trimestriel' | 'semestriel' | 'annuel' {
-  if (plan.endsWith('trimestriel')) return 'trimestriel'
+// Périodicité déduite d'une clé de plan (ex: "standard_semestriel" -> "semestriel")
+export function periodeDuPlan(plan: PlanKey): 'mensuel' | 'semestriel' | 'annuel' {
   if (plan.endsWith('semestriel')) return 'semestriel'
   if (plan.endsWith('annuel')) return 'annuel'
   return 'mensuel'

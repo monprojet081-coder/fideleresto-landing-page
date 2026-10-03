@@ -5,7 +5,7 @@ import { Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { plans } from "@/lib/pricing"
 
-type Periode = "mensuel" | "trimestriel" | "semestriel" | "annuel"
+type Periode = "mensuel" | "semestriel" | "annuel"
 
 export function PricingSection() {
   const [periode, setPeriode] = useState<Periode>("mensuel")
@@ -26,7 +26,6 @@ export function PricingSection() {
           <div className="inline-flex items-center rounded-full border border-wine/15 bg-card p-1">
             {([
               { key: "mensuel", label: "Mensuel" },
-              { key: "trimestriel", label: "Trimestriel" },
               { key: "semestriel", label: "Semestriel", badge: "-10%" },
               { key: "annuel", label: "Annuel", badge: "-20%" },
             ] as const).map((opt) => (
@@ -42,21 +41,15 @@ export function PricingSection() {
             ))}
           </div>
         </div>
-        <p className="mt-2 text-center text-xs text-ink/40">
-          Le plan Essentiel est facturé mensuellement, quel que soit le rythme choisi ci-dessus.
-        </p>
-
         {/* Deux cartes façon ticket de tombola gagnant, avec bord perforé et encoches */}
-        <div className="mx-auto mt-8 grid max-w-4xl gap-8 sm:grid-cols-2">
+        <div className="mx-auto mt-10 grid max-w-4xl gap-8 sm:grid-cols-2">
           {plans.map((plan) => {
             const periodeEffective: Periode = plan.periodesDisponibles ? periode : "mensuel"
             const prixAffiche =
               periodeEffective === "mensuel" ? plan.prixMensuel :
-              periodeEffective === "trimestriel" ? plan.prixTrimestriel :
               periodeEffective === "semestriel" ? plan.prixSemestriel :
               plan.prixAnnuel
             const totalPeriode =
-              periodeEffective === "trimestriel" ? plan.totalTrimestriel :
               periodeEffective === "semestriel" ? plan.totalSemestriel :
               periodeEffective === "annuel" ? plan.totalAnnuel :
               null
@@ -87,17 +80,8 @@ export function PricingSection() {
                   )}
 
                   <div className={`flex items-end justify-center gap-1 font-display ${plan.prixBarre ? "mt-0.5" : "mt-3"}`}>
-                    {periodeEffective === "trimestriel" ? (
-                      <>
-                        <span className="text-5xl font-semibold">{totalPeriode}€</span>
-                        <span className="mb-1 text-lg opacity-80">/3 mois</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-5xl font-semibold">{prixAffiche}€</span>
-                        <span className="mb-1 text-lg opacity-80">/mois</span>
-                      </>
-                    )}
+                    <span className="text-5xl font-semibold">{prixAffiche}€</span>
+                    <span className="mb-1 text-lg opacity-80">/mois</span>
                   </div>
 
                   {plan.prixBarre && (
@@ -106,7 +90,7 @@ export function PricingSection() {
                     </p>
                   )}
 
-                  {totalPeriode && periodeEffective !== "trimestriel" && (
+                  {totalPeriode && (
                     <p className="mt-1 text-xs opacity-75">
                       soit {totalPeriode}€ facturés {
                         periodeEffective === "semestriel" ? "tous les 6 mois" :

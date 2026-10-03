@@ -14,10 +14,8 @@ export const plans: {
   description: string
   prixMensuel: number
   prixBarre: number | null
-  prixTrimestriel: number
   prixSemestriel: number
   prixAnnuel: number
-  totalTrimestriel: number
   totalSemestriel: number
   totalAnnuel: number
   essaiGratuit: boolean
@@ -31,15 +29,13 @@ export const plans: {
     description: "L'essentiel pour commencer à fidéliser",
     prixMensuel: 50,
     prixBarre: null,
-    prixTrimestriel: 50,
-    prixSemestriel: 50,
-    prixAnnuel: 50,
-    totalTrimestriel: 150,
-    totalSemestriel: 300,
-    totalAnnuel: 600,
+    prixSemestriel: 45,
+    prixAnnuel: 40,
+    totalSemestriel: 270,
+    totalAnnuel: 480,
     essaiGratuit: false,
     highlight: false,
-    periodesDisponibles: false,
+    periodesDisponibles: true,
     features: [
       "Roue de la fidélité",
       "Alerte insatisfaction (protège votre note Google)",
@@ -51,10 +47,8 @@ export const plans: {
     description: "Tout FidèleResto, sans rien laisser de côté",
     prixMensuel: OFFRE_LANCEMENT_ACTIVE ? 120 : 180,
     prixBarre: OFFRE_LANCEMENT_ACTIVE ? 180 : null,
-    prixTrimestriel: 180,
     prixSemestriel: 162,
     prixAnnuel: 144,
-    totalTrimestriel: 540,
     totalSemestriel: 972,
     totalAnnuel: 1728,
     essaiGratuit: true,
