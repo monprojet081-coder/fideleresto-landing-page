@@ -61,10 +61,7 @@ export function PricingSection() {
     <section id="tarifs" className="relative overflow-hidden border-t border-wine/10 bg-secondary/50 py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="text-sm font-semibold uppercase tracking-wide text-wine">
-            Tarifs
-          </span>
-          <h2 className="mt-3 text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+          <h2 className="text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
             Un tarif simple et transparent
           </h2>
           <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/65">

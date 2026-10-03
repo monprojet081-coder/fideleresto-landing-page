@@ -1,4 +1,4 @@
-import { ArrowRight, Gift, Star } from "lucide-react"
+import { Gift, Star } from "lucide-react"
 import { PhoneMockup } from "./phone-mockup"
 
 // Vrai motif de QR code stylisé : 3 carrés de repérage (coins) + modules de données,
@@ -95,9 +95,9 @@ function RewardWheel() {
 
 const steps = [
   {
-    title: "Le client scanne le QR code",
-    description:
-      "Posé sur la table, l'addition ou la vitrine. Pas d'application à installer, ça s'ouvre directement dans son navigateur.",
+    label: "Il scanne",
+    title: "Le QR code, posé sur la table",
+    description: "Aucune application à installer, ça s'ouvre directement dans son navigateur.",
     visual: (
       <PhoneMockup>
         <div className="rounded-md bg-white p-2 shadow-sm">
@@ -118,26 +118,29 @@ const steps = [
     ),
   },
   {
-    title: "Il tourne la roue et gagne une récompense",
+    label: "Il joue",
+    title: "La roue tourne, il gagne une récompense",
     description:
       "Café offert, dessert, réduction… en quelques secondes, il repart avec une vraie raison de revenir.",
     visual: (
-      <PhoneMockup>
+      <PhoneMockup size="lg">
         <div className="relative flex items-center justify-center">
-          {/* Flèche dorée */}
           <span
-            className="absolute -top-1 z-10 size-0 border-x-[5px] border-b-[8px] border-x-transparent border-b-gold drop-shadow-sm"
+            className="absolute -top-1 z-10 size-0 border-x-[7px] border-b-[11px] border-x-transparent border-b-gold drop-shadow-sm"
             aria-hidden="true"
           />
-          <RewardWheel />
+          <div className="scale-[1.6]">
+            <RewardWheel />
+          </div>
         </div>
       </PhoneMockup>
     ),
+    featured: true,
   },
   {
-    title: "Il laisse un avis Google et récupère son cadeau",
-    description:
-      "Un tap suffit pour publier son avis. La récompense se débloque aussitôt, prête à être présentée en caisse.",
+    label: "Il revient",
+    title: "L'avis part, le cadeau se débloque",
+    description: "Un tap suffit pour publier son avis Google. La récompense est prête à être présentée en caisse.",
     visual: (
       <PhoneMockup tone="sage">
         <div className="flex flex-col items-center gap-2" aria-hidden="true">
@@ -160,11 +163,8 @@ export function HowItWorksSection() {
   return (
     <section id="comment-ca-marche" className="relative overflow-hidden border-t border-wine/10 bg-secondary/50 py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mx-auto max-w-2xl text-center">
-          <span className="text-sm font-semibold uppercase tracking-wide text-wine">
-            Comment ça marche
-          </span>
-          <h2 className="mt-3 text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+        <div className="max-w-xl">
+          <h2 className="text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
             De la table au clic, en moins d&apos;une minute
           </h2>
           <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/65">
@@ -173,29 +173,18 @@ export function HowItWorksSection() {
           </p>
         </div>
 
-        <div className="mt-14 flex flex-col gap-10 md:flex-row md:items-start md:gap-0">
-          {steps.map((step, index) => (
-            <div key={step.title} className="contents">
-              <div className="flex flex-1 flex-col items-center px-4 text-center">
-                <div className="relative">
-                  {step.visual}
-                  <span className="absolute -right-2 -top-2 flex size-7 items-center justify-center rounded-full border-2 border-secondary bg-gold text-xs font-bold text-wine-dark shadow-sm">
-                    {index + 1}
-                  </span>
-                </div>
-                <h3 className="mt-6 font-display text-xl font-semibold text-ink">{step.title}</h3>
-                <p className="mt-3 text-pretty leading-relaxed text-ink/65">
-                  {step.description}
-                </p>
-              </div>
-
-              {index < steps.length - 1 && (
-                <div className="hidden shrink-0 items-center justify-center pt-20 md:flex">
-                  <span className="flex size-8 items-center justify-center rounded-full bg-gold/15 text-gold">
-                    <ArrowRight className="size-4" aria-hidden="true" />
-                  </span>
-                </div>
-              )}
+        <div className="mt-16 grid gap-12 sm:grid-cols-3 sm:items-end sm:gap-6">
+          {steps.map((step) => (
+            <div
+              key={step.title}
+              className={`flex flex-col items-center text-center ${step.featured ? "sm:-mt-10" : ""}`}
+            >
+              {step.visual}
+              <p className="mt-6 text-xs font-semibold tracking-wide text-wine/70">{step.label}</p>
+              <h3 className="mt-2 font-display text-lg font-semibold text-ink">{step.title}</h3>
+              <p className="mt-2 max-w-[15rem] text-pretty text-sm leading-relaxed text-ink/60">
+                {step.description}
+              </p>
             </div>
           ))}
         </div>

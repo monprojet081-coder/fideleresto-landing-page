@@ -111,65 +111,72 @@ const secondaryFeatures = [
 ]
 
 export function FeaturesSection() {
+  const [phare, ...reste] = coreFeatures
+
   return (
     <section id="fonctionnalites" className="relative overflow-hidden bg-ivory py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mx-auto max-w-2xl text-center">
-          <span className="text-sm font-semibold uppercase tracking-wide text-wine">
-            Fonctionnalités
-          </span>
-          <h2 className="mt-3 text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+        <div className="max-w-xl">
+          <h2 className="text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
             Tout ce qu&apos;il faut pour remplir votre salle
           </h2>
           <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/65">
-            Une seule plateforme pour fidéliser vos clients, soigner votre réputation et garder le contact,
-            sans compétence technique.
+            Une seule plateforme pour fidéliser vos clients, soigner votre réputation et garder le
+            contact, sans compétence technique.
           </p>
         </div>
 
-        {/* 4 fonctionnalités principales, avec mockup visuel */}
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {coreFeatures.map((feature) => (
-            <div
-              key={feature.title}
-              className="group relative overflow-hidden rounded-2xl border border-wine/12 bg-card transition-all hover:border-gold/40 hover:shadow-xl hover:shadow-wine/5"
-            >
-              <div className="flex h-32 items-center justify-center border-b border-dashed border-wine/15 bg-secondary/40">
-                {feature.visual}
-              </div>
-              <div className="p-5">
-                <h3 className="font-display text-base font-semibold text-ink">{feature.title}</h3>
-                <p className="mt-2 text-pretty text-sm leading-relaxed text-ink/65">
-                  {feature.description}
-                </p>
-              </div>
+        {/* La roue, fonctionnalite signature, traitee en grand */}
+        <div className="mt-12 grid gap-5 lg:grid-cols-[1.3fr_1fr]">
+          <div className="flex flex-col justify-between gap-8 rounded-[28px] border border-wine/12 bg-card p-8 sm:flex-row sm:items-center sm:p-10">
+            <div className="max-w-xs">
+              <h3 className="font-display text-2xl font-semibold text-ink">{phare.title}</h3>
+              <p className="mt-3 text-pretty text-base leading-relaxed text-ink/65">{phare.description}</p>
             </div>
-          ))}
+            <div className="flex size-28 shrink-0 items-center justify-center rounded-full bg-secondary/50">
+              {phare.visual}
+            </div>
+          </div>
+
+          {/* Les 3 autres fonctionnalites principales, en rang compact */}
+          <div className="grid min-w-0 grid-rows-3 gap-5">
+            {reste.map((feature) => (
+              <div
+                key={feature.title}
+                className="flex min-w-0 items-center gap-4 rounded-2xl border border-wine/12 bg-card px-5 py-4"
+              >
+                <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary/50">
+                  <div className="scale-[0.4]">{feature.visual}</div>
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-display text-sm font-semibold text-ink">{feature.title}</h3>
+                  <p className="mt-0.5 truncate text-xs leading-relaxed text-ink/55">{feature.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* 4 fonctionnalités complémentaires, format compact */}
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {secondaryFeatures.map((feature) => (
-            <div
-              key={feature.title}
-              className="rounded-2xl border border-wine/12 bg-card p-5 transition-all hover:border-gold/40"
-            >
-              <div className="flex size-10 items-center justify-center rounded-lg bg-wine/8 text-wine">
-                <feature.icon className="size-5" aria-hidden="true" />
+        {/* Fonctionnalites complementaires, en liste simple : pas besoin du meme poids visuel */}
+        <div className="mt-14 border-t border-wine/10 pt-10">
+          <div className="grid gap-x-10 gap-y-7 sm:grid-cols-2">
+            {secondaryFeatures.map((feature) => (
+              <div key={feature.title} className="flex gap-4">
+                <feature.icon className="mt-0.5 size-5 shrink-0 text-wine/70" aria-hidden="true" />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-display text-sm font-semibold text-ink">{feature.title}</h3>
+                    {feature.badge && (
+                      <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-semibold text-wine-dark">
+                        {feature.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-pretty text-sm leading-relaxed text-ink/60">{feature.description}</p>
+                </div>
               </div>
-              <div className="mt-4 flex items-center gap-2">
-                <h3 className="font-display text-sm font-semibold text-ink">{feature.title}</h3>
-                {feature.badge && (
-                  <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-semibold text-wine-dark">
-                    {feature.badge}
-                  </span>
-                )}
-              </div>
-              <p className="mt-1.5 text-pretty text-xs leading-relaxed text-ink/60">
-                {feature.description}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

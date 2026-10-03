@@ -1,56 +1,114 @@
-import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+
+// Le panneau "ticket" a droite est un element graphique a part entiere, en attente
+// d'etre remplace/enrichi par l'asset hero fourni par le client. Pas d'illustration
+// recreee ici : uniquement de la couleur, de la forme et du texte reel.
+function TicketPanel() {
+  const lignes = [
+    { chiffre: "1 scan", texte: "suffit pour jouer, aucune appli à installer" },
+    { chiffre: "0 €", texte: "dépensé en pub pour faire revenir vos habitués" },
+    { chiffre: "24 h", texte: "chrono pour voir vos premiers clients rejouer" },
+  ]
+
+  return (
+    <div className="relative mx-auto w-full max-w-sm lg:mx-0">
+      <div className="relative overflow-hidden rounded-[28px] bg-wine text-ivory shadow-2xl shadow-wine/30">
+        {/* Bord perfore haut, comme un ticket qu'on detache */}
+        <div
+          className="h-5 bg-ivory"
+          style={{
+            maskImage: "radial-gradient(circle at 10px 2.5px, transparent 6px, black 6.5px)",
+            maskSize: "20px 20px",
+            maskRepeat: "repeat-x",
+            WebkitMaskImage: "radial-gradient(circle at 10px 2.5px, transparent 6px, black 6.5px)",
+            WebkitMaskSize: "20px 20px",
+            WebkitMaskRepeat: "repeat-x",
+          }}
+          aria-hidden="true"
+        />
+
+        <div className="px-8 py-9">
+          <p className="font-display text-base italic text-gold-light/70">
+            Depuis votre table
+          </p>
+
+          <div className="mt-7 space-y-6">
+            {lignes.map((l) => (
+              <div key={l.texte} className="flex items-baseline gap-4 border-t border-gold-light/15 pt-6 first:border-0 first:pt-0">
+                <span className="shrink-0 whitespace-nowrap font-display text-3xl font-semibold text-gold-light">{l.chiffre}</span>
+                <span className="text-sm leading-snug text-ivory/80">{l.texte}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div
+          className="h-5 bg-ivory"
+          style={{
+            maskImage: "radial-gradient(circle at 10px 2.5px, transparent 6px, black 6.5px)",
+            maskSize: "20px 20px",
+            maskRepeat: "repeat-x",
+            WebkitMaskImage: "radial-gradient(circle at 10px 2.5px, transparent 6px, black 6.5px)",
+            WebkitMaskSize: "20px 20px",
+            WebkitMaskRepeat: "repeat-x",
+          }}
+          aria-hidden="true"
+        />
+      </div>
+
+      {/* Tampon dore, comme une carte de fidelite validee */}
+      <div className="absolute -right-5 -top-5 flex size-20 rotate-[8deg] items-center justify-center rounded-full border-2 border-gold bg-ivory text-center shadow-lg">
+        <span className="font-display text-xs font-semibold leading-tight text-wine">
+          Prêt en<br />5 min
+        </span>
+      </div>
+    </div>
+  )
+}
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-ivory pt-32 pb-20 sm:pt-40 sm:pb-28">
-      {/* Halo doré discret en arrière-plan, façon projecteur sur une table */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-gold/15 blur-3xl" />
-        <div className="absolute top-32 -left-24 h-[280px] w-[280px] rounded-full bg-wine/8 blur-3xl" />
-      </div>
-
+    <section className="relative overflow-hidden bg-ivory pt-28 pb-20 sm:pt-36 sm:pb-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-1.5 text-sm font-medium text-wine-dark">
-            <span className="flex size-2 rounded-full bg-gold" aria-hidden="true" />
-            L&apos;outil de fidélisation pensé pour les restaurateurs
-          </span>
+        <div className="grid items-center gap-14 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10">
+          <div>
+            <h1 className="text-balance font-display font-semibold tracking-tight text-ink">
+              <span className="block text-4xl sm:text-5xl md:text-[3.4rem] md:leading-[1.05]">
+                Vos clients reviennent
+              </span>
+              <span className="mt-1 block text-5xl text-wine sm:text-6xl md:text-7xl md:leading-[1.02]">
+                ou ils ne reviennent pas.
+              </span>
+            </h1>
 
-          <h1 className="mt-6 text-balance font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl md:text-6xl">
-            Augmentez <span className="italic text-wine">votre chiffre d&apos;affaires</span> avec FidèleResto.
-          </h1>
+            <p className="mt-7 max-w-lg text-pretty text-lg leading-relaxed text-ink/65">
+              FidèleResto glisse une roue de la chance derrière le QR code de vos tables. Le client joue,
+              gagne, laisse un avis Google et revient — vous, vous récupérez ses coordonnées et suivez
+              tout depuis un tableau de bord.
+            </p>
 
-          <p className="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-ink/65">
-            Vous tenez un restaurant ? FidèleResto installe une roue de la chance derrière un simple
-            QR code sur vos tables. Vos clients jouent, gagnent une récompense, laissent un avis Google
-            et reviennent — pendant que vous récupérez leurs coordonnées et suivez tout depuis un tableau de bord.
-          </p>
-
-          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
-            <Button
-              size="lg"
-              className="h-11 bg-wine px-6 text-base text-gold-light shadow-lg shadow-wine/20 transition-transform hover:scale-[1.02] hover:bg-wine-dark"
-              nativeButton={false}
-              render={<a href="/inscription?plan=standard_mensuel" />}
-            >
-              Essayer gratuitement 14 jours
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-11 border-wine/20 px-6 text-base text-ink hover:bg-wine/5"
-              nativeButton={false}
-              render={<a href="#comment-ca-marche" />}
-            >
-              Voir comment ça marche
-            </Button>
+            <div className="mt-9 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+              <Button
+                size="lg"
+                className="h-12 bg-wine px-7 text-base text-gold-light shadow-lg shadow-wine/20 hover:bg-wine-dark"
+                nativeButton={false}
+                render={<a href="/inscription?plan=standard_mensuel" />}
+              >
+                Essayer gratuitement 14 jours
+              </Button>
+              <Button
+                variant="ghost"
+                size="lg"
+                className="h-12 px-3 text-base text-ink underline decoration-wine/30 decoration-2 underline-offset-4 hover:bg-transparent hover:text-wine"
+                nativeButton={false}
+                render={<a href="#comment-ca-marche" />}
+              >
+                Voir comment ça marche
+              </Button>
+            </div>
           </div>
 
-          <p className="mt-4 text-sm text-ink/45">
-            Sans engagement · Résiliable à tout moment · Aucune application à installer pour vos clients
-          </p>
+          <TicketPanel />
         </div>
       </div>
     </section>
