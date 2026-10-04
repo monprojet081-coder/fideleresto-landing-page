@@ -28,6 +28,8 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [avisExiste, setAvisExiste] = useState(true)
   const [dejaVenu, setDejaVenu] = useState(false)
   const [frequenceJours, setFrequenceJours] = useState(1)
+  const [emailStatut, setEmailStatut] = useState<"ok" | "echec" | null>(null)
+  const [recompenseRowId, setRecompenseRowId] = useState<string | null>(null)
   // Alerte insatisfaction (Premium) : on capte une note avant d'envoyer vers Google
   const [noteAvis, setNoteAvis] = useState(0)
   const [commentaireAvis, setCommentaireAvis] = useState("")
@@ -67,6 +69,21 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         })
       })
   }, [slug])
+
+  // Si l'email n'a pas pu partir, on affiche le QR de la recompense directement a l'ecran
+  // pour que le client reparte quand meme avec son gain (capture d'ecran).
+  React.useEffect(() => {
+    if (step === "win" && emailStatut === "echec" && recompenseRowId) {
+      import("qrcode").then((QRCode) => {
+        const canvas = document.getElementById("qr-recompense-canvas") as HTMLCanvasElement | null
+        if (canvas) {
+          QRCode.toCanvas(canvas, `fideleresto:recompense:${recompenseRowId}`, {
+            width: 180, margin: 1, color: { dark: "#241914", light: "#ffffff" },
+          }, () => {})
+        }
+      })
+    }
+  }, [step, emailStatut, recompenseRowId])
 
   // Le tirage au sort de la recompense se fait desormais cote serveur (/api/roue/jouer),
   // impossible a manipuler depuis la console du navigateur.
@@ -114,11 +131,24 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
     const reward = data.reward
 
     if (reward.label !== "Perdu 😢") {
-      await fetch("/api/send-reward-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prenom, email, recompense: reward.label, restaurantNom: nomRestaurant, slug, clientRowId: data.clientRowId }),
-      })
+      setRecompenseRowId(data.clientRowId || null)
+      try {
+        const resEmail = await fetch("/api/send-reward-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prenom, email, recompense: reward.label, restaurantNom: nomRestaurant, slug, clientRowId: data.clientRowId }),
+        })
+        if (resEmail.ok) {
+          setEmailStatut("ok")
+        } else {
+          const detail = await resEmail.json().catch(() => null)
+          console.error("Envoi de l'email de recompense impossible :", detail)
+          setEmailStatut("echec")
+        }
+      } catch (err) {
+        console.error("Envoi de l'email de recompense impossible :", err)
+        setEmailStatut("echec")
+      }
     }
 
     setResult(reward)
@@ -346,7 +376,20 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 mb-6">
               <p className="text-xl font-display font-semibold text-wine-dark">{result.label}</p>
             </div>
-            <p className="text-sm text-ink/55 mb-2">Un email avec votre récompense vient de vous être envoyé. Montrez-le au comptoir pour en profiter !</p>
+            {emailStatut === "echec" ? (
+              <div className="mb-4 rounded-xl border border-gold/40 bg-gold/10 p-4">
+                <p className="text-sm font-medium text-wine-dark mb-1">L&apos;email n&apos;a pas pu partir</p>
+                <p className="text-xs text-ink/60 mb-3">
+                  Pas d&apos;inquiétude, votre gain est bien enregistré. Faites une capture d&apos;écran de ce code et
+                  présentez-la au comptoir lors de votre prochaine visite.
+                </p>
+                <canvas id="qr-recompense-canvas" className="mx-auto rounded-lg bg-white p-2 shadow-sm" />
+              </div>
+            ) : (
+              <p className="text-sm text-ink/55 mb-2">
+                Un email avec votre récompense vient de vous être envoyé (pensez à vérifier vos spams). Montrez-le au comptoir pour en profiter !
+              </p>
+            )}
             <p className="text-xs text-ink/40 mb-5">Vous pourrez retenter votre chance demain 🎡</p>
 
             <AvisSection

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
-import { getResend } from '@/lib/resend'
+import { envoyerEmailSansBloquer } from '@/lib/resend'
 
 
 
@@ -8,7 +8,6 @@ import { getResend } from '@/lib/resend'
 // insatisfaction") : on ne publie rien nulle part, on prévient juste le restaurateur par email
 // pour qu'il puisse rattraper le client avant qu'un mauvais avis n'atterrisse sur Google
 export async function POST(req: NextRequest) {
-  const resend = getResend()
   const supabase = getSupabaseAdmin()
   try {
     const { slug, note, commentaire, prenom, email } = await req.json()
@@ -48,7 +47,7 @@ export async function POST(req: NextRequest) {
     const emailResto = userData?.user?.email
 
     if (emailResto) {
-      await resend.emails.send({
+      await envoyerEmailSansBloquer({
         from: 'FidèleResto <contact@fideleresto.fr>',
         to: [emailResto],
         subject: `⚠️ Retour client à traiter (${note}/5) — ${resto.nom_restaurant}`,
@@ -70,7 +69,7 @@ export async function POST(req: NextRequest) {
             </p>
           </div>
         `,
-      }).catch((err) => console.error('Erreur envoi email alerte insatisfaction:', err))
+      }, 'alerte avis negatif')
     }
 
     return NextResponse.json({ success: true })

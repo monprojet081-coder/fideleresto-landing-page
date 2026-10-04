@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getStripe, STRIPE_PRICE_FRAIS_SITE } from '@/lib/stripe'
 import type Stripe from 'stripe'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
-import { getResend } from '@/lib/resend'
+import { envoyerEmailSansBloquer } from '@/lib/resend'
 
 
 
 export async function POST(req: NextRequest) {
-  const resend = getResend()
   const supabase = getSupabaseAdmin()
   const stripe = getStripe()
   const body = await req.text()
@@ -85,7 +84,7 @@ export async function POST(req: NextRequest) {
             const options = 'création de site'
 
             if (destinataires.length > 0) {
-              await resend.emails.send({
+              await envoyerEmailSansBloquer({
                 from: 'FidèleResto <contact@fideleresto.fr>',
                 to: destinataires,
                 subject: `🔔 Nouvelle option souscrite : ${options}`,
@@ -97,7 +96,7 @@ export async function POST(req: NextRequest) {
                     <p>Rendez-vous dans l'espace admin pour voir les coordonnées du restaurant et le contacter.</p>
                   </div>
                 `,
-              }).catch((err) => console.error('Erreur envoi email notification option:', err))
+              }, 'notification option site')
             }
           }
         }
