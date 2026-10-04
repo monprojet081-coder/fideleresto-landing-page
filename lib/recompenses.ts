@@ -70,3 +70,10 @@ export function regrouperParClient(lignes: LigneClient[]): ClientRegroupe[] {
 export function normaliserRecherche(texte: string): string {
   return texte.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim()
 }
+
+// "Quand peut-on rejouer ?" selon la frequence choisie par le restaurateur.
+// Une frequence de N jours signifie : on peut rejouer N jours calendaires apres sa partie.
+export function quandRejouer(frequenceJours: number): string {
+  if (frequenceJours <= 1) return "demain"
+  return `dans ${frequenceJours} jours`
+}

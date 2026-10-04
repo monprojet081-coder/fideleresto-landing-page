@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic'
 import React, { useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { UtensilsCrossed } from "lucide-react"
+import { quandRejouer, DUREE_VALIDITE_JOURS } from "@/lib/recompenses"
 
 type Step = "checking" | "not_found" | "inactive" | "form" | "wheel" | "win" | "lose" | "already_played"
 
@@ -127,6 +128,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
     }
 
     setDejaVenu(data.dejaVenu)
+    setFrequenceJours(data.frequenceJours || 1)
     setRewards(data.rewardsList)
     const reward = data.reward
 
@@ -185,7 +187,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8 text-center">
           <div className="text-6xl mb-4">🔍</div>
           <h1 className="text-2xl font-display font-semibold text-ink mb-2">Roue introuvable</h1>
-          <p className="text-ink/55 text-sm">Ce lien ne correspond à aucun restaurant. Vérifiez le QR code ou le lien utilisé.</p>
+          <p className="text-ink/75 text-base">Ce lien ne correspond à aucun restaurant. Vérifiez le QR code ou le lien utilisé.</p>
         </div>
       </div>
     )
@@ -197,7 +199,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8 text-center">
           <div className="text-6xl mb-4">⏸️</div>
           <h1 className="text-2xl font-display font-semibold text-ink mb-2">Roue temporairement indisponible</h1>
-          <p className="text-ink/55 text-sm">Ce restaurant n&apos;a pas (ou plus) d&apos;abonnement actif.</p>
+          <p className="text-ink/75 text-base">Ce restaurant n&apos;a pas (ou plus) d&apos;abonnement actif.</p>
         </div>
       </div>
     )
@@ -213,7 +215,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
               <span className="text-2xl">🎡</span>
             </div>
             <h1 className="text-2xl font-display font-semibold text-ink">Tentez votre chance !</h1>
-            <p className="text-ink/55 text-sm mt-2">Remplissez vos infos et tournez la roue pour gagner une récompense</p>
+            <p className="text-ink/75 text-base mt-2">Remplissez vos infos et tournez la roue pour gagner une récompense</p>
           </div>
         )}
 
@@ -364,33 +366,51 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                 }}
               />
             </div>
-            <p className="text-ink/55 text-sm">{spinning ? "La roue tourne... 🎡" : "Regardez le résultat !"}</p>
+            <p className="text-ink/80 text-lg font-medium">{spinning ? "La roue tourne... 🎡" : "Regardez le résultat !"}</p>
           </div>
         )}
 
         {step === "win" && result && (
           <div className="text-center">
-            <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-2xl font-display font-semibold text-ink mb-2">Félicitations !</h2>
-            <p className="text-ink/55 mb-6">Vous avez gagné :</p>
-            <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 mb-6">
-              <p className="text-xl font-display font-semibold text-wine-dark">{result.label}</p>
+            <div className="text-7xl mb-3">🎉</div>
+            <h2 className="text-3xl font-display font-semibold text-ink mb-2">Félicitations !</h2>
+            <p className="text-lg text-ink/80 mb-5">Vous avez gagné :</p>
+            <div className="bg-gold/15 border-2 border-gold/50 rounded-2xl p-7 mb-6">
+              <p className="text-3xl font-display font-semibold text-wine-dark leading-tight">{result.label}</p>
             </div>
+
             {emailStatut === "echec" ? (
-              <div className="mb-4 rounded-xl border border-gold/40 bg-gold/10 p-4">
-                <p className="text-sm font-medium text-wine-dark mb-1">L&apos;email n&apos;a pas pu partir</p>
-                <p className="text-xs text-ink/60 mb-3">
-                  Pas d&apos;inquiétude, votre gain est bien enregistré. Faites une capture d&apos;écran de ce code et
-                  présentez-la au comptoir lors de votre prochaine visite.
+              <div className="mb-5 rounded-2xl border-2 border-gold/50 bg-gold/10 p-5 text-left">
+                <p className="text-lg font-semibold text-wine-dark mb-2">L&apos;email n&apos;a pas pu partir</p>
+                <p className="text-base text-ink/80 mb-4">
+                  Pas d&apos;inquiétude, votre gain est bien enregistré. <strong>Faites une capture d&apos;écran de ce code</strong>{" "}
+                  et présentez-la au comptoir au moment de payer.
                 </p>
-                <canvas id="qr-recompense-canvas" className="mx-auto rounded-lg bg-white p-2 shadow-sm" />
+                <canvas id="qr-recompense-canvas" width={180} height={180} className="mx-auto max-w-full rounded-lg bg-white p-2 shadow-sm" />
+                <p className="mt-3 text-center text-sm text-ink/70">
+                  Valable {DUREE_VALIDITE_JOURS} jours, utilisable une seule fois.
+                </p>
               </div>
             ) : (
-              <p className="text-sm text-ink/55 mb-2">
-                Un email avec votre récompense vient de vous être envoyé (pensez à vérifier vos spams). Montrez-le au comptoir pour en profiter !
-              </p>
+              <div className="mb-5 rounded-2xl bg-wine p-5 text-left text-ivory">
+                <p className="font-display text-xl font-semibold text-gold-light mb-2">Pour récupérer votre cadeau</p>
+                <p className="text-base leading-relaxed">
+                  Au moment de payer, <strong>présentez au comptoir l&apos;email de votre récompense</strong> (avec son QR code).
+                </p>
+                <p className="mt-3 rounded-lg bg-gold px-3 py-2.5 text-base font-semibold text-wine-dark">
+                  📬 Pas d&apos;email ? Regardez dans vos spams (courriers indésirables).
+                </p>
+                <p className="mt-3 text-sm text-ivory/85">
+                  Valable {DUREE_VALIDITE_JOURS} jours, utilisable une seule fois.
+                </p>
+              </div>
             )}
-            <p className="text-xs text-ink/40 mb-5">Vous pourrez retenter votre chance demain 🎡</p>
+
+            <div className="mb-6 rounded-2xl border-2 border-wine/25 bg-ivory p-4">
+              <p className="text-lg font-semibold text-wine-dark">
+                🎡 Revenez {quandRejouer(frequenceJours)} pour retenter votre chance !
+              </p>
+            </div>
 
             <AvisSection
               slug={slug}
@@ -414,11 +434,13 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
         {step === "lose" && (
           <div className="text-center">
-            <div className="text-6xl mb-4">😢</div>
-            <h2 className="text-2xl font-display font-semibold text-ink mb-2">Pas de chance !</h2>
-            <p className="text-ink/55 mb-6">Vous n'avez rien gagné cette fois...</p>
-            <div className="bg-secondary/50 border border-wine/10 rounded-xl p-6 mb-5">
-              <p className="text-sm text-ink/65">Revenez nous voir bientôt pour retenter votre chance ! 🍀</p>
+            <div className="text-7xl mb-3">😢</div>
+            <h2 className="text-3xl font-display font-semibold text-ink mb-2">Pas de chance !</h2>
+            <p className="text-lg text-ink/80 mb-6">Vous n&apos;avez rien gagné cette fois...</p>
+            <div className="mb-6 rounded-2xl border-2 border-wine/25 bg-ivory p-5">
+              <p className="text-lg font-semibold text-wine-dark">
+                🍀 Revenez {quandRejouer(frequenceJours)} pour retenter votre chance !
+              </p>
             </div>
 
             <AvisSection
@@ -443,21 +465,19 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
         {step === "already_played" && (
           <div className="text-center">
-            <div className="text-6xl mb-4">⏳</div>
-            <h2 className="text-2xl font-display font-semibold text-ink mb-2">Déjà joué !</h2>
-            <p className="text-ink/55 mb-6">Vous avez déjà participé{frequenceJours === 1 ? " aujourd'hui" : ""}.</p>
-            <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 mb-3">
-              <p className="text-sm text-wine-dark font-medium">
-                {frequenceJours === 1 && "La roue se réinitialise chaque jour — revenez demain pour retenter votre chance ! 🍀"}
-                {frequenceJours === 7 && "La roue se réinitialise chaque semaine — revenez la semaine prochaine pour retenter votre chance ! 🍀"}
-                {frequenceJours === 14 && "La roue se réinitialise toutes les 2 semaines — revenez dans 2 semaines pour retenter votre chance ! 🍀"}
-                {frequenceJours === 30 && "La roue se réinitialise une fois par mois — revenez le mois prochain pour retenter votre chance ! 🍀"}
-                {![1, 7, 14, 30].includes(frequenceJours) && `La roue se réinitialise tous les ${frequenceJours} jours — revenez plus tard pour retenter votre chance ! 🍀`}
+            <div className="text-7xl mb-3">⏳</div>
+            <h2 className="text-3xl font-display font-semibold text-ink mb-2">Déjà joué !</h2>
+            <p className="text-lg text-ink/80 mb-6">
+              Vous avez déjà participé{frequenceJours === 1 ? " aujourd'hui" : ""}.
+            </p>
+            <div className="mb-4 rounded-2xl border-2 border-wine/25 bg-ivory p-5">
+              <p className="text-lg font-semibold text-wine-dark">
+                🎡 Revenez {quandRejouer(frequenceJours)} pour retenter votre chance !
               </p>
             </div>
             <a
               href={`/carte/${slug}`}
-              className="block w-full border border-wine/20 text-ink font-medium text-sm py-3 rounded-lg hover:bg-wine/5 transition-colors text-center"
+              className="block w-full border border-wine/20 text-ink font-medium text-base py-3.5 rounded-lg hover:bg-wine/5 transition-colors text-center"
             >
               🍽️ Voir le menu et ma carte de fidélité
             </a>
@@ -515,7 +535,7 @@ function AvisSection({
   const lienCarteNeutre = (
     <a
       href={`/carte/${slug}`}
-      className="mt-3 block w-full border border-wine/20 text-ink font-medium text-sm py-3 rounded-lg hover:bg-wine/5 transition-colors text-center"
+      className="mt-3 block w-full border border-wine/20 text-ink font-medium text-base py-3.5 rounded-lg hover:bg-wine/5 transition-colors text-center"
     >
       🍽️ Voir le menu et ma carte de fidélité
     </a>
@@ -525,12 +545,12 @@ function AvisSection({
   // (incitation claire), pour ne pas que cette fonctionnalite reste trop discrete
   const lienCarteIncitatif = (
     <div className="mt-4 rounded-xl border-2 border-gold/40 bg-gold/10 p-3.5 text-center">
-      <p className="text-xs font-medium text-wine-dark mb-2.5">
+      <p className="text-sm font-semibold text-wine-dark mb-3">
         🔓 Une fois votre avis laissé, accédez à votre carte de fidélité et au menu du restaurant !
       </p>
       <a
         href={`/carte/${slug}`}
-        className="block w-full bg-card border border-wine/20 text-ink font-medium text-sm py-2.5 rounded-lg hover:bg-wine/5 transition-colors text-center"
+        className="block w-full bg-card border border-wine/20 text-ink font-medium text-base py-3 rounded-lg hover:bg-wine/5 transition-colors text-center"
       >
         🍽️ Voir le menu et ma carte de fidélité
       </a>
@@ -653,7 +673,7 @@ function AvisSection({
   return (
     <div className="text-center">
       <p className="text-sm text-ink/70 mb-1">Merci beaucoup 🙏</p>
-      <p className="text-xs text-ink/50 mb-2">Votre retour a bien été transmis au restaurant.</p>
+      <p className="text-sm text-ink/75 mb-2">Votre retour a bien été transmis au restaurant.</p>
       {lienCarteNeutre}
     </div>
   )

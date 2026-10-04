@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
     }
 
-    return NextResponse.json({ dejaJoue: false, dejaVenu, reward, rewardsList, clientRowId: nouveauClient?.id })
+    return NextResponse.json({ dejaJoue: false, dejaVenu, reward, rewardsList, clientRowId: nouveauClient?.id, frequenceJours })
   } catch (err: any) {
     console.error('Erreur roue/jouer:', err)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
