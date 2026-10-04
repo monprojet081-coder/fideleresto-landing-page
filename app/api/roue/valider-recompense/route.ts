@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifierRestaurateur } from '@/lib/verifierRestaurateur'
-
-const DUREE_VALIDITE_JOURS = 10
+import { DUREE_VALIDITE_JOURS } from '@/lib/recompenses'
 
 export async function POST(req: NextRequest) {
   try {

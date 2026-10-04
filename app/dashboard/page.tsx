@@ -8,10 +8,11 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck, Menu, X, Inbox } from "lucide-react"
+import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck, Menu, X, Inbox, ArrowLeft } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
 import { plans } from "@/lib/pricing"
+import { statutRecompense, regrouperParClient, normaliserRecherche, DUREE_VALIDITE_JOURS } from "@/lib/recompenses"
 
 export default function DashboardPage() {
   return (
@@ -48,6 +49,10 @@ function DashboardContent() {
   const [newLabel, setNewLabel] = useState("")
   const [saving, setSaving] = useState(false)
   const [clients, setClients] = useState<any[]>([])
+  const [rechercheClient, setRechercheClient] = useState("")
+  const [clientSelectionne, setClientSelectionne] = useState<string | null>(null)
+  const [validationHistoriqueId, setValidationHistoriqueId] = useState<string | null>(null)
+  const [messageHistorique, setMessageHistorique] = useState<{ ok: boolean; texte: string } | null>(null)
   const [clientsLoading, setClientsLoading] = useState(true)
   const [restaurant, setRestaurant] = useState<any>(null)
   const [nomRestaurantInput, setNomRestaurantInput] = useState("")
@@ -264,6 +269,53 @@ function DashboardContent() {
       setActiveSection("abonnement")
     }
   }, [searchParams])
+
+  // Recharge la liste des clients : sans ca, un gain valide au scanner (autre onglet)
+  // s'afficherait encore "a utiliser" ici.
+  const rechargerClients = async () => {
+    if (!user) return
+    const slug = user.id.slice(0, 8)
+    const { data } = await supabase
+      .from("clients")
+      .select("*")
+      .eq("restaurant_slug", slug)
+      .order("created_at", { ascending: false })
+    if (data) setClients(data)
+  }
+
+  useEffect(() => {
+    if (activeSection === "clients" && user) {
+      rechargerClients()
+    }
+    if (activeSection !== "clients") {
+      setClientSelectionne(null)
+      setMessageHistorique(null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSection, user])
+
+  const validerDepuisHistorique = async (clientRowId: string) => {
+    setValidationHistoriqueId(clientRowId)
+    setMessageHistorique(null)
+    const slug = user.id.slice(0, 8)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch("/api/roue/valider-recompense", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ slug, clientRowId }),
+    })
+    const result = await res.json()
+    if (result.success) {
+      setClients(prev => prev.map(c => c.id === clientRowId
+        ? { ...c, recompense_utilisee: true, recompense_utilisee_le: new Date().toISOString() }
+        : c))
+      setMessageHistorique({ ok: true, texte: `Récompense validée : ${result.recompense}` })
+    } else {
+      setMessageHistorique({ ok: false, texte: result.error || "Erreur lors de la validation" })
+      rechargerClients()
+    }
+    setValidationHistoriqueId(null)
+  }
 
   const handleSubscribe = async (planKey: string) => {
     setSubscribing(planKey)
@@ -1268,78 +1320,181 @@ function DashboardContent() {
           </div>
         )}
 
-        {activeSection === "clients" && (
-          <div>
-            <div className="mb-8">
-              <h1 className="text-2xl font-display font-semibold text-ink">Mes clients</h1>
-              <p className="text-ink/55 mt-1">Liste des clients collectés via votre QR code</p>
-            </div>
-            <div className="bg-card rounded-xl border border-wine/10 shadow-sm">
-              {clientsLoading ? (
-                <div className="p-6 text-center">
-                  <div className="w-6 h-6 border-2 border-wine border-t-transparent rounded-full animate-spin mx-auto"></div>
-                </div>
-              ) : clients.length === 0 ? (
-                <div className="p-10 flex flex-col items-center text-center">
-                  <span className="flex size-12 items-center justify-center rounded-full bg-wine/8 text-wine mb-4">
-                    <Users className="w-6 h-6" />
-                  </span>
-                  <p className="text-sm text-ink/60 max-w-sm">
-                    Aucun client pour le moment. Partagez votre QR code pour commencer à collecter des contacts !
+        {activeSection === "clients" && (() => {
+          const clientsRegroupes = regrouperParClient(clients)
+          const terme = normaliserRecherche(rechercheClient)
+          const clientsFiltres = terme
+            ? clientsRegroupes.filter(c =>
+                normaliserRecherche(c.prenom).includes(terme) || normaliserRecherche(c.email).includes(terme))
+            : clientsRegroupes
+          const clientDetail = clientSelectionne
+            ? clientsRegroupes.find(c => c.email === clientSelectionne) || null
+            : null
+
+          const formatDate = (d: Date | string) =>
+            new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
+          const formatDateHeure = (d: Date | string) =>
+            new Date(d).toLocaleString("fr-FR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })
+
+          // ===== Page d'un client : historique de ses gains =====
+          if (clientDetail) {
+            const gagnees = clientDetail.parties.filter(p => p.a_gagne)
+            const utilisees = gagnees.filter(p => statutRecompense(p).type === "utilisee")
+            return (
+              <div>
+                <button
+                  onClick={() => { setClientSelectionne(null); setMessageHistorique(null) }}
+                  className="mb-6 flex items-center gap-1.5 text-sm text-wine font-medium hover:underline"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Retour aux clients
+                </button>
+
+                <div className="mb-6">
+                  <h1 className="text-2xl font-display font-semibold text-ink">{clientDetail.prenom}</h1>
+                  <p className="text-ink/55 mt-1">{clientDetail.email}</p>
+                  <p className="text-sm text-ink/50 mt-3">
+                    {clientDetail.parties.length} participation{clientDetail.parties.length > 1 ? "s" : ""} ·{" "}
+                    {gagnees.length} gain{gagnees.length > 1 ? "s" : ""} ·{" "}
+                    {utilisees.length} utilisé{utilisees.length > 1 ? "s" : ""}
                   </p>
-                  <button
-                    onClick={() => setActiveSection("qrcode")}
-                    className="mt-4 text-sm text-wine font-semibold hover:underline flex items-center gap-1"
-                  >
-                    Voir mon QR code
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-wine/10 text-left text-ink/50 bg-secondary/30">
-                        <th className="px-6 py-3 font-medium">Prénom</th>
-                        <th className="px-6 py-3 font-medium">Email</th>
-                        <th className="px-6 py-3 font-medium">Date</th>
-                        <th className="px-6 py-3 font-medium">Résultat</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {clients.map((client) => (
-                        <tr key={client.id} className="border-b border-wine/5 last:border-0 hover:bg-secondary/25 transition-colors">
-                          <td className="px-6 py-3 text-ink font-medium">{client.prenom}</td>
-                          <td className="px-6 py-3 text-ink/70">{client.email}</td>
-                          <td className="px-6 py-3 text-ink/70">
-                            {new Date(client.created_at).toLocaleDateString("fr-FR", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </td>
-                          <td className="px-6 py-3">
-                            {client.a_gagne ? (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sage/12 text-sage">
-                                {client.recompense}
+
+                {messageHistorique && (
+                  <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${messageHistorique.ok ? "bg-sage/10 text-sage" : "bg-wine/5 text-wine"}`}>
+                    {messageHistorique.ok ? "✓ " : ""}{messageHistorique.texte}
+                  </div>
+                )}
+
+                <div className="bg-card rounded-xl border border-wine/10 shadow-sm divide-y divide-wine/10 max-w-3xl">
+                  {clientDetail.parties.map((partie) => {
+                    const statut = statutRecompense(partie)
+                    return (
+                      <div key={partie.id} className="flex items-center justify-between gap-4 px-5 py-4">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-ink">
+                            {statut.type === "perdu" ? "Pas de gain" : partie.recompense}
+                          </p>
+                          <p className="text-xs text-ink/50 mt-0.5">
+                            Jouée le {formatDateHeure(partie.created_at)}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          {statut.type === "perdu" && (
+                            <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-ink/50">Perdu</span>
+                          )}
+                          {statut.type === "utilisee" && (
+                            <span className="rounded-full bg-sage/15 px-2.5 py-1 text-xs font-medium text-sage text-right">
+                              ✓ Validée{statut.le ? ` le ${formatDateHeure(statut.le)}` : ""}
+                            </span>
+                          )}
+                          {statut.type === "expiree" && (
+                            <span className="rounded-full bg-wine/10 px-2.5 py-1 text-xs font-medium text-wine">
+                              Expirée le {formatDate(statut.depuis)}
+                            </span>
+                          )}
+                          {statut.type === "a_utiliser" && (
+                            <>
+                              <span className="rounded-full bg-gold/20 px-2.5 py-1 text-xs font-medium text-wine-dark text-right">
+                                À utiliser avant le {formatDate(statut.jusquau)}
                               </span>
-                            ) : (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-ink/50">
-                                Perdu
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                              <button
+                                onClick={() => validerDepuisHistorique(partie.id)}
+                                disabled={validationHistoriqueId === partie.id}
+                                className="bg-wine hover:bg-wine-dark disabled:opacity-50 text-gold-light font-medium px-3 py-1.5 rounded-lg text-xs whitespace-nowrap"
+                              >
+                                {validationHistoriqueId === partie.id ? "..." : "Valider"}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                <p className="text-xs text-ink/40 mt-3 max-w-3xl">
+                  Une récompense est valable {DUREE_VALIDITE_JOURS} jours après le gain et ne peut être validée qu&apos;une seule fois.
+                </p>
+              </div>
+            )
+          }
+
+          // ===== Liste des clients avec recherche =====
+          return (
+            <div>
+              <div className="mb-6">
+                <h1 className="text-2xl font-display font-semibold text-ink">Mes clients</h1>
+                <p className="text-ink/55 mt-1">Clients collectés via votre QR code. Cliquez sur un client pour voir ses gains.</p>
+              </div>
+
+              {clients.length > 0 && (
+                <div className="relative mb-4 max-w-md">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-ink/35" aria-hidden="true" />
+                  <input
+                    type="search"
+                    value={rechercheClient}
+                    onChange={e => setRechercheClient(e.target.value)}
+                    placeholder="Rechercher par prénom ou email"
+                    className="w-full rounded-lg border border-wine/15 bg-card py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+                  />
                 </div>
               )}
+
+              <div className="bg-card rounded-xl border border-wine/10 shadow-sm">
+                {clientsLoading ? (
+                  <div className="p-6 text-center">
+                    <div className="w-6 h-6 border-2 border-wine border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  </div>
+                ) : clients.length === 0 ? (
+                  <div className="p-10 flex flex-col items-center text-center">
+                    <span className="flex size-12 items-center justify-center rounded-full bg-wine/8 text-wine mb-4">
+                      <Users className="w-6 h-6" />
+                    </span>
+                    <p className="text-sm text-ink/60 max-w-sm">
+                      Aucun client pour le moment. Partagez votre QR code pour commencer à collecter des contacts !
+                    </p>
+                    <button
+                      onClick={() => setActiveSection("qrcode")}
+                      className="mt-4 text-sm text-wine font-semibold hover:underline flex items-center gap-1"
+                    >
+                      Voir mon QR code
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : clientsFiltres.length === 0 ? (
+                  <p className="p-8 text-center text-sm text-ink/55">Aucun client ne correspond à « {rechercheClient} ».</p>
+                ) : (
+                  <div className="divide-y divide-wine/10">
+                    {clientsFiltres.map((c) => (
+                      <button
+                        key={c.email}
+                        onClick={() => setClientSelectionne(c.email)}
+                        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left hover:bg-secondary/30 transition-colors"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-ink truncate">{c.prenom}</p>
+                          <p className="text-xs text-ink/50 truncate">{c.email}</p>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          {c.aUtiliser > 0 && (
+                            <span className="rounded-full bg-gold/20 px-2.5 py-1 text-xs font-medium text-wine-dark">
+                              {c.aUtiliser} à utiliser
+                            </span>
+                          )}
+                          <span className="text-xs text-ink/45 hidden sm:inline">
+                            {c.parties.length} participation{c.parties.length > 1 ? "s" : ""}
+                          </span>
+                          <ArrowRight className="w-4 h-4 text-ink/30" aria-hidden="true" />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {activeSection === "roue" && (
           <div>

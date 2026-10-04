@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getResend } from '@/lib/resend'
 import QRCode from 'qrcode'
-
-const DUREE_VALIDITE_JOURS = 10
+import { DUREE_VALIDITE_JOURS } from '@/lib/recompenses'
 
 export async function POST(req: NextRequest) {
   const resend = getResend()
