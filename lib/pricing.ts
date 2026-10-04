@@ -38,7 +38,9 @@ export const plans: {
     periodesDisponibles: true,
     features: [
       "Roue de la fidélité",
-      "Alerte insatisfaction (protège votre note Google)",
+      "Tri des avis négatifs (protège votre note Google)",
+      "Tableau de bord de suivi",
+      "Option création de site",
     ],
   },
   {
@@ -56,7 +58,7 @@ export const plans: {
     periodesDisponibles: true,
     features: [
       "Roue de la fidélité + boost avis Google",
-      "Alerte insatisfaction (protège votre note Google)",
+      "Tri des avis négatifs (protège votre note Google)",
       "Statistiques avancées (heures de pointe, évolution)",
       "Accompagnement personnalisé",
       "3 modèles de flyers, fournis et traduits sur demande",
@@ -64,7 +66,7 @@ export const plans: {
       "Menu digital",
       "Carte de fidélité digitale",
       "Traduction de l'application sur demande",
-      "Option création de site et gestion des réseaux",
+      "Option création de site",
     ],
   },
 ]

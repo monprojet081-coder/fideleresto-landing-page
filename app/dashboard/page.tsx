@@ -58,7 +58,7 @@ function DashboardContent() {
   const [relancePourcentage, setRelancePourcentage] = useState(10)
   const [billingPeriod, setBillingPeriod] = useState<"mensuel" | "semestriel" | "annuel">("mensuel")
   const [avecCreationSite, setAvecCreationSite] = useState(false)
-  const [avecReseaux, setAvecReseaux] = useState(false)
+
   const [subscribing, setSubscribing] = useState<string | null>(null)
   const [abonnementMessage, setAbonnementMessage] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -274,8 +274,7 @@ function DashboardContent() {
         body: JSON.stringify({
           userId: user.id,
           plan: planKey,
-          avecCreationSite: planKey.startsWith("standard") ? avecCreationSite : false,
-          avecReseaux: planKey.startsWith("standard") ? avecReseaux : false,
+          avecCreationSite,
         }),
       })
       const data = await res.json()
@@ -1966,7 +1965,7 @@ function DashboardContent() {
                       ))}
                     </ul>
 
-                    {offre.key === "standard" && !estPlanActuel && (
+                    {!estPlanActuel && (
                       <div className="mt-4 space-y-2">
                         <label className="flex items-start gap-2.5 rounded-lg bg-secondary/50 p-3 text-sm text-ink/75 cursor-pointer">
                           <input
@@ -1980,21 +1979,6 @@ function DashboardContent() {
                             <span className="block text-xs text-ink/50">
                               600€ de frais uniques, puis {" "}
                               {periodeEffective === "mensuel" ? "100€/mois" : periodeEffective === "semestriel" ? "600€/semestre" : "1200€/an"} de maintenance
-                            </span>
-                          </span>
-                        </label>
-                        <label className="flex items-start gap-2.5 rounded-lg bg-secondary/50 p-3 text-sm text-ink/75 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={avecReseaux}
-                            onChange={(e) => setAvecReseaux(e.target.checked)}
-                            className="mt-0.5 accent-wine"
-                          />
-                          <span>
-                            Gérez-moi mes réseaux sociaux
-                            <span className="block text-xs text-ink/50">
-                              400€ de frais uniques, puis {" "}
-                              {periodeEffective === "mensuel" ? "200€/mois" : periodeEffective === "semestriel" ? "1200€/semestre" : "2400€/an"} de gestion
                             </span>
                           </span>
                         </label>

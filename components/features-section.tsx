@@ -103,7 +103,7 @@ const secondaryFeatures = [
   },
   {
     icon: ShieldAlert,
-    title: "Alerte insatisfaction",
+    title: "Tri des avis négatifs",
     description:
       "Un client déçu ? Son retour vous arrive directement par email au lieu d'atterrir en public sur Google.",
   },

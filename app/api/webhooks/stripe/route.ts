@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getStripe, STRIPE_PRICE_FRAIS_SITE, STRIPE_PRICE_FRAIS_RESEAUX } from '@/lib/stripe'
+import { getStripe, STRIPE_PRICE_FRAIS_SITE } from '@/lib/stripe'
 import type Stripe from 'stripe'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import { getResend } from '@/lib/resend'
@@ -57,17 +57,15 @@ export async function POST(req: NextRequest) {
           }
 
           // On regarde le détail des lignes payées pour savoir si le client a pris
-          // l'option création de site et/ou gestion des réseaux sociaux
+          // l'option création de site
           const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 })
           const priceIds = lineItems.data.map((item) => item.price?.id)
           const aPrisSite = priceIds.includes(STRIPE_PRICE_FRAIS_SITE)
-          const aPrisReseaux = priceIds.includes(STRIPE_PRICE_FRAIS_RESEAUX)
 
           const misAJourOptions: Record<string, any> = {
             stripe_subscription_id: session.subscription as string || null,
           }
           if (aPrisSite) misAJourOptions.option_site = true
-          if (aPrisReseaux) misAJourOptions.option_reseaux = true
 
           const { data: resto, error: erreurOptions } = await supabase
             .from('restaurants')
@@ -80,13 +78,11 @@ export async function POST(req: NextRequest) {
             console.error('Erreur mise à jour options restaurants (non bloquant):', erreurOptions.message)
           }
 
-          // Notifie l'équipe par email si une option a été prise, pour savoir qu'il faut
-          // s'occuper du site ou des réseaux sociaux du restaurant
-          if ((aPrisSite || aPrisReseaux) && process.env.ADMIN_EMAILS) {
+          // Notifie l'équipe par email si l'option site a été prise, pour savoir qu'il faut
+          // s'occuper du site du restaurant
+          if (aPrisSite && process.env.ADMIN_EMAILS) {
             const destinataires = process.env.ADMIN_EMAILS.split(',').map((e) => e.trim()).filter(Boolean)
-            const options = [aPrisSite && 'création de site', aPrisReseaux && 'gestion des réseaux sociaux']
-              .filter(Boolean)
-              .join(' + ')
+            const options = 'création de site'
 
             if (destinataires.length > 0) {
               await resend.emails.send({

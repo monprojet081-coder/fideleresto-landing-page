@@ -58,7 +58,7 @@ export function PricingSection() {
             return (
               <div
                 key={plan.nom}
-                className={`relative overflow-hidden rounded-3xl border bg-card shadow-xl ${
+                className={`relative flex flex-col overflow-hidden rounded-3xl border bg-card shadow-xl ${
                   plan.highlight ? "border-gold/50 shadow-wine/15" : "border-wine/15 shadow-wine/10"
                 }`}
               >
@@ -106,7 +106,7 @@ export function PricingSection() {
                   )}
                 </div>
 
-                <div className="border-t border-dashed border-wine/25 px-8 py-8">
+                <div className="flex flex-1 flex-col border-t border-dashed border-wine/25 px-8 py-8">
                   <ul className="flex flex-col gap-3">
                     {plan.features.map((item) => (
                       <li key={item} className="flex items-start gap-3">
@@ -117,6 +117,8 @@ export function PricingSection() {
                       </li>
                     ))}
                   </ul>
+
+                  <div className="flex-1" aria-hidden="true" />
 
                   <Button
                     size="lg"
@@ -132,7 +134,7 @@ export function PricingSection() {
           })}
         </div>
         <p className="mt-8 text-center text-sm text-ink/50">
-          Options création de site et gestion des réseaux sociaux disponibles sur le plan Complet, quel que soit le rythme choisi.
+          Option création de site disponible sur les deux plans, quel que soit le rythme choisi.
         </p>
       </div>
     </section>

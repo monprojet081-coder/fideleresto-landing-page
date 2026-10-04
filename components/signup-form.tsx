@@ -19,7 +19,7 @@ function SignupFormContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [avecCreationSite, setAvecCreationSite] = useState(false)
-  const [avecReseaux, setAvecReseaux] = useState(false)
+
   const [formData, setFormData] = useState({
     nomRestaurant: "",
     typeCuisine: "",
@@ -89,8 +89,7 @@ function SignupFormContent() {
         body: JSON.stringify({
           userId: data.user.id,
           plan,
-          avecCreationSite: plan.startsWith("standard") ? avecCreationSite : false,
-          avecReseaux: plan.startsWith("standard") ? avecReseaux : false,
+          avecCreationSite,
         }),
       })
       const checkoutData = await res.json()
@@ -249,44 +248,27 @@ function SignupFormContent() {
             </div>
           </div>
 
-          {plan.startsWith("standard") && (
-            <div className="space-y-2 rounded-lg border border-wine/10 bg-secondary/40 p-4">
-              <p className="text-sm font-medium text-ink/80">Options (facultatif)</p>
-              <label className="flex items-start gap-2.5 text-sm text-ink/75 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="mt-0.5 accent-wine"
-                  checked={avecCreationSite}
-                  onChange={(e) => setAvecCreationSite(e.target.checked)}
-                />
-                <span>
-                  Je n&apos;ai pas encore de site, créez-moi en un
-                  <span className="block text-xs text-ink/50">
-                    600€ de frais uniques, puis {" "}
-                    {plan.endsWith("trimestriel") ? "300€/trimestre" : plan.endsWith("annuel") ? "1200€/an" : "100€/mois"} de maintenance
-                  </span>
+          <div className="space-y-2 rounded-lg border border-wine/10 bg-secondary/40 p-4">
+            <p className="text-sm font-medium text-ink/80">Option (facultatif)</p>
+            <label className="flex items-start gap-2.5 text-sm text-ink/75 cursor-pointer">
+              <input
+                type="checkbox"
+                className="mt-0.5 accent-wine"
+                checked={avecCreationSite}
+                onChange={(e) => setAvecCreationSite(e.target.checked)}
+              />
+              <span>
+                Je n&apos;ai pas encore de site, créez-moi en un
+                <span className="block text-xs text-ink/50">
+                  600€ de frais uniques, puis {" "}
+                  {plan.endsWith("annuel") ? "1200€/an" : plan.endsWith("semestriel") ? "600€/semestre" : "100€/mois"} de maintenance
                 </span>
-              </label>
-              <label className="flex items-start gap-2.5 text-sm text-ink/75 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="mt-0.5 accent-wine"
-                  checked={avecReseaux}
-                  onChange={(e) => setAvecReseaux(e.target.checked)}
-                />
-                <span>
-                  Gérez-moi mes réseaux sociaux
-                  <span className="block text-xs text-ink/50">
-                    400€ de frais uniques, puis {" "}
-                    {plan.endsWith("trimestriel") ? "600€/trimestre" : plan.endsWith("annuel") ? "2400€/an" : "200€/mois"} de gestion
-                  </span>
-                </span>
-              </label>
-              <p className="text-xs text-ink/45 pt-1">
-                Ces options resteront modifiables plus tard depuis votre dashboard, onglet Abonnement.
-              </p>
-            </div>
-          )}
+              </span>
+            </label>
+            <p className="text-xs text-ink/45 pt-1">
+              Cette option reste modifiable plus tard depuis votre dashboard, onglet Abonnement.
+            </p>
+          </div>
 
           <div className="flex items-start gap-2">
             <input

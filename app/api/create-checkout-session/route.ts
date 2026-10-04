@@ -5,8 +5,6 @@ import {
   STRIPE_PRICES,
   STRIPE_PRICE_FRAIS_SITE,
   STRIPE_PRICE_MAINTENANCE_SITE,
-  STRIPE_PRICE_FRAIS_RESEAUX,
-  STRIPE_PRICE_GESTION_RESEAUX,
   PlanKey,
   periodeDuPlan,
 } from '@/lib/stripe'
@@ -18,11 +16,10 @@ export async function POST(req: NextRequest) {
   let slugPourLog: string | null = null
   let planPourLog: string | null = null
   try {
-    const { userId, plan, avecCreationSite, avecReseaux } = await req.json() as {
+    const { userId, plan, avecCreationSite } = await req.json() as {
       userId: string
       plan: PlanKey
       avecCreationSite?: boolean
-      avecReseaux?: boolean
     }
     planPourLog = plan
 
@@ -105,21 +102,14 @@ export async function POST(req: NextRequest) {
       { price: STRIPE_PRICES[plan], quantity: 1 },
     ]
 
-    // Options (création de site, gestion réseaux) : uniquement sur le Premium, mais
-    // maintenant disponibles quel que soit le rythme (mensuel/trimestriel/annuel) —
-    // l'abonnement de suivi (maintenance/gestion) est facturé au même rythme que le plan
-    // principal, pour ne pas mélanger deux fréquences différentes dans un seul abonnement Stripe
+    // Option création de site : disponible sur les deux plans (Essentiel et Complet),
+    // quel que soit le rythme — l'abonnement de maintenance est facturé au même rythme
+    // que le plan principal, pour ne pas mélanger deux fréquences dans un seul abonnement Stripe
     const periode = periodeDuPlan(plan)
-    const optionsDisponibles = plan.startsWith('standard')
 
-    if (optionsDisponibles && avecCreationSite) {
+    if (avecCreationSite) {
       lineItems.push({ price: STRIPE_PRICE_FRAIS_SITE, quantity: 1 })
       lineItems.push({ price: STRIPE_PRICE_MAINTENANCE_SITE[periode], quantity: 1 })
-    }
-
-    if (optionsDisponibles && avecReseaux) {
-      lineItems.push({ price: STRIPE_PRICE_FRAIS_RESEAUX, quantity: 1 })
-      lineItems.push({ price: STRIPE_PRICE_GESTION_RESEAUX[periode], quantity: 1 })
     }
 
     const session = await stripe.checkout.sessions.create({

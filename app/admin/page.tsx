@@ -18,7 +18,6 @@ type RestaurantAdmin = {
   plan: string | null
   statut_abonnement: string | null
   option_site: boolean | null
-  option_reseaux: boolean | null
   telephone: string | null
   ville: string | null
   email: string | null
@@ -301,18 +300,11 @@ export default function AdminPage() {
                       {[r.telephone, r.ville].filter(Boolean).join(" · ")}
                     </p>
                   )}
-                  {(r.option_site || r.option_reseaux) && (
+                  {r.option_site && (
                     <div className="flex gap-1.5 mt-1.5">
-                      {r.option_site && (
-                        <span className="text-[11px] font-medium bg-gold/15 text-wine-dark px-2 py-0.5 rounded-full">
-                          🔔 Création de site
-                        </span>
-                      )}
-                      {r.option_reseaux && (
-                        <span className="text-[11px] font-medium bg-gold/15 text-wine-dark px-2 py-0.5 rounded-full">
-                          🔔 Réseaux sociaux
-                        </span>
-                      )}
+                      <span className="text-[11px] font-medium bg-gold/15 text-wine-dark px-2 py-0.5 rounded-full">
+                        🔔 Création de site
+                      </span>
                     </div>
                   )}
                 </div>
