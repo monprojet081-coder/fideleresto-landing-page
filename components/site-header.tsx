@@ -1,13 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { Menu, X, UtensilsCrossed } from "lucide-react"
+import Image from "next/image"
+import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navLinks = [
-  { label: "Fonctionnalités", href: "#fonctionnalites" },
   { label: "Comment ça marche", href: "#comment-ca-marche" },
-  { label: "Le principe", href: "#resultats" },
+  { label: "Fonctionnalités", href: "#fonctionnalites" },
+  { label: "Avant / après", href: "#resultats" },
   { label: "Tarifs", href: "#tarifs" },
 ]
 
@@ -18,8 +19,8 @@ export function SiteHeader() {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-wine/10 bg-ivory/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <a href="/" className="flex items-center gap-2.5" aria-label="FidèleResto, accueil">
-          <span className="flex size-9 items-center justify-center rounded-full bg-wine text-gold-light">
-            <UtensilsCrossed className="size-4.5" aria-hidden="true" />
+          <span className="flex size-10 items-center justify-center rounded-full bg-wine ring-1 ring-gold/70">
+            <Image src="/assets/logo-icone.webp" alt="" width={320} height={304} className="h-auto w-[22px]" />
           </span>
           <span className="font-display text-lg font-semibold tracking-tight text-ink">
             Fidèle<span className="text-wine">Resto</span>

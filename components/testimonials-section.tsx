@@ -1,85 +1,62 @@
-const parcoursAvant = [
-  { label: "Il mange", note: null },
-  { label: "Il paie", note: null },
-  { label: "Il repart", note: "et disparaît de vos radars" },
-]
-
-const parcoursApres = [
-  { label: "Il mange", note: null },
-  { label: "Il scanne et joue", note: "gagne une récompense" },
-  { label: "Il note en privé", note: "les avis négatifs restent chez vous" },
-  { label: "Il revient", note: "récompense à récupérer sur place" },
-]
-
-const chiffres = [
-  { avant: "45", apres: "187", label: "avis Google" },
-  { avant: "3.6", apres: "4.7", label: "note moyenne" },
-]
+import Image from "next/image"
 
 export function TestimonialsSection() {
   return (
-    <section id="resultats" className="relative overflow-hidden bg-ivory py-20 sm:py-28">
+    <section id="resultats" className="relative overflow-hidden border-t border-wine/10 bg-ivory py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="max-w-xl">
           <h2 className="text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
             Ce que FidèleResto change, concrètement
           </h2>
-          <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/65">
-            L&apos;idée est simple : capter chaque client au moment où il est content, juste après son repas.
+          <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/70">
+            L&apos;idée est simple : capter chaque client au moment où il est là, juste après son repas, pour
+            lui donner une raison de revenir.
           </p>
         </div>
 
-        <div className="mt-14 grid gap-10 lg:grid-cols-2 lg:gap-16">
-          {/* AVANT : parcours court, qui s'arrête net */}
-          <div>
-            <p className="text-sm font-semibold text-ink/50">Sans FidèleResto</p>
-            <div className="mt-5">
-              {parcoursAvant.map((etape, i) => (
-                <div key={etape.label} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <span className="flex size-2.5 shrink-0 rounded-full bg-ink/25" aria-hidden="true" />
-                    {i < parcoursAvant.length - 1 && <span className="my-1 h-10 w-px bg-ink/15" aria-hidden="true" />}
-                  </div>
-                  <div className="-mt-1 pb-1">
-                    <p className="font-display text-lg font-medium text-ink/70">{etape.label}</p>
-                    {etape.note && <p className="text-sm text-ink/45">{etape.note}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Le contenu des images est résumé ici pour les lecteurs d'écran et les moteurs de recherche */}
+        <p className="sr-only">
+          Exemple illustratif pour un restaurant fictif, « Le Kebab du Centre ». Avant FidèleResto : 3,6 étoiles
+          pour 45 avis, peu de clients qui reviennent, peu de clients fidèles, peu d&apos;avis Google, des cartes
+          de fidélité papier souvent perdues, un chiffre d&apos;affaires limité et aucun moyen de recontacter les
+          clients. Avec FidèleResto : 4,7 étoiles pour 187 avis, 142 nouveaux avis, plus de clients qui
+          reviennent, une carte de fidélité digitale, un chiffre d&apos;affaires en hausse et la possibilité de
+          recontacter ses clients par email.
+        </p>
 
-          {/* APRES : parcours plus long, qui boucle sur lui-meme */}
-          <div>
-            <p className="text-sm font-semibold text-wine">Avec FidèleResto</p>
-            <div className="mt-5">
-              {parcoursApres.map((etape, i) => (
-                <div key={etape.label} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <span className="flex size-2.5 shrink-0 rounded-full bg-gold" aria-hidden="true" />
-                    {i < parcoursApres.length - 1 && <span className="my-1 h-10 w-px bg-gold/40" aria-hidden="true" />}
-                  </div>
-                  <div className="-mt-1 pb-1">
-                    <p className="font-display text-lg font-medium text-ink">{etape.label}</p>
-                    {etape.note && <p className="text-sm text-ink/55">{etape.note}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        <div className="mx-auto mt-14 grid max-w-5xl items-center gap-5 lg:grid-cols-[1fr_auto_1fr] lg:gap-7">
+          <Image
+            src="/assets/avant-apres-avant.webp"
+            alt="Avant FidèleResto, exemple illustratif : 3,6 étoiles pour 45 avis, peu de clients qui reviennent, peu d'avis Google, des cartes papier perdues, un chiffre d'affaires limité, aucun moyen de recontact"
+            width={718}
+            height={925}
+            sizes="(min-width: 1024px) 480px, 100vw"
+            loading="lazy"
+            className="h-auto w-full"
+          />
+          <Image
+            src="/assets/avant-apres-fleche.webp"
+            alt=""
+            width={76}
+            height={77}
+            loading="lazy"
+            className="mx-auto h-auto w-10 rotate-90 lg:w-14 lg:rotate-0"
+          />
+          <Image
+            src="/assets/avant-apres-apres.webp"
+            alt="Avec FidèleResto, exemple illustratif : 4,7 étoiles pour 187 avis, plus de clients qui reviennent, plus d'avis Google, une carte de fidélité digitale, un chiffre d'affaires en hausse, la possibilité de recontacter ses clients"
+            width={731}
+            height={954}
+            sizes="(min-width: 1024px) 480px, 100vw"
+            loading="lazy"
+            className="h-auto w-full"
+          />
         </div>
 
-        {/* Chiffres d'exemple, en bas, sobres */}
-        <div className="mt-14 flex flex-wrap items-center gap-x-12 gap-y-6 border-t border-wine/10 pt-10">
-          {chiffres.map((c) => (
-            <div key={c.label} className="flex items-baseline gap-3">
-              <span className="font-display text-2xl text-ink/35 line-through decoration-1">{c.avant}</span>
-              <span className="font-display text-3xl font-semibold text-wine">{c.apres}</span>
-              <span className="text-sm text-ink/55">{c.label}</span>
-            </div>
-          ))}
-          <p className="text-xs text-ink/40">Exemple illustratif, les résultats dépendent de votre fréquentation.</p>
-        </div>
+        <p className="mx-auto mt-10 max-w-2xl text-center text-sm text-ink/60">
+          Exemple illustratif pour un restaurant fictif. Les résultats dépendent de votre établissement et de
+          votre fréquentation.
+        </p>
       </div>
     </section>
   )

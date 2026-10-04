@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check } from "lucide-react"
+import { Check, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { plans } from "@/lib/pricing"
 
@@ -114,6 +114,17 @@ export function PricingSection() {
                           <Check className="size-3.5" aria-hidden="true" />
                         </span>
                         <span className="text-sm leading-relaxed text-ink">{item}</span>
+                      </li>
+                    ))}
+                    {plan.nonInclus.map((item) => (
+                      <li key={item} className="flex items-start gap-3">
+                        <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-ink/8 text-ink/45">
+                          <Minus className="size-3.5" aria-hidden="true" />
+                        </span>
+                        <span className="text-sm leading-relaxed text-ink/55">
+                          {item}
+                          <span className="sr-only"> (non inclus)</span>
+                        </span>
                       </li>
                     ))}
                   </ul>

@@ -22,6 +22,7 @@ export const plans: {
   highlight: boolean
   periodesDisponibles: boolean
   features: string[]
+  nonInclus: string[]
 }[] = [
   {
     key: "essentiel",
@@ -41,6 +42,14 @@ export const plans: {
       "Tri des avis négatifs (protège votre note Google)",
       "Tableau de bord de suivi",
       "Option création de site",
+    ],
+    nonInclus: [
+      "Carte de fidélité digitale",
+      "Menu digital",
+      "Emails de relance automatiques",
+      "Statistiques avancées (heures de pointe, évolution)",
+      "Accompagnement personnalisé",
+      "Flyers fournis et traduits sur demande",
     ],
   },
   {
@@ -68,5 +77,6 @@ export const plans: {
       "Traduction de l'application sur demande",
       "Option création de site",
     ],
+    nonInclus: [],
   },
 ]

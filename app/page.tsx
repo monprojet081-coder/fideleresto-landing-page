@@ -17,8 +17,8 @@ export default function Page() {
         <VideoSection />
         <HowItWorksSection />
         <FeaturesSection />
-        <PricingSection />
         <TestimonialsSection />
+        <PricingSection />
         <CtaSection />
       </main>
       <SiteFooter />

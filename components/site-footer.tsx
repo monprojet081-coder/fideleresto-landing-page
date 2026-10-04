@@ -1,4 +1,4 @@
-import { UtensilsCrossed } from "lucide-react"
+import Image from "next/image"
 
 const legalLinks = [
   { label: "Mentions légales", href: "/mentions-legales" },
@@ -13,12 +13,13 @@ export function SiteFooter() {
     <footer className="border-t border-wine/10 bg-ivory">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-          <a href="#" className="flex items-center gap-2" aria-label="FidèleResto, accueil">
-            <span className="flex size-8 items-center justify-center rounded-full bg-wine text-gold-light">
-              <UtensilsCrossed className="size-4" aria-hidden="true" />
-            </span>
-            <span className="font-display text-base font-semibold tracking-tight text-ink">
-              Fidèle<span className="text-wine">Resto</span>
+          <a href="/" className="flex items-center gap-4" aria-label="FidèleResto, accueil">
+            <Image src="/assets/logo-fideleresto.webp" alt="" width={560} height={560} className="size-20 shrink-0" />
+            <span>
+              <span className="block font-display text-xl font-semibold tracking-tight text-ink">
+                Fidèle<span className="text-wine">Resto</span>
+              </span>
+              <span className="mt-0.5 block text-sm text-ink/60">Fidélisez. Engagez. Développez.</span>
             </span>
           </a>
 

@@ -1,105 +1,30 @@
-import { Star, CreditCard, Mail, BarChart3, Printer, ShieldAlert, UtensilsCrossed } from "lucide-react"
+import Image from "next/image"
+import { Check, Mail, BarChart3, Printer, ShieldAlert, QrCode, SlidersHorizontal } from "lucide-react"
 
-const coreFeatures = [
-  {
-    title: "Roue de la chance",
-    description:
-      "Vos clients scannent un QR code sur la table, tournent la roue et gagnent une récompense que vous choisissez.",
-    visual: (
-      <svg viewBox="0 0 100 100" className="size-16" aria-hidden="true">
-        <circle cx="50" cy="50" r="42" fill="none" stroke="var(--wine)" strokeWidth="3" />
-        {Array.from({ length: 8 }).map((_, i) => {
-          const angle = (i * 360) / 8
-          const x2 = 50 + 42 * Math.cos((angle * Math.PI) / 180)
-          const y2 = 50 + 42 * Math.sin((angle * Math.PI) / 180)
-          return <line key={i} x1="50" y1="50" x2={x2} y2={y2} stroke="var(--gold)" strokeWidth="1.5" opacity="0.6" />
-        })}
-        <circle cx="50" cy="50" r="6" fill="var(--gold)" />
-        <path d="M50 4 L45 14 L55 14 Z" fill="var(--wine)" />
-      </svg>
-    ),
-  },
-  {
-    title: "Plus d'avis Google",
-    description:
-      "Après avoir joué, vos clients laissent un avis sur votre fiche Google en un clic. Votre note grimpe, votre visibilité aussi.",
-    visual: (
-      <div className="flex flex-col items-center gap-2" aria-hidden="true">
-        <div className="flex gap-1">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} className="size-5 fill-gold text-gold" />
-          ))}
-        </div>
-        <span className="font-display text-2xl font-semibold text-wine">4.8</span>
-      </div>
-    ),
-  },
-  {
-    title: "Carte de fidélité digitale",
-    description:
-      "Fini les cartes en carton qu'on perd. Vos clients cumulent leurs tampons sur leur téléphone, sans rien à faire de votre côté.",
-    visual: (
-      <div className="grid grid-cols-4 gap-1.5" aria-hidden="true">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <span
-            key={i}
-            className={`flex size-5 items-center justify-center rounded-full border-2 ${
-              i < 5 ? "border-wine bg-wine text-gold-light" : "border-wine/25 text-wine/25"
-            }`}
-          >
-            <CreditCard className="size-2.5" />
-          </span>
-        ))}
-      </div>
-    ),
-  },
-  {
-    title: "Menu digital",
-    description:
-      "Importez votre carte (PDF, photo ou document) et vos clients la consultent depuis leur téléphone, toujours à jour.",
-    visual: (
-      <div className="w-full space-y-2.5 px-3" aria-hidden="true">
-        <div className="flex items-center justify-between">
-          <div className="h-2 w-16 rounded-full bg-wine/50" />
-          <UtensilsCrossed className="size-3.5 text-gold" />
-        </div>
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <div className="h-1.5 w-16 rounded-full bg-ink/15" />
-            <span className="shrink-0 text-[9px] font-semibold text-wine">12€</span>
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <div className="h-1.5 w-20 rounded-full bg-ink/15" />
-            <span className="shrink-0 text-[9px] font-semibold text-wine">8€</span>
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <div className="h-1.5 w-14 rounded-full bg-ink/15" />
-            <span className="shrink-0 text-[9px] font-semibold text-wine">15€</span>
-          </div>
-        </div>
-      </div>
-    ),
-  },
+const avantagesCarte = [
+  "Elle reste dans le téléphone du client : impossible de l'oublier à la maison.",
+  "Vous validez chaque passage en scannant son QR code.",
+  "Le menu digital se consulte depuis le même lien.",
 ]
 
-const secondaryFeatures = [
+const autresFonctionnalites = [
+  {
+    icon: SlidersHorizontal,
+    title: "Une roue à vos couleurs",
+    description:
+      "Vous choisissez les récompenses, leur probabilité, la couleur de chaque case et le délai avant qu'un client puisse rejouer.",
+  },
+  {
+    icon: QrCode,
+    title: "Récompenses suivies et validées",
+    description:
+      "Chaque gain arrive par email avec un QR code unique, valable 10 jours et utilisable une seule fois : vous le scannez, c'est validé.",
+  },
   {
     icon: Mail,
-    title: "Emails de relance automatiques",
+    title: "Relance automatique",
     description:
       "Un client n'est pas revenu depuis un moment ? FidèleResto lui envoie automatiquement une petite offre pour le faire revenir, avec son accord.",
-  },
-  {
-    icon: BarChart3,
-    title: "Tableau de bord clair",
-    description:
-      "Suivez vos scans, vos clients collectés, vos récompenses distribuées et vos avis, tout au même endroit, en temps réel.",
-  },
-  {
-    icon: Printer,
-    title: "Flyers prêts à imprimer",
-    description:
-      "Choisissez parmi plusieurs modèles de flyers à votre nom, avec votre QR code intégré, prêts à poser sur vos tables ou votre comptoir.",
   },
   {
     icon: ShieldAlert,
@@ -107,11 +32,21 @@ const secondaryFeatures = [
     description:
       "Un client déçu ? Son retour vous arrive directement par email au lieu d'atterrir en public sur Google.",
   },
+  {
+    icon: BarChart3,
+    title: "Tableau de bord clair",
+    description:
+      "Suivez vos scans, vos clients, vos récompenses distribuées et vos avis, tout au même endroit, en temps réel.",
+  },
+  {
+    icon: Printer,
+    title: "Flyers prêts à imprimer",
+    description:
+      "Choisissez parmi plusieurs modèles de flyers à votre nom, avec votre QR code intégré, prêts à poser sur vos tables ou votre comptoir.",
+  },
 ]
 
 export function FeaturesSection() {
-  const [phare, ...reste] = coreFeatures
-
   return (
     <section id="fonctionnalites" className="relative overflow-hidden bg-ivory py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -119,52 +54,83 @@ export function FeaturesSection() {
           <h2 className="text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
             Tout ce qu&apos;il faut pour remplir votre salle
           </h2>
-          <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/65">
-            Une seule plateforme pour fidéliser vos clients, soigner votre réputation et garder le
-            contact, sans compétence technique.
+          <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/70">
+            Une seule plateforme pour fidéliser vos clients, soigner votre réputation et garder le contact,
+            sans compétence technique.
           </p>
         </div>
 
-        {/* La roue, fonctionnalite signature, traitee en grand */}
-        <div className="mt-12 grid gap-5 lg:grid-cols-[1.3fr_1fr]">
-          <div className="flex flex-col justify-between gap-8 rounded-[28px] border border-wine/12 bg-card p-8 sm:flex-row sm:items-center sm:p-10">
-            <div className="max-w-xs">
-              <h3 className="font-display text-2xl font-semibold text-ink">{phare.title}</h3>
-              <p className="mt-3 text-pretty text-base leading-relaxed text-ink/65">{phare.description}</p>
-            </div>
-            <div className="flex size-28 shrink-0 items-center justify-center rounded-full bg-secondary/50">
-              {phare.visual}
-            </div>
+        {/* La carte de fidélité digitale */}
+        <div className="mt-16 grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+          <div className="order-2 lg:order-1">
+            <h3 className="text-balance font-display text-3xl font-semibold tracking-tight text-ink">
+              Fini les cartes en carton perdues
+            </h3>
+            <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/70">
+              Chaque client a sa carte de fidélité sur son téléphone, avec ses tampons et la récompense qui
+              l&apos;attend. Pas de carte à imprimer, pas de carte oubliée dans un autre manteau.
+            </p>
+            <ul className="mt-7 space-y-3.5">
+              {avantagesCarte.map((texte) => (
+                <li key={texte} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-gold/20 text-wine">
+                    <Check className="size-3.5" aria-hidden="true" />
+                  </span>
+                  <span className="text-base leading-relaxed text-ink">{texte}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Les 3 autres fonctionnalites principales, en rang compact */}
-          <div className="grid min-w-0 grid-rows-3 gap-5">
-            {reste.map((feature) => (
-              <div
-                key={feature.title}
-                className="flex min-w-0 items-center gap-4 rounded-2xl border border-wine/12 bg-card px-5 py-4"
-              >
-                <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary/50">
-                  <div className="scale-[0.4]">{feature.visual}</div>
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-display text-sm font-semibold text-ink">{feature.title}</h3>
-                  <p className="mt-0.5 truncate text-xs leading-relaxed text-ink/55">{feature.description}</p>
-                </div>
-              </div>
-            ))}
+          <div className="order-1 flex justify-center lg:order-2">
+            <Image
+              src="/assets/carte-fidelite-mockup.webp"
+              alt="La carte de fidélité digitale FidèleResto sur un smartphone : quatre tampons sur huit et « Encore 3 visites avant votre récompense »"
+              width={852}
+              height={1334}
+              sizes="(min-width: 1024px) 380px, 70vw"
+              className="h-auto w-full max-w-[340px] drop-shadow-[0_26px_30px_rgba(66,16,28,0.22)] lg:max-w-[380px]"
+            />
           </div>
         </div>
 
-        {/* Fonctionnalites complementaires, en liste simple : pas besoin du meme poids visuel */}
-        <div className="mt-14 border-t border-wine/10 pt-10">
-          <div className="grid gap-x-10 gap-y-7 sm:grid-cols-2">
-            {secondaryFeatures.map((feature) => (
-              <div key={feature.title} className="flex gap-4">
-                <feature.icon className="mt-0.5 size-5 shrink-0 text-wine/70" aria-hidden="true" />
+        {/* Les avis Google */}
+        <div className="mt-24 sm:mt-28">
+          <figure className="relative overflow-hidden rounded-[28px] shadow-xl shadow-wine/15">
+            <Image
+              src="/assets/avis-google-kebab.webp"
+              alt="Illustration : le comptoir d'un kebab avec, en surimpression, la fiche Google du restaurant et plusieurs avis cinq étoiles de clients"
+              width={1536}
+              height={1024}
+              sizes="(min-width: 1152px) 1100px, 100vw"
+              className="h-auto w-full"
+            />
+            <figcaption className="absolute right-3 top-3 rounded-full bg-ink/65 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+              Illustration : avis fictifs
+            </figcaption>
+          </figure>
+
+          <div className="relative mx-auto -mt-8 max-w-3xl rounded-3xl bg-wine p-7 text-ivory shadow-2xl shadow-wine/30 sm:-mt-20 sm:p-10">
+            <h3 className="text-balance font-display text-2xl font-semibold text-gold-light sm:text-3xl">
+              Des avis Google, au bon moment
+            </h3>
+            <p className="mt-3 text-pretty text-base leading-relaxed text-ivory/90 sm:text-lg">
+              Après la roue, votre client peut laisser un avis Google en un tap, directement depuis son
+              téléphone. Plus besoin de lui tendre un smartphone ni de lui courir après : vous gagnez en
+              visibilité sur Google, sans effort.
+            </p>
+          </div>
+        </div>
+
+        {/* Le reste, en liste sobre */}
+        <div className="mt-20 border-t border-wine/12 pt-12">
+          <div className="grid gap-x-12 gap-y-9 sm:grid-cols-2">
+            {autresFonctionnalites.map((fonction) => (
+              <div key={fonction.title} className="flex gap-4">
+                <fonction.icon className="mt-1 size-5 shrink-0 text-wine/75" aria-hidden="true" />
                 <div>
-                  <h3 className="font-display text-sm font-semibold text-ink">{feature.title}</h3>
-                  <p className="mt-1 text-pretty text-sm leading-relaxed text-ink/60">{feature.description}</p>
+                  <h3 className="font-display text-base font-semibold text-ink">{fonction.title}</h3>
+                  <p className="mt-1.5 text-pretty text-[0.95rem] leading-relaxed text-ink/70">{fonction.description}</p>
                 </div>
               </div>
             ))}
