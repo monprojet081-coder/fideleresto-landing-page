@@ -9,6 +9,8 @@ import React, { useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { UtensilsCrossed } from "lucide-react"
 import { quandRejouer, DUREE_VALIDITE_JOURS } from "@/lib/recompenses"
+import { RoueChance, LegendeLots } from "@/components/roue-chance"
+import { REWARDS_PAR_DEFAUT, LABEL_PERDU, DUREE_ROTATION_MS, PAUSE_FIN_MS, PAUSE_AVANT_ROTATION_MS, type Lot } from "@/lib/roue"
 
 type Step = "checking" | "not_found" | "inactive" | "form" | "wheel" | "win" | "lose" | "already_played"
 
@@ -23,7 +25,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [rotation, setRotation] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [rewards, setRewards] = useState<{ label: string; probabilite: number; couleur: string }[]>([])
+  const [rewards, setRewards] = useState<Lot[]>([])
   const [estPremium, setEstPremium] = useState(false)
   const [avisClique, setAvisClique] = useState(false)
   const [avisExiste, setAvisExiste] = useState(true)
@@ -62,6 +64,13 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         // dans les deux plans payants, essentiel comme standard
         setEstPremium(data.plan === "essentiel" || data.plan === "standard")
         setNomRestaurant(data.nom_restaurant || "")
+        // Charge les lots tout de suite : le client voit la roue et ce qu'il peut gagner
+        // AVANT de remplir le formulaire, au lieu de la decouvrir lancee a pleine vitesse
+        supabase
+          .from("roue_config")
+          .select("label, probabilite, couleur")
+          .filter("restaurant_id", "like", `${slug}%`)
+          .then(({ data: lots }) => setRewards(lots && lots.length > 0 ? lots : REWARDS_PAR_DEFAUT))
         // Le scan ne compte que si le restaurant existe réellement
         fetch("/api/send-reward-email/track-scan", {
           method: "POST",
@@ -98,7 +107,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
     const arcDeg = 360 / rewardsList.length
     const caseCenterDeg = index * arcDeg + arcDeg / 2
     const randomOffset = (Math.random() - 0.5) * (arcDeg * 0.6)
-    const extraSpins = 5 * 360
+    const extraSpins = 6 * 360
     return extraSpins + (360 - caseCenterDeg + randomOffset)
   }
 
@@ -129,28 +138,35 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
     setDejaVenu(data.dejaVenu)
     setFrequenceJours(data.frequenceJours || 1)
-    setRewards(data.rewardsList)
     const reward = data.reward
 
-    if (reward.label !== "Perdu 😢") {
+    // On garde la roue deja affichee (meme ordre des cases) tant qu'elle contient le lot gagne ;
+    // sinon (configuration modifiee entre-temps) on bascule sur la liste du serveur.
+    const listeAffichee: Lot[] = rewards.some(r => r.label === reward.label) ? rewards : data.rewardsList
+    if (listeAffichee !== rewards) setRewards(listeAffichee)
+
+    if (reward.label !== LABEL_PERDU) {
       setRecompenseRowId(data.clientRowId || null)
-      try {
-        const resEmail = await fetch("/api/send-reward-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prenom, email, recompense: reward.label, restaurantNom: nomRestaurant, slug, clientRowId: data.clientRowId }),
+      // Envoi de l'email en parallele : on n'attend plus sa reponse pour lancer la roue.
+      // Le resultat est connu bien avant la fin du tour (8 s).
+      fetch("/api/send-reward-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prenom, email, recompense: reward.label, restaurantNom: nomRestaurant, slug, clientRowId: data.clientRowId }),
+      })
+        .then(async (resEmail) => {
+          if (resEmail.ok) {
+            setEmailStatut("ok")
+          } else {
+            const detail = await resEmail.json().catch(() => null)
+            console.error("Envoi de l'email de recompense impossible :", detail)
+            setEmailStatut("echec")
+          }
         })
-        if (resEmail.ok) {
-          setEmailStatut("ok")
-        } else {
-          const detail = await resEmail.json().catch(() => null)
-          console.error("Envoi de l'email de recompense impossible :", detail)
+        .catch((err) => {
+          console.error("Envoi de l'email de recompense impossible :", err)
           setEmailStatut("echec")
-        }
-      } catch (err) {
-        console.error("Envoi de l'email de recompense impossible :", err)
-        setEmailStatut("echec")
-      }
+        })
     }
 
     setResult(reward)
@@ -159,18 +175,14 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
     setTimeout(() => {
       setSpinning(true)
-      const targetAngle = getTargetRotation(data.rewardsList, reward)
-      setRotation(targetAngle)
+      setRotation(getTargetRotation(listeAffichee, reward))
 
+      // Une fois arretee, on laisse voir sur quoi la roue s'est posee avant d'afficher le resultat
       setTimeout(() => {
         setSpinning(false)
-        if (reward.label === "Perdu 😢") {
-          setStep("lose")
-        } else {
-          setStep("win")
-        }
-      }, 5500)
-    }, 500)
+        setStep(reward.label === LABEL_PERDU ? "lose" : "win")
+      }, DUREE_ROTATION_MS + PAUSE_FIN_MS)
+    }, PAUSE_AVANT_ROTATION_MS)
   }
 
   if (step === "checking") {
@@ -211,11 +223,15 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
         {step === "form" && (
           <div className="text-center mb-8">
-            <div className="w-12 h-12 bg-wine rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">🎡</span>
-            </div>
-            <h1 className="text-2xl font-display font-semibold text-ink">Tentez votre chance !</h1>
-            <p className="text-ink/75 text-base mt-2">Remplissez vos infos et tournez la roue pour gagner une récompense</p>
+            <h1 className="text-3xl font-display font-semibold text-ink">Tentez votre chance !</h1>
+            <p className="text-ink/75 text-base mt-2">Voici ce que vous pouvez gagner. Remplissez vos infos puis lancez la roue.</p>
+          </div>
+        )}
+
+        {step === "form" && rewards.length > 0 && (
+          <div className="mb-8">
+            <RoueChance rewards={rewards} rotation={0} spinning={false} />
+            <LegendeLots rewards={rewards} />
           </div>
         )}
 
@@ -272,101 +288,10 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
         {step === "wheel" && (
           <div className="text-center">
-            <div className="relative mx-auto mb-6" style={{ width: 320, height: 320 }}>
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3 z-10">
-                <div className="w-0 h-0" style={{
-                  borderLeft: "9px solid transparent",
-                  borderRight: "9px solid transparent",
-                  borderTop: "18px solid #c9962c",
-                  filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.25))"
-                }} />
-              </div>
-              <canvas
-                id="wheel-canvas"
-                width={320}
-                height={320}
-                ref={(canvas) => {
-                  if (!canvas || rewards.length === 0) return
-                  const ctx = canvas.getContext("2d")
-                  if (!ctx) return
-                  const numSegments = rewards.length
-                  const arc = (2 * Math.PI) / numSegments
-                  const centerX = 160
-                  const centerY = 160
-                  const radius = 138
-
-                  ctx.clearRect(0, 0, 320, 320)
-
-                  // Anneau exterieur dore
-                  ctx.beginPath()
-                  ctx.arc(centerX, centerY, radius + 8, 0, 2 * Math.PI)
-                  ctx.fillStyle = "#c9962c"
-                  ctx.fill()
-
-                  // Pastilles reparties sur l'anneau, comme la roue physique de la marque
-                  const dotCount = 28
-                  for (let d = 0; d < dotCount; d++) {
-                    const dotAngle = (2 * Math.PI * d) / dotCount
-                    const dx = centerX + (radius + 8) * Math.cos(dotAngle)
-                    const dy = centerY + (radius + 8) * Math.sin(dotAngle)
-                    ctx.beginPath()
-                    ctx.arc(dx, dy, 2, 0, 2 * Math.PI)
-                    ctx.fillStyle = "rgba(107,30,46,0.45)"
-                    ctx.fill()
-                  }
-
-                  // Segments (couleurs personnalisables par le restaurateur, inchangees)
-                  rewards.forEach((reward, i) => {
-                    const startAngle = i * arc - Math.PI / 2
-                    const endAngle = startAngle + arc
-                    ctx.beginPath()
-                    ctx.moveTo(centerX, centerY)
-                    ctx.arc(centerX, centerY, radius, startAngle, endAngle)
-                    ctx.closePath()
-                    ctx.fillStyle = reward.couleur
-                    ctx.fill()
-                    ctx.strokeStyle = "#c9962c"
-                    ctx.lineWidth = 1.5
-                    ctx.stroke()
-
-                    ctx.save()
-                    ctx.translate(centerX, centerY)
-                    ctx.rotate(startAngle + arc / 2)
-                    ctx.textAlign = "right"
-                    ctx.fillStyle = "#faf3e8"
-                    ctx.font = "bold 15px sans-serif"
-                    ctx.fillText(reward.label, radius - 14, 5)
-                    ctx.restore()
-                  })
-
-                  // Hub central : fourchette + couteau croises (logo de la marque)
-                  ctx.beginPath()
-                  ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI)
-                  ctx.fillStyle = "#6b1e2e"
-                  ctx.fill()
-                  ctx.strokeStyle = "#c9962c"
-                  ctx.lineWidth = 3
-                  ctx.stroke()
-
-                  ctx.strokeStyle = "#f4e4c1"
-                  ctx.lineWidth = 2.5
-                  ctx.lineCap = "round"
-                  ctx.beginPath()
-                  ctx.moveTo(centerX - 10, centerY - 10)
-                  ctx.lineTo(centerX + 10, centerY + 10)
-                  ctx.moveTo(centerX + 10, centerY - 10)
-                  ctx.lineTo(centerX - 10, centerY + 10)
-                  ctx.stroke()
-                }}
-                style={{
-                  transform: `rotate(${rotation}deg)`,
-                  transition: spinning ? "transform 5500ms cubic-bezier(0.1, 0.65, 0.05, 1)" : "none",
-                  borderRadius: "50%",
-                  boxShadow: "0 4px 20px rgba(107,30,46,0.25)"
-                }}
-              />
-            </div>
-            <p className="text-ink/80 text-lg font-medium">{spinning ? "La roue tourne... 🎡" : "Regardez le résultat !"}</p>
+            <RoueChance rewards={rewards} rotation={rotation} spinning={spinning} />
+            <p className="mt-7 text-ink/80 text-lg font-medium">
+              {spinning ? "La roue tourne... 🎡" : rotation === 0 ? "C'est parti !" : "Et le résultat est..."}
+            </p>
           </div>
         )}
 

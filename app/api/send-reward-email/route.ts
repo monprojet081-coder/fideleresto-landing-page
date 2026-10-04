@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
           </div>
           ${qrBuffer ? `
           <div style="text-align: center; margin: 24px 0;">
-            <p style="font-size: 14px; color: #4b5563; margin-bottom: 10px;">Présentez ce code au comptoir lors de votre prochaine visite :</p>
+            <p style="font-size: 14px; color: #4b5563; margin-bottom: 10px;">Présentez ce code au comptoir au moment de payer :</p>
             <img src="cid:qr-recompense" alt="QR code de votre récompense" width="180" height="180" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px;" />
             <p style="font-size: 13px; color: #9ca3af; margin-top: 10px;">Valable ${DUREE_VALIDITE_JOURS} jours, utilisable une seule fois.</p>
           </div>

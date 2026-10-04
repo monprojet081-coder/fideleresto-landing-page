@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
+import { REWARDS_PAR_DEFAUT, type Lot as Reward } from '@/lib/roue'
 
-type Reward = { label: string; probabilite: number; couleur: string }
 
-const REWARDS_PAR_DEFAUT: Reward[] = [
-  { label: "Boisson offerte 🥤", probabilite: 25, couleur: "#6b1e2e" },
-  { label: "Dessert offert 🍰", probabilite: 25, couleur: "#c9962c" },
-  { label: "10% de réduction 🏷️", probabilite: 25, couleur: "#3f6b4f" },
-  { label: "Perdu 😢", probabilite: 25, couleur: "#a8536a" },
-]
 
 // Emails de test internes, jamais soumis a la limite d'un tirage par jour
 const EMAILS_TEST = ["cokillage67@gmail.com", "monprojet081@gmail.com"]
