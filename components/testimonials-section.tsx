@@ -24,13 +24,13 @@ export function TestimonialsSection() {
           recontacter ses clients par email.
         </p>
 
-        <div className="mx-auto mt-14 grid max-w-5xl items-center gap-5 lg:grid-cols-[1fr_auto_1fr] lg:gap-7">
+        <div className="mx-auto mt-12 grid max-w-[440px] items-center gap-4 sm:mt-14 lg:max-w-5xl lg:grid-cols-[1fr_auto_1fr] lg:gap-7">
           <Image
             src="/assets/avant-apres-avant.webp"
             alt="Avant FidèleResto, exemple illustratif : 3,6 étoiles pour 45 avis, peu de clients qui reviennent, peu d'avis Google, des cartes papier perdues, un chiffre d'affaires limité, aucun moyen de recontact"
-            width={718}
-            height={925}
-            sizes="(min-width: 1024px) 480px, 100vw"
+            width={700}
+            height={924}
+            sizes="(min-width: 1024px) 480px, 440px"
             loading="lazy"
             className="h-auto w-full"
           />
@@ -40,14 +40,14 @@ export function TestimonialsSection() {
             width={76}
             height={77}
             loading="lazy"
-            className="mx-auto h-auto w-10 rotate-90 lg:w-14 lg:rotate-0"
+            className="mx-auto h-auto w-9 rotate-90 lg:w-14 lg:rotate-0"
           />
           <Image
             src="/assets/avant-apres-apres.webp"
             alt="Avec FidèleResto, exemple illustratif : 4,7 étoiles pour 187 avis, plus de clients qui reviennent, plus d'avis Google, une carte de fidélité digitale, un chiffre d'affaires en hausse, la possibilité de recontacter ses clients"
-            width={731}
-            height={954}
-            sizes="(min-width: 1024px) 480px, 100vw"
+            width={700}
+            height={942}
+            sizes="(min-width: 1024px) 480px, 440px"
             loading="lazy"
             className="h-auto w-full"
           />

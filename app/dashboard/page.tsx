@@ -942,8 +942,8 @@ function DashboardContent() {
         { id: "menu", label: "Menu digital", icon: BookOpen, verrou: !estComplet },
         { id: "fidelite", label: "Carte fidélité", icon: Award, verrou: !estComplet },
         ...(restaurant?.plan === "essentiel" || restaurant?.plan === "standard" ? [{ id: "retours", label: "Retours clients", icon: Inbox }] : []),
-        { id: "abonnement", label: "Abonnement", icon: CreditCard },
         { id: "relance", label: "Relance", icon: Mail, verrou: !estComplet },
+        { id: "abonnement", label: "Abonnement", icon: CreditCard },
         { id: "parametres", label: "Paramètres", icon: Settings },
       ]
 
