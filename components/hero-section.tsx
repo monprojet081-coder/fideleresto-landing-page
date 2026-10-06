@@ -53,7 +53,7 @@ export function HeroSection() {
               src="/assets/hero-mockup.webp"
               alt="L'application FidèleResto sur un smartphone : la roue de la chance à tourner, un lot « Boisson gratuite ! », la carte de fidélité du restaurant et l'invitation à laisser un avis Google"
               width={1200}
-              height={1114}
+              height={1097}
               priority
               sizes="(min-width: 1024px) 560px, 90vw"
               className="h-auto w-full drop-shadow-[0_28px_34px_rgba(66,16,28,0.22)]"

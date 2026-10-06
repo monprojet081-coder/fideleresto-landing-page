@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck, Menu, X, Inbox, ArrowLeft, Lock } from "lucide-react"
+import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck, Menu, X, Inbox, ArrowLeft, Lock, ScanLine } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
 import { plans } from "@/lib/pricing"
@@ -253,7 +253,7 @@ function DashboardContent() {
       })
     }
 
-    if (activeSection !== "fidelite" && streamRef.current) {
+    if (activeSection !== "scanner" && streamRef.current) {
       arreterScan()
     }
   }, [activeSection, user, restaurant])
@@ -692,6 +692,12 @@ function DashboardContent() {
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
           const code = jsQR(imageData.data, imageData.width, imageData.height)
+          if (code && code.data.startsWith("fideleresto:client:") && !estComplet) {
+            arreterScan()
+            setClientTrouve(null)
+            setRecompenseScanResult({ success: false, error: "Ce QR est une carte de fidélité : la carte de fidélité est incluse dans le plan Complet." })
+            return
+          }
           if (code && code.data.startsWith("fideleresto:client:")) {
             const clientId = code.data.replace("fideleresto:client:", "")
             arreterScan()
@@ -930,6 +936,7 @@ function DashboardContent() {
         { id: "accueil", label: "Tableau de bord", icon: LayoutDashboard },
         { id: "qrcode", label: "Mon QR code", icon: QrCode },
         { id: "flyer", label: "Mon flyer", icon: FileText },
+        { id: "scanner", label: "Scanner", icon: ScanLine },
         { id: "clients", label: "Mes clients", icon: Users },
         { id: "roue", label: "Ma roue", icon: Sliders },
         { id: "menu", label: "Menu digital", icon: BookOpen, verrou: !estComplet },
@@ -1667,60 +1674,20 @@ function DashboardContent() {
           </div>
         )}
 
-        {activeSection === "fidelite" && estComplet && (
+        {activeSection === "scanner" && (
           <div>
             <div className="mb-8">
-              <h1 className="text-2xl font-display font-semibold text-ink">Carte fidélité</h1>
-              <p className="text-ink/55 mt-1">Réglez votre carte et validez les passages de vos clients</p>
+              <h1 className="text-2xl font-display font-semibold text-ink">Scanner</h1>
+              <p className="text-ink/55 mt-1">
+                {estComplet
+                  ? "Validez les récompenses de la roue et les passages sur la carte de fidélité"
+                  : "Validez les récompenses gagnées à la roue par vos clients"}
+              </p>
             </div>
-
-            <div className="grid gap-6 lg:grid-cols-2 max-w-4xl">
-              {/* Réglages */}
+            <div className="max-w-xl">
+              {/* Scanner : récompenses de la roue (tous plans) + passages carte fidélité (Complet) */}
               <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
-                <p className="text-sm font-medium text-ink mb-4">Réglages de la carte</p>
-
-                <label className="block text-sm text-ink/70 mb-1">
-                  Nombre de tampons requis : <span className="font-semibold text-wine">{tamponsRequis}</span>
-                </label>
-                <input
-                  type="range"
-                  min={6}
-                  max={15}
-                  value={tamponsRequis}
-                  onChange={e => setTamponsRequis(parseInt(e.target.value))}
-                  className="w-full accent-wine mb-4"
-                />
-
-                <label className="block text-sm text-ink/70 mb-1">Montant minimum pour valider un tampon (€)</label>
-                <input
-                  type="number"
-                  step="0.5"
-                  min={0}
-                  value={montantMin}
-                  onChange={e => setMontantMin(parseFloat(e.target.value))}
-                  className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-
-                <label className="block text-sm text-ink/70 mb-1">Récompense offerte</label>
-                <input
-                  type="text"
-                  value={recompenseFidelite}
-                  onChange={e => setRecompenseFidelite(e.target.value)}
-                  className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-
-                <button
-                  onClick={saveFideliteConfig}
-                  disabled={savingFidelite}
-                  className="w-full bg-wine hover:bg-wine-dark disabled:opacity-60 text-gold-light font-medium py-2.5 rounded-lg text-sm"
-                >
-                  {savingFidelite ? "Sauvegarde..." : "Sauvegarder les réglages"}
-                </button>
-              </div>
-
-              {/* Validation d'un passage */}
-              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
-                <p className="text-sm font-medium text-ink mb-4">Valider un passage client</p>
+                <p className="text-sm font-medium text-ink mb-4">{estComplet ? "Scanner une carte ou une récompense" : "Scanner une récompense"}</p>
 
                 {scanning ? (
                   <div className="mb-4">
@@ -1742,10 +1709,11 @@ function DashboardContent() {
                     className="w-full flex items-center justify-center gap-2 bg-wine hover:bg-wine-dark text-gold-light font-medium py-3 rounded-lg text-sm mb-4"
                   >
                     <QrCode className="size-4" />
-                    Scanner (carte fidélité ou récompense roue)
+                    {estComplet ? "Scanner (carte fidélité ou récompense roue)" : "Scanner le QR de la récompense"}
                   </button>
                 )}
 
+                {estComplet && (
                 <details className="mb-2">
                   <summary className="text-xs text-ink/50 cursor-pointer hover:text-ink/70">
                     Ou rechercher par email
@@ -1767,6 +1735,7 @@ function DashboardContent() {
                     </button>
                   </div>
                 </details>
+                )}
 
                 {rechercheError && <p className="text-sm text-wine mt-3 mb-2">{rechercheError}</p>}
 
@@ -1859,6 +1828,73 @@ function DashboardContent() {
                     </div>
                   )}
                 </details>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeSection === "fidelite" && estComplet && (
+          <div>
+            <div className="mb-8">
+              <h1 className="text-2xl font-display font-semibold text-ink">Carte fidélité</h1>
+              <p className="text-ink/55 mt-1">Réglez votre carte et validez les passages de vos clients</p>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2 max-w-4xl">
+              {/* Réglages */}
+              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
+                <p className="text-sm font-medium text-ink mb-4">Réglages de la carte</p>
+
+                <label className="block text-sm text-ink/70 mb-1">
+                  Nombre de tampons requis : <span className="font-semibold text-wine">{tamponsRequis}</span>
+                </label>
+                <input
+                  type="range"
+                  min={6}
+                  max={15}
+                  value={tamponsRequis}
+                  onChange={e => setTamponsRequis(parseInt(e.target.value))}
+                  className="w-full accent-wine mb-4"
+                />
+
+                <label className="block text-sm text-ink/70 mb-1">Montant minimum pour valider un tampon (€)</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  min={0}
+                  value={montantMin}
+                  onChange={e => setMontantMin(parseFloat(e.target.value))}
+                  className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-gold"
+                />
+
+                <label className="block text-sm text-ink/70 mb-1">Récompense offerte</label>
+                <input
+                  type="text"
+                  value={recompenseFidelite}
+                  onChange={e => setRecompenseFidelite(e.target.value)}
+                  className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-gold"
+                />
+
+                <button
+                  onClick={saveFideliteConfig}
+                  disabled={savingFidelite}
+                  className="w-full bg-wine hover:bg-wine-dark disabled:opacity-60 text-gold-light font-medium py-2.5 rounded-lg text-sm"
+                >
+                  {savingFidelite ? "Sauvegarde..." : "Sauvegarder les réglages"}
+                </button>
+              </div>
+
+              {/* La validation des passages se fait dans l'onglet Scanner (commun aux deux plans) */}
+              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
+                <p className="text-sm font-medium text-ink mb-2">Valider un passage client</p>
+                <p className="text-sm text-ink/60 mb-4">Scannez la carte du client ou retrouvez-le par email depuis l&apos;onglet Scanner.</p>
+                <button
+                  onClick={() => setActiveSection("scanner")}
+                  className="w-full flex items-center justify-center gap-2 bg-wine hover:bg-wine-dark text-gold-light font-medium py-3 rounded-lg text-sm"
+                >
+                  <ScanLine className="size-4" />
+                  Ouvrir le scanner
+                </button>
               </div>
             </div>
 
