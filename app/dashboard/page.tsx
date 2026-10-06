@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck, Menu, X, Inbox, ArrowLeft } from "lucide-react"
+import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck, Menu, X, Inbox, ArrowLeft, Lock } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
 import { plans } from "@/lib/pricing"
@@ -886,6 +886,8 @@ function DashboardContent() {
   // === Statistiques avancées (Premium) ===
   // Les statistiques avancees restent une fonctionnalite du plan standard (Complet) uniquement
   const estPremiumStats = restaurant?.plan === "standard"
+  // Carte fidélité, menu digital et relances : réservés au plan Complet (standard)
+  const estComplet = restaurant?.plan === "standard"
 
   // Comparaison mois en cours vs mois précédent (nombre de clients / passages)
   const maintenant = new Date()
@@ -930,11 +932,11 @@ function DashboardContent() {
         { id: "flyer", label: "Mon flyer", icon: FileText },
         { id: "clients", label: "Mes clients", icon: Users },
         { id: "roue", label: "Ma roue", icon: Sliders },
-        { id: "menu", label: "Menu digital", icon: BookOpen },
-        { id: "fidelite", label: "Carte fidélité", icon: Award },
+        { id: "menu", label: "Menu digital", icon: BookOpen, verrou: !estComplet },
+        { id: "fidelite", label: "Carte fidélité", icon: Award, verrou: !estComplet },
         ...(restaurant?.plan === "essentiel" || restaurant?.plan === "standard" ? [{ id: "retours", label: "Retours clients", icon: Inbox }] : []),
         { id: "abonnement", label: "Abonnement", icon: CreditCard },
-        { id: "relance", label: "Relance", icon: Mail },
+        { id: "relance", label: "Relance", icon: Mail, verrou: !estComplet },
         { id: "parametres", label: "Paramètres", icon: Settings },
       ]
 
@@ -990,6 +992,7 @@ function DashboardContent() {
               >
                 <Icon className="w-4 h-4" />
                 {item.label}
+                {"verrou" in item && item.verrou && <Lock className="w-3.5 h-3.5 ml-auto opacity-60" aria-label="Plan Complet" />}
               </button>
             )
           })}
@@ -1604,7 +1607,27 @@ function DashboardContent() {
           </div>
         )}
 
-        {activeSection === "menu" && (
+        {!estComplet && ["menu", "fidelite", "relance"].includes(activeSection) && (
+          <div className="max-w-xl mx-auto mt-10 bg-card rounded-xl border border-wine/10 shadow-sm p-8 text-center">
+            <div className="w-12 h-12 rounded-full bg-gold/15 text-wine flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-5 h-5" />
+            </div>
+            <h1 className="text-xl font-display font-semibold text-ink">Inclus dans le plan Complet</h1>
+            <p className="text-ink/60 mt-2">
+              {activeSection === "menu" && "Le menu digital est réservé au plan Complet."}
+              {activeSection === "fidelite" && "La carte de fidélité digitale est réservée au plan Complet."}
+              {activeSection === "relance" && "Les emails de relance automatiques sont réservés au plan Complet."}
+            </p>
+            <button
+              onClick={() => setActiveSection("abonnement")}
+              className="mt-6 inline-flex items-center gap-2 bg-wine text-ivory px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-wine-dark transition-colors"
+            >
+              Voir les plans <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {activeSection === "menu" && estComplet && (
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Menu digital</h1>
@@ -1644,7 +1667,7 @@ function DashboardContent() {
           </div>
         )}
 
-        {activeSection === "fidelite" && (
+        {activeSection === "fidelite" && estComplet && (
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Carte fidélité</h1>
@@ -2131,7 +2154,7 @@ function DashboardContent() {
           </div>
         )}
 
-        {activeSection === "relance" && (
+        {activeSection === "relance" && estComplet && (
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Relance</h1>

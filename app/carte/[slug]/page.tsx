@@ -46,9 +46,9 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
         setStep("not_found")
         return
       }
-      // Menu digital + carte fidélité sont inclus dans Standard ET Premium :
-      // l'accès dépend d'un abonnement actif (ou en essai), pas du plan précis
-      if (!resto.plan || !["actif", "essai"].includes(resto.statut_abonnement)) {
+      // Menu digital + carte fidélité : réservés au plan Complet (standard),
+      // avec un abonnement actif (ou en essai)
+      if (resto.plan !== "standard" || !["actif", "essai"].includes(resto.statut_abonnement)) {
         setStep("no_access")
         return
       }

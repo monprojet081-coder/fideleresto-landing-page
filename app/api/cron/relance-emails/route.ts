@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   try {
     const { data: restaurants, error: restoError } = await supabaseAdmin
       .from('restaurants')
-      .select('slug, nom_restaurant, relance_active, relance_jours_inactivite, relance_pourcentage')
+      .select('slug, nom_restaurant, plan, relance_active, relance_jours_inactivite, relance_pourcentage')
       .eq('relance_active', true)
 
     if (restoError) throw restoError
@@ -26,6 +26,9 @@ export async function GET(req: NextRequest) {
     const details: any[] = []
 
     for (const resto of restaurants || []) {
+      // Relances automatiques : réservées au plan Complet (standard)
+      if (resto.plan !== 'standard') continue
+
       const jours = resto.relance_jours_inactivite || 10
       const seuil = new Date(Date.now() - jours * 24 * 60 * 60 * 1000).toISOString()
 

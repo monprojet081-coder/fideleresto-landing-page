@@ -38,6 +38,8 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [commentaireAvis, setCommentaireAvis] = useState("")
   const [avisEtape, setAvisEtape] = useState<"note" | "negatif" | "positif" | "envoye">("note")
   const [nomRestaurant, setNomRestaurant] = useState("")
+  // Carte de fidélité + menu digital : réservés au plan Complet (standard)
+  const [aCarte, setACarte] = useState(false)
 
   // Vérifie que le restaurant existe vraiment avant d'afficher quoi que ce soit.
   // Empêche de contourner l'anti-fraude en modifiant le slug dans l'URL.
@@ -64,6 +66,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         // dans les deux plans payants, essentiel comme standard
         setEstPremium(data.plan === "essentiel" || data.plan === "standard")
         setNomRestaurant(data.nom_restaurant || "")
+        setACarte(data.plan === "standard")
         // Charge les lots tout de suite : le client voit la roue et ce qu'il peut gagner
         // AVANT de remplir le formulaire, au lieu de la decouvrir lancee a pleine vitesse
         supabase
@@ -340,6 +343,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <AvisSection
               slug={slug}
               estPremium={estPremium}
+              aCarte={aCarte}
               prenom={prenom}
               email={email}
               dejaVenu={dejaVenu}
@@ -371,6 +375,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <AvisSection
               slug={slug}
               estPremium={estPremium}
+              aCarte={aCarte}
               prenom={prenom}
               email={email}
               dejaVenu={dejaVenu}
@@ -400,12 +405,14 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                 🎡 Revenez {quandRejouer(frequenceJours)} pour retenter votre chance !
               </p>
             </div>
-            <a
-              href={`/carte/${slug}`}
-              className="block w-full border border-wine/20 text-ink font-medium text-base py-3.5 rounded-lg hover:bg-wine/5 transition-colors text-center"
-            >
-              🍽️ Voir le menu et ma carte de fidélité
-            </a>
+            {aCarte && (
+              <a
+                href={`/carte/${slug}`}
+                className="block w-full border border-wine/20 text-ink font-medium text-base py-3.5 rounded-lg hover:bg-wine/5 transition-colors text-center"
+              >
+                🍽️ Voir le menu et ma carte de fidélité
+              </a>
+            )}
           </div>
         )}
 
@@ -422,12 +429,13 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 }
 
 function AvisSection({
-  slug, estPremium, prenom, email, dejaVenu,
+  slug, estPremium, aCarte, prenom, email, dejaVenu,
   avisClique, setAvisClique, avisExiste, setAvisExiste,
   noteAvis, setNoteAvis, commentaireAvis, setCommentaireAvis, avisEtape, setAvisEtape,
 }: {
   slug: string
   estPremium: boolean
+  aCarte: boolean
   prenom: string
   email: string
   dejaVenu: boolean
@@ -457,7 +465,7 @@ function AvisSection({
       })
   }, [slug])
 
-  const lienCarteNeutre = (
+  const lienCarteNeutre = !aCarte ? null : (
     <a
       href={`/carte/${slug}`}
       className="mt-3 block w-full border border-wine/20 text-ink font-medium text-base py-3.5 rounded-lg hover:bg-wine/5 transition-colors text-center"
@@ -468,7 +476,7 @@ function AvisSection({
 
   // Tant que l'avis n'est pas laisse, on met le lien vers la carte/menu bien en evidence
   // (incitation claire), pour ne pas que cette fonctionnalite reste trop discrete
-  const lienCarteIncitatif = (
+  const lienCarteIncitatif = !aCarte ? null : (
     <div className="mt-4 rounded-xl border-2 border-gold/40 bg-gold/10 p-3.5 text-center">
       <p className="text-sm font-semibold text-wine-dark mb-3">
         🔓 Une fois votre avis laissé, accédez à votre carte de fidélité et au menu du restaurant !
