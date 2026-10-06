@@ -39,7 +39,6 @@ function DashboardContent() {
     setConfirmModal({ message, onConfirm })
   }
   const [activeSection, setActiveSection] = useState("accueil")
-  const [videoVisible, setVideoVisible] = useState(true)
   const [rewards, setRewards] = useState([
     { label: "Boisson offerte 🥤", probabilite: 25, couleur: "#6b1e2e" },
     { label: "Dessert offert 🍰", probabilite: 25, couleur: "#c9962c" },
@@ -1027,32 +1026,6 @@ function DashboardContent() {
               <h1 className="text-2xl font-display font-semibold text-ink">Bonjour, {nomResto} 👋</h1>
               <p className="text-ink/55 mt-1">Voici un aperçu de votre activité</p>
             </div>
-
-            {videoVisible && (
-              <div className="mb-8 bg-card rounded-xl border border-wine/10 shadow-sm overflow-hidden max-w-2xl">
-                <div className="flex items-center justify-between px-5 pt-4">
-                  <p className="text-sm font-medium text-ink">🎬 Guide de mise en place de FidèleResto</p>
-                  <button
-                    onClick={() => setVideoVisible(false)}
-                    className="text-ink/40 hover:text-wine text-lg leading-none"
-                    aria-label="Masquer la vidéo"
-                  >
-                    ×
-                  </button>
-                </div>
-                <div className="p-5 pt-3">
-                  <div className="relative w-full rounded-lg overflow-hidden" style={{ paddingTop: "56.25%" }}>
-                    <iframe
-                      src="https://www.youtube.com/embed/9Dm5AImbNfY"
-                      title="Présentation de FidèleResto"
-                      className="absolute inset-0 w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {kpis.map((kpi) => {

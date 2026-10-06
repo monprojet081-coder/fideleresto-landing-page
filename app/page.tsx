@@ -1,6 +1,5 @@
 import { SiteHeader } from "@/components/site-header"
 import { HeroSection } from "@/components/hero-section"
-import { VideoSection } from "@/components/video-section"
 import { HowItWorksSection } from "@/components/how-it-works-section"
 import { FeaturesSection } from "@/components/features-section"
 import { PricingSection } from "@/components/pricing-section"
@@ -14,7 +13,6 @@ export default function Page() {
       <SiteHeader />
       <main>
         <HeroSection />
-        <VideoSection />
         <HowItWorksSection />
         <FeaturesSection />
         <TestimonialsSection />

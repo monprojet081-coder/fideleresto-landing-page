@@ -54,8 +54,7 @@ export function TestimonialsSection() {
         </div>
 
         <p className="mx-auto mt-10 max-w-2xl text-center text-sm text-ink/60">
-          Exemple illustratif pour un restaurant fictif. Les résultats dépendent de votre établissement et de
-          votre fréquentation.
+          Exemple illustratif
         </p>
       </div>
     </section>
