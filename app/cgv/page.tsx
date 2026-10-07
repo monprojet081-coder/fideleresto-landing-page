@@ -1,6 +1,6 @@
 import { LegalLayout } from "@/components/legal-layout"
 
-export const metadata = { title: "Conditions générales — FidèleResto" }
+export const metadata = { title: "Conditions générales" }
 
 export default function ConditionsGeneralesPage() {
   return (

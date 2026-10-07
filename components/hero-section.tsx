@@ -7,6 +7,9 @@ export function HeroSection() {
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-8">
           <div>
+            <p className="mb-5 text-sm font-semibold uppercase tracking-[0.14em] text-wine/80">
+              Logiciel de fidélité pour restaurants
+            </p>
             <h1 className="text-balance font-display font-semibold tracking-tight text-ink">
               <span className="block text-4xl sm:text-5xl md:text-6xl md:leading-[1.05]">Augmentez votre</span>
               <span className="mt-1 block text-5xl text-wine sm:text-6xl md:text-7xl md:leading-[1.02]">

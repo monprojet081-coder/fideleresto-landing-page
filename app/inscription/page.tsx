@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { SiteHeader } from "@/components/site-header"
 import { SignupForm } from "@/components/signup-form"
 import { SiteFooter } from "@/components/site-footer"
@@ -5,6 +6,12 @@ import { SiteFooter } from "@/components/site-footer"
 // prerenderee statiquement au build, ce qui evitait un plantage du build Vercel
 // quand cette page touchait des variables d'env cote client au mauvais moment
 export const dynamic = 'force-dynamic'
+
+export const metadata: Metadata = {
+  title: "Créer mon compte restaurateur",
+  description: "Inscrivez votre restaurant sur FidèleResto en quelques minutes : roue de la fidélité, QR code et carte de fidélité digitale. Essai gratuit 14 jours sur le plan Complet.",
+  alternates: { canonical: "/inscription" },
+}
 
 export default function InscriptionPage() {
   return (

@@ -1,6 +1,6 @@
 import { LegalLayout } from "@/components/legal-layout"
 
-export const metadata = { title: "Politique de confidentialité — FidèleResto" }
+export const metadata = { title: "Politique de confidentialité" }
 
 export default function ConfidentialitePage() {
   return (

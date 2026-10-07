@@ -19,9 +19,21 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://fideleresto.fr'),
-  title: 'FidèleResto — Fidélisez vos clients et boostez vos avis Google',
+  title: {
+    default: 'FidèleResto — Logiciel de fidélité pour restaurant',
+    template: '%s | FidèleResto',
+  },
   description:
-    'FidèleResto aide les restaurateurs à fidéliser leurs clients et à multiplier leurs avis Google grâce à un QR code, une roue de la fidélité et des récompenses.',
+    "Logiciel de fidélité pour restaurants indépendants : QR code sur table, roue de la fidélité, carte de fidélité digitale, relances email et plus d'avis Google. Sans application à installer. Essai gratuit 14 jours.",
+  keywords: [
+    'logiciel fidélité restaurant',
+    'carte de fidélité digitale restaurant',
+    'programme de fidélité restaurant',
+    'roue de la fortune QR code restaurant',
+    'avis Google restaurant',
+    'fidéliser clients restaurant',
+    'QR code restaurant',
+  ],
   applicationName: 'FidèleResto',
   icons: {
     icon: [
@@ -49,13 +61,19 @@ export const metadata: Metadata = {
   },
   manifest: '/site.webmanifest',
   openGraph: {
-    title: 'FidèleResto — Fidélisez vos clients et boostez vos avis Google',
+    title: 'FidèleResto — Faites revenir vos clients',
     description:
-      'FidèleResto aide les restaurateurs à fidéliser leurs clients et à multiplier leurs avis Google grâce à un QR code, une roue de la fidélité et des récompenses.',
+      "QR code sur table, roue de la fidélité, carte de fidélité digitale et plus d'avis Google pour les restaurants indépendants.",
     url: 'https://fideleresto.fr',
     siteName: 'FidèleResto',
     locale: 'fr_FR',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'FidèleResto — Faites revenir vos clients',
+    description:
+      "QR code sur table, roue de la fidélité, carte de fidélité digitale et plus d'avis Google pour les restaurants indépendants.",
   },
 }
 
@@ -72,7 +90,9 @@ const organizationJsonLd = {
   url: 'https://fideleresto.fr',
   logo: 'https://fideleresto.fr/icon-512x512.png',
   description:
-    "FidèleResto aide les restaurateurs à fidéliser leurs clients et à multiplier leurs avis Google grâce à un QR code, une roue de la fidélité et des récompenses.",
+    "Logiciel de fidélité pour restaurants indépendants : QR code, roue de la fidélité, carte de fidélité digitale et relances email.",
+  email: 'contact@fideleresto.fr',
+  areaServed: 'FR',
 }
 
 export default function RootLayout({

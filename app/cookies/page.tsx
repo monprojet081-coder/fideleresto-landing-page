@@ -1,6 +1,6 @@
 import { LegalLayout } from "@/components/legal-layout"
 
-export const metadata = { title: "Cookies — FidèleResto" }
+export const metadata = { title: "Cookies" }
 
 export default function CookiesPage() {
   return (

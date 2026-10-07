@@ -6,10 +6,10 @@ import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navLinks = [
-  { label: "Comment ça marche", href: "#comment-ca-marche" },
-  { label: "Fonctionnalités", href: "#fonctionnalites" },
-  { label: "Avant / après", href: "#resultats" },
-  { label: "Tarifs", href: "#tarifs" },
+  { label: "Comment ça marche", href: "/#comment-ca-marche" },
+  { label: "Fonctionnalités", href: "/#fonctionnalites" },
+  { label: "Avant / après", href: "/#resultats" },
+  { label: "Tarifs", href: "/#tarifs" },
 ]
 
 export function SiteHeader() {

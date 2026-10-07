@@ -1,6 +1,7 @@
 import Image from "next/image"
 
 const legalLinks = [
+  { label: "Guides", href: "/guides" },
   { label: "Mentions légales", href: "/mentions-legales" },
   { label: "Conditions générales", href: "/cgv" },
   { label: "Politique de confidentialité", href: "/confidentialite" },
@@ -23,7 +24,7 @@ export function SiteFooter() {
             </span>
           </a>
 
-          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2" aria-label="Liens légaux">
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2" aria-label="Liens du pied de page">
             {legalLinks.map((link) => (
               <a
                 key={link.label}

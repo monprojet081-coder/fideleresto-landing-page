@@ -1,6 +1,6 @@
 import { LegalLayout } from "@/components/legal-layout"
 
-export const metadata = { title: "Mentions légales — FidèleResto" }
+export const metadata = { title: "Mentions légales" }
 
 export default function MentionsLegalesPage() {
   return (
