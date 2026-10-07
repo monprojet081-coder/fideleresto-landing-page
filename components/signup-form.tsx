@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
+import { OPTION_SITE, libelleMaintenanceSite } from "@/lib/pricing"
 
 export function SignupForm() {
   return (
@@ -248,27 +249,44 @@ function SignupFormContent() {
             </div>
           </div>
 
-          <div className="space-y-2 rounded-lg border border-wine/10 bg-secondary/40 p-4">
-            <p className="text-sm font-medium text-ink/80">Option (facultatif)</p>
-            <label className="flex items-start gap-2.5 text-sm text-ink/75 cursor-pointer">
+          <label
+            className={`block cursor-pointer rounded-xl border-2 p-4 transition-colors ${
+              avecCreationSite ? "border-gold bg-gold/10" : "border-gold/50 bg-gold/5 hover:border-gold"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold text-wine-dark">🌐 Option : votre site internet</p>
+              {OPTION_SITE.offreLancementActive && (
+                <span className="shrink-0 rounded-full bg-wine px-2.5 py-0.5 text-xs font-semibold text-gold-light">
+                  Offre de lancement
+                </span>
+              )}
+            </div>
+            <div className="mt-3 flex items-start gap-2.5">
               <input
                 type="checkbox"
-                className="mt-0.5 accent-wine"
+                className="mt-1 size-4 accent-wine"
                 checked={avecCreationSite}
                 onChange={(e) => setAvecCreationSite(e.target.checked)}
               />
-              <span>
+              <span className="text-sm text-ink/80">
                 Je n&apos;ai pas encore de site, créez-moi en un
-                <span className="block text-xs text-ink/50">
-                  600€ de frais uniques, puis {" "}
-                  {plan.endsWith("annuel") ? "1200€/an" : plan.endsWith("semestriel") ? "600€/semestre" : "100€/mois"} de maintenance
+                <span className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
+                  {OPTION_SITE.offreLancementActive && (
+                    <span className="text-sm text-ink/45 line-through">{OPTION_SITE.fraisUniquesBarre}€</span>
+                  )}
+                  <span className="text-lg font-bold text-wine">{OPTION_SITE.fraisUniques}€</span>
+                  <span className="text-xs text-ink/60">de frais uniques</span>
+                </span>
+                <span className="block text-xs text-ink/55">
+                  puis {libelleMaintenanceSite(plan.endsWith("annuel") ? "annuel" : plan.endsWith("semestriel") ? "semestriel" : "mensuel")} de maintenance
                 </span>
               </span>
-            </label>
-            <p className="text-xs text-ink/45 pt-1">
-              Cette option reste modifiable plus tard depuis votre dashboard, onglet Abonnement.
+            </div>
+            <p className="mt-2 text-xs text-ink/45">
+              Facultatif, modifiable plus tard depuis votre dashboard, onglet Abonnement.
             </p>
-          </div>
+          </label>
 
           <div className="flex items-start gap-2">
             <input

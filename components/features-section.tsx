@@ -30,7 +30,7 @@ const autresFonctionnalites = [
     icon: ShieldAlert,
     title: "Tri des avis négatifs",
     description:
-      "Un client déçu ? Son retour vous arrive directement par email au lieu d'atterrir en public sur Google.",
+      "Un client déçu ? Il peut vous écrire en privé : son retour vous arrive directement par email pour que vous réagissiez vite.",
   },
   {
     icon: BarChart3,

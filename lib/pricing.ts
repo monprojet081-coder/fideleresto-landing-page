@@ -6,6 +6,22 @@
 // puis mettre a jour STRIPE_PRICE_STANDARD_MENSUEL sur Vercel vers le nouveau prix plein.
 export const OFFRE_LANCEMENT_ACTIVE = true
 
+// Option creation de site (frais uniques + maintenance). Affichee seulement a l'inscription
+// et dans l'onglet Abonnement, pas sur la landing.
+// Le montant reellement facture vient du Price Stripe STRIPE_PRICE_FRAIS_SITE : s'il change,
+// creer un nouveau Price dans Stripe, mettre a jour la variable sur Vercel, redeployer sans cache.
+export const OPTION_SITE = {
+  offreLancementActive: true,
+  fraisUniques: 500,
+  fraisUniquesBarre: 1000,
+  maintenance: { mensuel: 100, semestriel: 600, annuel: 1200 },
+}
+
+export function libelleMaintenanceSite(periode: "mensuel" | "semestriel" | "annuel") {
+  const m = OPTION_SITE.maintenance
+  return periode === "annuel" ? `${m.annuel}€/an` : periode === "semestriel" ? `${m.semestriel}€/semestre` : `${m.mensuel}€/mois`
+}
+
 export type PlanKeyPublic = "essentiel" | "standard"
 
 export const plans: {
@@ -39,7 +55,7 @@ export const plans: {
     periodesDisponibles: true,
     features: [
       "Roue de la fidélité",
-      "Tri des avis négatifs (protège votre note Google)",
+      "Tri des avis négatifs (retours privés envoyés au restaurant)",
       "Tableau de bord de suivi",
       "Option création de site",
     ],
@@ -66,8 +82,8 @@ export const plans: {
     highlight: true,
     periodesDisponibles: true,
     features: [
-      "Roue de la fidélité + boost avis Google",
-      "Tri des avis négatifs (protège votre note Google)",
+      "Roue de la fidélité + plus d'avis Google",
+      "Tri des avis négatifs (retours privés envoyés au restaurant)",
       "Statistiques avancées (heures de pointe, évolution)",
       "Accompagnement personnalisé",
       "3 modèles de flyers, fournis et traduits sur demande",

@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabase"
 import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck, Menu, X, Inbox, ArrowLeft, Lock, ScanLine } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
-import { plans } from "@/lib/pricing"
+import { plans, OPTION_SITE, libelleMaintenanceSite } from "@/lib/pricing"
 import { statutRecompense, regrouperParClient, normaliserRecherche, DUREE_VALIDITE_JOURS } from "@/lib/recompenses"
 
 export default function DashboardPage() {
@@ -2164,8 +2164,10 @@ function DashboardContent() {
                           <span>
                             Je n&apos;ai pas encore de site, créez-moi en un
                             <span className="block text-xs text-ink/50">
-                              600€ de frais uniques, puis {" "}
-                              {periodeEffective === "mensuel" ? "100€/mois" : periodeEffective === "semestriel" ? "600€/semestre" : "1200€/an"} de maintenance
+                              {OPTION_SITE.offreLancementActive && <span className="line-through mr-1">{OPTION_SITE.fraisUniquesBarre}€</span>}
+                              <span className="font-semibold text-wine">{OPTION_SITE.fraisUniques}€</span> de frais uniques
+                              {OPTION_SITE.offreLancementActive && " (offre de lancement)"}, puis{" "}
+                              {libelleMaintenanceSite(periodeEffective)} de maintenance
                             </span>
                           </span>
                         </label>

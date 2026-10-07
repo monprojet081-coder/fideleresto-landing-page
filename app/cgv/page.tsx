@@ -4,7 +4,7 @@ export const metadata = { title: "Conditions générales — FidèleResto" }
 
 export default function ConditionsGeneralesPage() {
   return (
-    <LegalLayout title="Conditions générales d'utilisation et de vente" majDate="8 août 2026">
+    <LegalLayout title="Conditions générales d'utilisation et de vente" majDate="7 octobre 2026">
       <section>
         <p>
           Les présentes conditions régissent l'utilisation de la plateforme FidèleResto, éditée par Victor
@@ -17,8 +17,10 @@ export default function ConditionsGeneralesPage() {
         <h2 className="font-display text-xl font-semibold text-wine">1. Description du service</h2>
         <p className="mt-2">
           FidèleResto est une plateforme SaaS destinée aux restaurateurs, proposant : une roue de la fidélité
-          digitale accessible par QR code, un dispositif d'incitation aux avis Google, une carte de fidélité
-          digitale, et un menu digital consultable en ligne.
+          digitale accessible par QR code, un lien vers la fiche Google du restaurant
+          proposé à tous les clients ainsi qu'un formulaire de retour privé, une carte de fidélité digitale et un
+          menu digital consultable en ligne (ces deux derniers selon le plan souscrit). Aucune récompense n'est
+          conditionnée au dépôt d'un avis.
         </p>
       </section>
 

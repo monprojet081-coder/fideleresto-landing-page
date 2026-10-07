@@ -63,6 +63,19 @@ export async function POST(req: NextRequest) {
       .eq('restaurant_slug', slug)
     const dejaVenu = (visitesPrecedentes || 0) > 0
 
+    // A-t-il deja clique sur "Laisser un avis Google" lors d'une visite precedente ?
+    // (en cas d'erreur, ex. colonne absente : on considere que non)
+    let dejaAvis = false
+    if (dejaVenu) {
+      const { count: nbAvis, error: avisError } = await supabase
+        .from('clients')
+        .select('id', { count: 'exact', head: true })
+        .eq('email', emailNormalise)
+        .eq('restaurant_slug', slug)
+        .eq('avis_google_clique', true)
+      dejaAvis = !avisError && (nbAvis || 0) > 0
+    }
+
     const { data: roueData } = await supabase
       .from('roue_config')
       .select('label, probabilite, couleur')
@@ -91,7 +104,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
     }
 
-    return NextResponse.json({ dejaJoue: false, dejaVenu, reward, rewardsList, clientRowId: nouveauClient?.id, frequenceJours })
+    return NextResponse.json({ dejaJoue: false, dejaVenu, dejaAvis, reward, rewardsList, clientRowId: nouveauClient?.id, frequenceJours })
   } catch (err: any) {
     console.error('Erreur roue/jouer:', err)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })

@@ -30,6 +30,9 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [avisClique, setAvisClique] = useState(false)
   const [avisExiste, setAvisExiste] = useState(true)
   const [dejaVenu, setDejaVenu] = useState(false)
+  // Ce client (meme email) a deja clique sur "Laisser un avis Google" lors d'une visite precedente
+  const [dejaAvis, setDejaAvis] = useState(false)
+  const [clientRowId, setClientRowId] = useState<string | null>(null)
   const [frequenceJours, setFrequenceJours] = useState(1)
   const [emailStatut, setEmailStatut] = useState<"ok" | "echec" | null>(null)
   const [recompenseRowId, setRecompenseRowId] = useState<string | null>(null)
@@ -140,6 +143,8 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
     }
 
     setDejaVenu(data.dejaVenu)
+    setDejaAvis(!!data.dejaAvis)
+    setClientRowId(data.clientRowId || null)
     setFrequenceJours(data.frequenceJours || 1)
     const reward = data.reward
 
@@ -344,6 +349,8 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
               slug={slug}
               estPremium={estPremium}
               aCarte={aCarte}
+              dejaAvis={dejaAvis}
+              clientRowId={clientRowId}
               prenom={prenom}
               email={email}
               dejaVenu={dejaVenu}
@@ -376,6 +383,8 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
               slug={slug}
               estPremium={estPremium}
               aCarte={aCarte}
+              dejaAvis={dejaAvis}
+              clientRowId={clientRowId}
               prenom={prenom}
               email={email}
               dejaVenu={dejaVenu}
@@ -429,13 +438,15 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 }
 
 function AvisSection({
-  slug, estPremium, aCarte, prenom, email, dejaVenu,
+  slug, estPremium, aCarte, dejaAvis, clientRowId, prenom, email, dejaVenu,
   avisClique, setAvisClique, avisExiste, setAvisExiste,
   noteAvis, setNoteAvis, commentaireAvis, setCommentaireAvis, avisEtape, setAvisEtape,
 }: {
   slug: string
   estPremium: boolean
   aCarte: boolean
+  dejaAvis: boolean
+  clientRowId: string | null
   prenom: string
   email: string
   dejaVenu: boolean
@@ -465,7 +476,9 @@ function AvisSection({
       })
   }, [slug])
 
-  const lienCarteNeutre = !aCarte ? null : (
+  // Lien carte + menu, toujours sous le bouton Google. Il n'est JAMAIS conditionne a un avis
+  // (regles Google : aucun avantage en echange d'un avis).
+  const lienCarte = !aCarte ? null : (
     <a
       href={`/carte/${slug}`}
       className="mt-3 block w-full border border-wine/20 text-ink font-medium text-base py-3.5 rounded-lg hover:bg-wine/5 transition-colors text-center"
@@ -474,58 +487,71 @@ function AvisSection({
     </a>
   )
 
-  // Tant que l'avis n'est pas laisse, on met le lien vers la carte/menu bien en evidence
-  // (incitation claire), pour ne pas que cette fonctionnalite reste trop discrete
-  const lienCarteIncitatif = !aCarte ? null : (
-    <div className="mt-4 rounded-xl border-2 border-gold/40 bg-gold/10 p-3.5 text-center">
-      <p className="text-sm font-semibold text-wine-dark mb-3">
-        🔓 Une fois votre avis laissé, accédez à votre carte de fidélité et au menu du restaurant !
-      </p>
-      <a
-        href={`/carte/${slug}`}
-        className="block w-full bg-card border border-wine/20 text-ink font-medium text-base py-3 rounded-lg hover:bg-wine/5 transition-colors text-center"
-      >
-        🍽️ Voir le menu et ma carte de fidélité
-      </a>
-    </div>
-  )
-
-  const lienCarte = avisClique ? lienCarteNeutre : lienCarteIncitatif
-
   const trackClicGoogle = () => {
+    setAvisClique(true)
     fetch("/api/track-avis-clic", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug }),
+      body: JSON.stringify({ slug, clientRowId }),
     }).catch(() => {})
   }
 
-  // Aucune fiche Google configurée : rien à "débloquer" via un avis, on montre direct le lien neutre
+  const boutonGoogle = (texte = "⭐ Laisser un avis Google") => (
+    <a
+      href={googleUrl ?? undefined}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={trackClicGoogle}
+      className="flex items-center justify-center gap-2 w-full bg-wine text-gold-light text-base font-semibold px-4 py-3.5 rounded-lg shadow-md shadow-wine/20 hover:bg-wine-dark transition-colors"
+    >
+      {texte}
+    </a>
+  )
+
+  // Version discrete : apres un retour prive, ou pour un client qui a deja laisse son avis
+  const lienGoogleDiscret = (texte: string) => (
+    <p className="mt-4 text-center text-sm text-ink/60">
+      <a
+        href={googleUrl ?? undefined}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={trackClicGoogle}
+        className="underline underline-offset-2 hover:text-wine"
+      >
+        {texte}
+      </a>
+    </p>
+  )
+
+  // Aucune fiche Google configuree : on montre seulement la carte/menu
   if (!googleUrl) {
-    return lienCarteNeutre
+    return lienCarte
   }
 
-  // Restaurant NON premium : comportement classique (bouton Google direct), sans gating
+  // Client qui a deja clique sur "Laisser un avis" lors d'une visite precedente (meme email) :
+  // on ne le relance pas, le lien reste dispo en petit en bas
+  if (dejaAvis && !avisClique) {
+    return (
+      <>
+        {lienCarte}
+        {lienGoogleDiscret("Pas encore laissé d'avis ? Laisser un avis Google")}
+      </>
+    )
+  }
+
+  // Sans tri des avis : bouton Google direct, carte/menu en dessous
   if (!estPremium) {
     return (
       <>
-        <a
-          href={googleUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => { setAvisClique(true); trackClicGoogle() }}
-          className="flex items-center justify-center gap-2 w-full bg-wine text-gold-light text-base font-semibold px-4 py-3.5 rounded-lg shadow-md shadow-wine/20 hover:bg-wine-dark transition-colors"
-        >
-          ⭐ Laisser un avis Google
-        </a>
+        {boutonGoogle()}
         {lienCarte}
       </>
     )
   }
 
-  // Restaurant PREMIUM : on demande d'abord une note (alerte insatisfaction / redirection intelligente)
+  // Tri des avis : on demande d'abord une note
 
-  // Étape 1 : on demande la note
+  // Etape 1 : on demande la note
   if (avisEtape === "note") {
     return (
       <div className="text-left">
@@ -550,26 +576,19 @@ function AvisSection({
     )
   }
 
-  // Étape 2a : bonne note → on invite à publier sur Google
+  // Etape 2a : bonne note → bouton Google en evidence
   if (avisEtape === "positif") {
     return (
       <div className="text-center">
         <p className="text-sm text-ink/70 mb-3">Super, merci ! Partagez votre avis sur Google, ça nous aide énormément 🙏</p>
-        <a
-          href={googleUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => { setAvisClique(true); trackClicGoogle() }}
-          className="flex items-center justify-center gap-2 w-full bg-wine text-gold-light text-base font-semibold px-4 py-3.5 rounded-lg shadow-md shadow-wine/20 hover:bg-wine-dark transition-colors"
-        >
-          ⭐ Laisser un avis Google
-        </a>
+        {boutonGoogle()}
         {lienCarte}
       </div>
     )
   }
 
-  // Étape 2b : note mitigée/mauvaise → retour privé, pas de redirection Google
+  // Etape 2b : note mitigee/mauvaise → retour prive propose au restaurant, MAIS le lien Google
+  // reste disponible : le client publie l'avis qu'il veut (interdit par Google de le masquer)
   if (avisEtape === "negatif") {
     return (
       <div className="text-left">
@@ -597,17 +616,19 @@ function AvisSection({
         >
           {envoiEnCours ? "Envoi..." : "Envoyer mon retour"}
         </button>
+        {lienGoogleDiscret("Vous pouvez aussi laisser un avis public sur Google")}
         {lienCarte}
       </div>
     )
   }
 
-  // Étape 3 : retour envoyé (avis laissé en privé, considéré comme complété)
+  // Etape 3 : retour prive envoye
   return (
     <div className="text-center">
       <p className="text-sm text-ink/70 mb-1">Merci beaucoup 🙏</p>
       <p className="text-sm text-ink/75 mb-2">Votre retour a bien été transmis au restaurant.</p>
-      {lienCarteNeutre}
+      {lienCarte}
+      {lienGoogleDiscret("Vous pouvez aussi laisser un avis public sur Google")}
     </div>
   )
 }
