@@ -19,7 +19,7 @@ export function FaqSection() {
                   aria-hidden="true"
                 />
               </summary>
-              <p className="mt-3 pr-8 text-base leading-relaxed text-ink/70">{item.reponse}</p>
+              <p className="mt-3 pr-8 text-base leading-relaxed text-ink/80">{item.reponse}</p>
             </details>
           ))}
         </div>

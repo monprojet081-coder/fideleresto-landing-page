@@ -15,12 +15,12 @@ export function HeroSection() {
               <span className="mt-1 block text-5xl text-wine sm:text-6xl md:text-7xl md:leading-[1.02]">
                 chiffre d&apos;affaires
               </span>
-              <span className="mt-4 block text-2xl font-medium text-ink/70 sm:text-3xl">
+              <span className="mt-4 block text-2xl font-medium text-ink/80 sm:text-3xl">
                 en faisant revenir vos clients.
               </span>
             </h1>
 
-            <p className="mt-7 max-w-lg text-pretty text-lg leading-relaxed text-ink/70">
+            <p className="mt-7 max-w-lg text-pretty text-lg leading-relaxed text-ink/80">
               Vos clients scannent un QR code, tournent la roue et gagnent une récompense à venir chercher au
               comptoir. Vous gardez leurs coordonnées, suivez tout depuis un tableau de bord et les relancez
               automatiquement quand ils tardent à revenir.
@@ -46,7 +46,7 @@ export function HeroSection() {
               </Button>
             </div>
 
-            <p className="mt-5 text-sm text-ink/65">
+            <p className="mt-5 text-sm text-ink/75">
               Aucune application à installer pour vos clients.
             </p>
           </div>

@@ -206,3 +206,8 @@
   .fr-ampoule, .fr-ampoule-vite, .fr-case-gagnante { animation: none; }
   .fr-confetti { display: none; }
 }
+
+/* Ligne de scan animee (scanner du dashboard) */
+@keyframes fr-ligne-scan { 0% { top: 4%; } 50% { top: 92%; } 100% { top: 4%; } }
+.fr-ligne-scan { animation: fr-ligne-scan 2.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .fr-ligne-scan { animation: none; top: 50%; } }

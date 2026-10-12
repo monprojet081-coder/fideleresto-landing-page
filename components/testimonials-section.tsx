@@ -8,7 +8,7 @@ export function TestimonialsSection() {
           <h2 className="text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
             Ce que FidèleResto change, concrètement
           </h2>
-          <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/70">
+          <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/80">
             L&apos;idée est simple : capter chaque client au moment où il est là, juste après son repas, pour
             lui donner une raison de revenir.
           </p>
@@ -53,7 +53,7 @@ export function TestimonialsSection() {
           />
         </div>
 
-        <p className="mx-auto mt-10 max-w-2xl text-center text-sm text-ink/60">
+        <p className="mx-auto mt-10 max-w-2xl text-center text-sm text-ink/75">
           Exemple illustratif
         </p>
       </div>

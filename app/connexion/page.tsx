@@ -45,12 +45,12 @@ export default function ConnexionPage() {
       <div className="bg-card p-8 rounded-2xl shadow-sm w-full max-w-md border border-wine/10">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-display font-semibold text-ink">Connexion</h1>
-          <p className="text-ink/55 mt-1 text-sm">Accédez à votre espace restaurateur</p>
+          <p className="text-ink/70 mt-1 text-sm">Accédez à votre espace restaurateur</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-ink/80 mb-1">Email</label>
+            <label className="block text-sm font-medium text-ink/90 mb-1">Email</label>
             <input
               type="email"
               value={email}
@@ -61,7 +61,7 @@ export default function ConnexionPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink/80 mb-1">Mot de passe</label>
+            <label className="block text-sm font-medium text-ink/90 mb-1">Mot de passe</label>
             <input
               type="password"
               value={password}
@@ -74,7 +74,7 @@ export default function ConnexionPage() {
           {error && <p className="text-wine text-sm">{error}</p>}
 
           <div className="text-right">
-            <a href="/mot-de-passe-oublie" className="text-xs text-ink/55 hover:text-wine hover:underline">
+            <a href="/mot-de-passe-oublie" className="text-xs text-ink/70 hover:text-wine hover:underline">
               Mot de passe oublié ?
             </a>
           </div>
@@ -88,7 +88,7 @@ export default function ConnexionPage() {
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-ink/55">
+        <p className="mt-4 text-center text-sm text-ink/70">
           Pas encore de compte ?{" "}
           <a href="/inscription?plan=standard_mensuel" className="text-wine font-medium hover:underline">
             Créer un compte

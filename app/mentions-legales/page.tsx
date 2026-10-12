@@ -17,7 +17,7 @@ export default function MentionsLegalesPage() {
           <li>Adresse : 32 Rue de la République, 67110 Niederbronn-les-Bains, France</li>
           <li>Email : <a href="mailto:contact@fideleresto.fr" className="text-wine underline underline-offset-2">contact@fideleresto.fr</a></li>
         </ul>
-        <p className="mt-2 text-sm text-ink/55">
+        <p className="mt-2 text-sm text-ink/70">
           Directeur de la publication : Victor Ehrenbogen.
         </p>
       </section>

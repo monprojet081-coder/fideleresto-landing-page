@@ -54,7 +54,7 @@ export function FeaturesSection() {
           <h2 className="text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
             Tout ce qu&apos;il faut pour remplir votre salle
           </h2>
-          <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/70">
+          <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/80">
             Une seule plateforme pour fidéliser vos clients, soigner votre réputation et garder le contact,
             sans compétence technique.
           </p>
@@ -66,7 +66,7 @@ export function FeaturesSection() {
             <h3 className="text-balance font-display text-3xl font-semibold tracking-tight text-ink">
               Fini les cartes en carton perdues
             </h3>
-            <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/70">
+            <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/80">
               Chaque client a sa carte de fidélité sur son téléphone, avec ses tampons et la récompense qui
               l&apos;attend. Pas de carte à imprimer, pas de carte oubliée dans un autre manteau.
             </p>
@@ -130,7 +130,7 @@ export function FeaturesSection() {
                 <fonction.icon className="mt-1 size-5 shrink-0 text-wine/75" aria-hidden="true" />
                 <div>
                   <h3 className="font-display text-base font-semibold text-ink">{fonction.title}</h3>
-                  <p className="mt-1.5 text-pretty text-[0.95rem] leading-relaxed text-ink/70">{fonction.description}</p>
+                  <p className="mt-1.5 text-pretty text-[0.95rem] leading-relaxed text-ink/80">{fonction.description}</p>
                 </div>
               </div>
             ))}

@@ -42,13 +42,13 @@ type Prospect = {
 }
 
 const STATUTS_PROSPECT = [
-  { value: "a_contacter", label: "Pas encore envoyé", couleur: "bg-secondary text-ink/60" },
+  { value: "a_contacter", label: "Pas encore envoyé", couleur: "bg-secondary text-ink/75" },
   { value: "envoye", label: "Envoyé", couleur: "bg-gold/15 text-wine-dark" },
   { value: "en_attente", label: "En attente de réponse", couleur: "bg-gold/25 text-wine-dark" },
   { value: "repondu", label: "A répondu", couleur: "bg-sage/15 text-sage" },
   { value: "pas_interesse", label: "Pas intéressé", couleur: "bg-wine/10 text-wine" },
   { value: "client", label: "Devenu client 🎉", couleur: "bg-sage text-white" },
-  { value: "desabonne", label: "Désabonné", couleur: "bg-wine/5 text-ink/40" },
+  { value: "desabonne", label: "Désabonné", couleur: "bg-wine/5 text-ink/65" },
   { value: "email_invalide", label: "Email invalide (rebond)", couleur: "bg-wine/15 text-wine" },
 ]
 
@@ -194,7 +194,7 @@ export default function AdminPage() {
   }
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-ivory text-ink/50">Chargement...</div>
+    return <div className="min-h-screen flex items-center justify-center bg-ivory text-ink/70">Chargement...</div>
   }
 
   if (accesRefuse) {
@@ -202,7 +202,7 @@ export default function AdminPage() {
       <div className="min-h-screen flex items-center justify-center bg-ivory px-4">
         <div className="bg-card p-8 rounded-2xl shadow-sm border border-wine/10 text-center max-w-md">
           <h1 className="text-xl font-display font-semibold text-ink mb-2">Accès refusé</h1>
-          <p className="text-ink/55 text-sm">Ce compte n'a pas les droits administrateur.</p>
+          <p className="text-ink/70 text-sm">Ce compte n'a pas les droits administrateur.</p>
         </div>
       </div>
     )
@@ -240,7 +240,7 @@ export default function AdminPage() {
                 </p>
               ))}
             </div>
-            <p className="mt-2 text-xs text-ink/50">
+            <p className="mt-2 text-xs text-ink/70">
               Vérifie que tes prix Stripe et tes variables Vercel sont bien à jour (voir historique des bugs précédents sur ce point).
             </p>
           </div>
@@ -250,7 +250,7 @@ export default function AdminPage() {
           <button
             onClick={() => setOnglet("restaurants")}
             className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              onglet === "restaurants" ? "bg-wine text-gold-light" : "text-ink/60"
+              onglet === "restaurants" ? "bg-wine text-gold-light" : "text-ink/75"
             }`}
           >
             <Users className="w-3.5 h-3.5" /> Restaurants
@@ -258,7 +258,7 @@ export default function AdminPage() {
           <button
             onClick={() => setOnglet("prospection")}
             className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              onglet === "prospection" ? "bg-wine text-gold-light" : "text-ink/60"
+              onglet === "prospection" ? "bg-wine text-gold-light" : "text-ink/75"
             }`}
           >
             <Contact className="w-3.5 h-3.5" /> Prospection
@@ -266,7 +266,7 @@ export default function AdminPage() {
           <button
             onClick={() => setOnglet("parrainage")}
             className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              onglet === "parrainage" ? "bg-wine text-gold-light" : "text-ink/60"
+              onglet === "parrainage" ? "bg-wine text-gold-light" : "text-ink/75"
             }`}
           >
             <Handshake className="w-3.5 h-3.5" /> Parrainage
@@ -274,7 +274,7 @@ export default function AdminPage() {
           <button
             onClick={() => setOnglet("stats")}
             className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              onglet === "stats" ? "bg-wine text-gold-light" : "text-ink/60"
+              onglet === "stats" ? "bg-wine text-gold-light" : "text-ink/75"
             }`}
           >
             <BarChart3 className="w-3.5 h-3.5" /> Stats
@@ -286,17 +286,17 @@ export default function AdminPage() {
         {onglet === "restaurants" && (
           <div className="bg-card rounded-xl border border-wine/10 shadow-sm divide-y divide-wine/10">
             {restaurants.length === 0 && (
-              <p className="p-6 text-sm text-ink/50">Aucun restaurant pour le moment.</p>
+              <p className="p-6 text-sm text-ink/70">Aucun restaurant pour le moment.</p>
             )}
             {restaurants.map((r) => (
               <div key={r.id} className="flex items-center justify-between px-5 py-4">
                 <div>
                   <p className="font-medium text-ink">{r.nom_restaurant || "(sans nom)"}</p>
-                  <p className="text-xs text-ink/50">
+                  <p className="text-xs text-ink/70">
                     {r.email} · plan {r.plan || "aucun"} · {r.statut_abonnement || "statut inconnu"}
                   </p>
                   {(r.telephone || r.ville) && (
-                    <p className="text-xs text-ink/40 mt-0.5">
+                    <p className="text-xs text-ink/65 mt-0.5">
                       {[r.telephone, r.ville].filter(Boolean).join(" · ")}
                     </p>
                   )}
@@ -344,29 +344,29 @@ export default function AdminPage() {
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
                       <p className="text-2xl font-display font-semibold text-wine">{envoyesAujourdhui}</p>
-                      <p className="text-xs text-ink/50 mt-0.5">Envoyés aujourd'hui</p>
+                      <p className="text-xs text-ink/70 mt-0.5">Envoyés aujourd'hui</p>
                     </div>
                     <div>
                       <p className="text-2xl font-display font-semibold text-ink">{totalEnvoyes}</p>
-                      <p className="text-xs text-ink/50 mt-0.5">Envoyés au total</p>
+                      <p className="text-xs text-ink/70 mt-0.5">Envoyés au total</p>
                     </div>
                     <div>
                       <p className="text-2xl font-display font-semibold text-ink">{restants}</p>
-                      <p className="text-xs text-ink/50 mt-0.5">Restants à contacter</p>
+                      <p className="text-xs text-ink/70 mt-0.5">Restants à contacter</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4 text-center mt-4 pt-4 border-t border-wine/10">
                     <div>
-                      <p className="text-xl font-display font-semibold text-sage">👁️ {ouverts} <span className="text-sm text-ink/40 font-normal">({tauxOuverture}%)</span></p>
-                      <p className="text-xs text-ink/50 mt-0.5">Ont ouvert l'email</p>
+                      <p className="text-xl font-display font-semibold text-sage">👁️ {ouverts} <span className="text-sm text-ink/65 font-normal">({tauxOuverture}%)</span></p>
+                      <p className="text-xs text-ink/70 mt-0.5">Ont ouvert l'email</p>
                     </div>
                     <div>
-                      <p className="text-xl font-display font-semibold text-sage">🖱️ {cliques} <span className="text-sm text-ink/40 font-normal">({tauxClic}%)</span></p>
-                      <p className="text-xs text-ink/50 mt-0.5">Ont cliqué sur un lien</p>
+                      <p className="text-xl font-display font-semibold text-sage">🖱️ {cliques} <span className="text-sm text-ink/65 font-normal">({tauxClic}%)</span></p>
+                      <p className="text-xs text-ink/70 mt-0.5">Ont cliqué sur un lien</p>
                     </div>
                     <div>
-                      <p className={`text-xl font-display font-semibold ${tauxRebond > 10 ? "text-wine" : "text-ink"}`}>⚠️ {invalides} <span className="text-sm text-ink/40 font-normal">({tauxRebond}%)</span></p>
-                      <p className="text-xs text-ink/50 mt-0.5">Emails invalides (rebond)</p>
+                      <p className={`text-xl font-display font-semibold ${tauxRebond > 10 ? "text-wine" : "text-ink"}`}>⚠️ {invalides} <span className="text-sm text-ink/65 font-normal">({tauxRebond}%)</span></p>
+                      <p className="text-xs text-ink/70 mt-0.5">Emails invalides (rebond)</p>
                     </div>
                   </div>
                   {tauxRebond > 10 && totalEnvoyes >= 10 && (
@@ -380,7 +380,7 @@ export default function AdminPage() {
                       style={{ width: `${prospects.length > 0 ? (totalEnvoyes / prospects.length) * 100 : 0}%` }}
                     />
                   </div>
-                  <p className="text-xs text-ink/40 mt-2">
+                  <p className="text-xs text-ink/65 mt-2">
                     ~10 envois/heure entre 8h et 20h (max 90/jour) · {avecMessage} contact{avecMessage > 1 ? "s" : ""} sur {prospects.length} ont un message prêt à envoyer
                   </p>
                 </div>
@@ -392,7 +392,7 @@ export default function AdminPage() {
               <button
                 onClick={() => setFiltreStatut("tous")}
                 className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                  filtreStatut === "tous" ? "bg-wine text-gold-light" : "bg-card border border-wine/10 text-ink/60"
+                  filtreStatut === "tous" ? "bg-wine text-gold-light" : "bg-card border border-wine/10 text-ink/75"
                 }`}
               >
                 Tous ({prospects.length})
@@ -402,7 +402,7 @@ export default function AdminPage() {
                   key={s.value}
                   onClick={() => setFiltreStatut(s.value)}
                   className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                    filtreStatut === s.value ? "bg-wine text-gold-light" : "bg-card border border-wine/10 text-ink/60"
+                    filtreStatut === s.value ? "bg-wine text-gold-light" : "bg-card border border-wine/10 text-ink/75"
                   }`}
                 >
                   {s.label} ({prospects.filter(p => p.statut === s.value).length})
@@ -416,7 +416,7 @@ export default function AdminPage() {
                 <button
                   onClick={() => setFiltreVille("toutes")}
                   className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
-                    filtreVille === "toutes" ? "bg-wine-dark text-gold-light border-wine-dark" : "bg-card border-wine/10 text-ink/60"
+                    filtreVille === "toutes" ? "bg-wine-dark text-gold-light border-wine-dark" : "bg-card border-wine/10 text-ink/75"
                   }`}
                 >
                   🗺️ Toutes les villes ({prospects.length})
@@ -426,7 +426,7 @@ export default function AdminPage() {
                     key={ville}
                     onClick={() => setFiltreVille(ville)}
                     className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
-                      filtreVille === ville ? "bg-wine-dark text-gold-light border-wine-dark" : "bg-card border-wine/10 text-ink/60"
+                      filtreVille === ville ? "bg-wine-dark text-gold-light border-wine-dark" : "bg-card border-wine/10 text-ink/75"
                     }`}
                   >
                     {ville} ({prospects.filter(p => p.ville === ville).length})
@@ -438,9 +438,9 @@ export default function AdminPage() {
             {/* Liste des prospects, groupée par ville */}
             <div className="bg-card rounded-xl border border-wine/10 shadow-sm divide-y divide-wine/10">
               {loadingProspects ? (
-                <p className="p-6 text-sm text-ink/50">Chargement...</p>
+                <p className="p-6 text-sm text-ink/70">Chargement...</p>
               ) : prospectsAffiches.length === 0 ? (
-                <p className="p-6 text-sm text-ink/50">Aucun contact pour ce filtre.</p>
+                <p className="p-6 text-sm text-ink/70">Aucun contact pour ce filtre.</p>
               ) : (
                 prospectsAffiches.map((p, index) => {
                   const statutInfo = STATUTS_PROSPECT.find(s => s.value === p.statut) || STATUTS_PROSPECT[0]
@@ -456,7 +456,7 @@ export default function AdminPage() {
                       <div className="flex items-center justify-between gap-4 px-5 py-4">
                         <div className="min-w-0">
                           <p className="font-medium text-ink truncate">{p.nom}</p>
-                          <p className="text-xs text-ink/50 truncate">
+                          <p className="text-xs text-ink/70 truncate">
                             {p.email}{p.telephone ? ` · ${p.telephone}` : ""}
                           </p>
                           {(p.ouvert_le || p.clique_le) && (
@@ -507,7 +507,7 @@ export default function AdminPage() {
           if (parrains.length === 0) {
             return (
               <div className="bg-card rounded-xl border border-wine/10 shadow-sm p-6">
-                <p className="text-sm text-ink/50">
+                <p className="text-sm text-ink/70">
                   Aucun restaurant apporté par un lien de parrainage pour le moment. Les liens du type{" "}
                   <code className="bg-secondary/60 px-1.5 py-0.5 rounded text-xs">fideleresto.fr/?ref=code</code>{" "}
                   apparaîtront ici dès qu'un restaurateur s'inscrira grâce à eux.
@@ -531,7 +531,7 @@ export default function AdminPage() {
                         <p className="font-medium text-ink">{parrain}</p>
                       </div>
                       <div className="flex items-center gap-3 text-xs">
-                        <span className="text-ink/50">{restosDuParrain.length} inscrit{restosDuParrain.length > 1 ? "s" : ""}</span>
+                        <span className="text-ink/70">{restosDuParrain.length} inscrit{restosDuParrain.length > 1 ? "s" : ""}</span>
                         <span className="font-medium bg-sage/15 text-sage px-2 py-1 rounded-full">
                           {actifs.length} payant{actifs.length > 1 ? "s" : ""}
                         </span>
@@ -542,12 +542,12 @@ export default function AdminPage() {
                         <div key={r.id} className="flex items-center justify-between gap-4 px-5 py-3">
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-ink truncate">{r.nom_restaurant || "(sans nom)"}</p>
-                            <p className="text-xs text-ink/50 truncate">
+                            <p className="text-xs text-ink/70 truncate">
                               {r.email} · inscrit le {new Date(r.created_at).toLocaleDateString("fr-FR")}
                             </p>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className="text-xs font-medium bg-secondary text-ink/60 px-2 py-1 rounded-full">
+                            <span className="text-xs font-medium bg-secondary text-ink/75 px-2 py-1 rounded-full">
                               {r.plan || "aucun plan"}
                             </span>
                             <span className={`text-xs font-medium px-2 py-1 rounded-full ${
@@ -570,7 +570,7 @@ export default function AdminPage() {
         {onglet === "stats" && (
           <div className="space-y-6">
             {loadingStats || !stats ? (
-              <p className="text-sm text-ink/50">Chargement...</p>
+              <p className="text-sm text-ink/70">Chargement...</p>
             ) : (
               <>
                 <div className="bg-card rounded-xl border border-wine/10 shadow-sm p-5">
@@ -578,15 +578,15 @@ export default function AdminPage() {
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
                       <p className="text-2xl font-display font-semibold text-wine">{stats.visites.j1}</p>
-                      <p className="text-xs text-ink/50 mt-0.5">Dernières 24h</p>
+                      <p className="text-xs text-ink/70 mt-0.5">Dernières 24h</p>
                     </div>
                     <div>
                       <p className="text-2xl font-display font-semibold text-wine">{stats.visites.j7}</p>
-                      <p className="text-xs text-ink/50 mt-0.5">7 derniers jours</p>
+                      <p className="text-xs text-ink/70 mt-0.5">7 derniers jours</p>
                     </div>
                     <div>
                       <p className="text-2xl font-display font-semibold text-wine">{stats.visites.j30}</p>
-                      <p className="text-xs text-ink/50 mt-0.5">30 derniers jours</p>
+                      <p className="text-xs text-ink/70 mt-0.5">30 derniers jours</p>
                     </div>
                   </div>
                 </div>
@@ -596,11 +596,11 @@ export default function AdminPage() {
                   <div className="grid grid-cols-2 gap-4 text-center">
                     <div>
                       <p className="text-2xl font-display font-semibold text-sage">{stats.connexions.reussies7j}</p>
-                      <p className="text-xs text-ink/50 mt-0.5">Réussies</p>
+                      <p className="text-xs text-ink/70 mt-0.5">Réussies</p>
                     </div>
                     <div>
                       <p className="text-2xl font-display font-semibold text-wine">{stats.connexions.echouees7j}</p>
-                      <p className="text-xs text-ink/50 mt-0.5">Échouées</p>
+                      <p className="text-xs text-ink/70 mt-0.5">Échouées</p>
                     </div>
                   </div>
                   {stats.connexions.echouees7j > stats.connexions.reussies7j * 3 && stats.connexions.echouees7j > 15 && (
@@ -615,23 +615,23 @@ export default function AdminPage() {
                   <div className="grid grid-cols-2 gap-4 text-center mb-4">
                     <div>
                       <p className="text-2xl font-display font-semibold text-ink">{stats.restaurants.total}</p>
-                      <p className="text-xs text-ink/50 mt-0.5">Comptes créés au total</p>
+                      <p className="text-xs text-ink/70 mt-0.5">Comptes créés au total</p>
                     </div>
                     <div>
                       <p className="text-2xl font-display font-semibold text-ink">{stats.restaurants.inscriptionsSemaine}</p>
-                      <p className="text-xs text-ink/50 mt-0.5">Nouveaux cette semaine</p>
+                      <p className="text-xs text-ink/70 mt-0.5">Nouveaux cette semaine</p>
                     </div>
                   </div>
                   <div className="border-t border-wine/10 pt-4">
-                    <p className="text-xs font-medium text-ink/60 mb-2">Par plan</p>
+                    <p className="text-xs font-medium text-ink/75 mb-2">Par plan</p>
                     <div className="flex flex-wrap gap-2 mb-3">
                       {Object.entries(stats.restaurants.parPlan).map(([plan, n]) => (
-                        <span key={plan} className="text-xs font-medium bg-secondary text-ink/70 px-2.5 py-1 rounded-full">
+                        <span key={plan} className="text-xs font-medium bg-secondary text-ink/80 px-2.5 py-1 rounded-full">
                           {plan} : {n as number}
                         </span>
                       ))}
                     </div>
-                    <p className="text-xs font-medium text-ink/60 mb-2">Par statut</p>
+                    <p className="text-xs font-medium text-ink/75 mb-2">Par statut</p>
                     <div className="flex flex-wrap gap-2">
                       {Object.entries(stats.restaurants.parStatut).map(([statut, n]) => (
                         <span key={statut} className={`text-xs font-medium px-2.5 py-1 rounded-full ${
@@ -647,7 +647,7 @@ export default function AdminPage() {
                 <div className="bg-card rounded-xl border border-wine/10 shadow-sm p-5">
                   <p className="text-sm font-medium text-ink mb-2">👥 Clients collectés sur toute la plateforme</p>
                   <p className="text-2xl font-display font-semibold text-wine">{stats.clientsTotal}</p>
-                  <p className="text-xs text-ink/50 mt-0.5">Tous restaurants confondus (via la roue de la fidélité)</p>
+                  <p className="text-xs text-ink/70 mt-0.5">Tous restaurants confondus (via la roue de la fidélité)</p>
                 </div>
               </>
             )}

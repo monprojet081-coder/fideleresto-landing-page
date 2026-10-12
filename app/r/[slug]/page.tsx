@@ -204,7 +204,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   if (step === "checking") {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center p-4">
-        <p className="text-ink/50 text-sm">Chargement...</p>
+        <p className="text-ink/70 text-sm">Chargement...</p>
       </div>
     )
   }
@@ -215,7 +215,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8 text-center">
           <div className="text-6xl mb-4">🔍</div>
           <h1 className="text-2xl font-display font-semibold text-ink mb-2">Roue introuvable</h1>
-          <p className="text-ink/75 text-base">Ce lien ne correspond à aucun restaurant. Vérifiez le QR code ou le lien utilisé.</p>
+          <p className="text-ink/85 text-base">Ce lien ne correspond à aucun restaurant. Vérifiez le QR code ou le lien utilisé.</p>
         </div>
       </div>
     )
@@ -227,7 +227,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8 text-center">
           <div className="text-6xl mb-4">⏸️</div>
           <h1 className="text-2xl font-display font-semibold text-ink mb-2">Roue temporairement indisponible</h1>
-          <p className="text-ink/75 text-base">Ce restaurant n&apos;a pas (ou plus) d&apos;abonnement actif.</p>
+          <p className="text-ink/85 text-base">Ce restaurant n&apos;a pas (ou plus) d&apos;abonnement actif.</p>
         </div>
       </div>
     )
@@ -240,7 +240,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         {step === "form" && (
           <div className="text-center mb-8">
             <h1 className="text-3xl font-display font-semibold text-ink">Tentez votre chance !</h1>
-            <p className="text-ink/75 text-base mt-2">Voici ce que vous pouvez gagner. Remplissez vos infos puis lancez la roue.</p>
+            <p className="text-ink/85 text-base mt-2">Voici ce que vous pouvez gagner. Remplissez vos infos puis lancez la roue.</p>
           </div>
         )}
 
@@ -254,7 +254,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         {step === "form" && (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-ink/80 mb-1">Prénom</label>
+              <label className="block text-sm font-medium text-ink/90 mb-1">Prénom</label>
               <input
                 type="text"
                 required
@@ -265,7 +265,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-ink/80 mb-1">Email</label>
+              <label className="block text-sm font-medium text-ink/90 mb-1">Email</label>
               <input
                 type="email"
                 required
@@ -284,7 +284,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                 onChange={e => setConsentementMarketing(e.target.checked)}
                 className="mt-1 accent-wine"
               />
-              <label htmlFor="rgpd" className="text-xs text-ink/50">
+              <label htmlFor="rgpd" className="text-xs text-ink/70">
                 J'accepte que mes données soient utilisées pour recevoir des offres de ce restaurant.{" "}
                 <a href="/confidentialite" target="_blank" className="underline hover:text-wine">
                   En savoir plus
@@ -305,7 +305,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         {step === "wheel" && (
           <div className="text-center">
             <RoueChance rewards={rewards} rotation={rotation} spinning={spinning} issue={result ? (result.label === LABEL_PERDU ? "perdu" : "gagne") : null} />
-            <p className="mt-7 text-ink/80 text-lg font-medium">
+            <p className="mt-7 text-ink/90 text-lg font-medium">
               {spinning ? "La roue tourne... 🎡" : rotation === 0 ? "C'est parti !" : "Et le résultat est..."}
             </p>
           </div>
@@ -315,7 +315,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
           <div className="text-center">
             <div className="text-7xl mb-3">🎉</div>
             <h2 className="text-3xl font-display font-semibold text-ink mb-2">Félicitations !</h2>
-            <p className="text-lg text-ink/80 mb-5">Vous avez gagné :</p>
+            <p className="text-lg text-ink/90 mb-5">Vous avez gagné :</p>
             <div className="bg-gold/15 border-2 border-gold/50 rounded-2xl p-7 mb-6">
               <p className="text-3xl font-display font-semibold text-wine-dark leading-tight">{result.label}</p>
             </div>
@@ -323,12 +323,12 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             {emailStatut === "echec" ? (
               <div className="mb-5 rounded-2xl border-2 border-gold/50 bg-gold/10 p-5 text-left">
                 <p className="text-lg font-semibold text-wine-dark mb-2">L&apos;email n&apos;a pas pu partir</p>
-                <p className="text-base text-ink/80 mb-4">
+                <p className="text-base text-ink/90 mb-4">
                   Pas d&apos;inquiétude, votre gain est bien enregistré. <strong>Faites une capture d&apos;écran de ce code</strong>{" "}
                   et présentez-la au comptoir au moment de payer.
                 </p>
                 <canvas id="qr-recompense-canvas" width={180} height={180} className="mx-auto max-w-full rounded-lg bg-white p-2 shadow-sm" />
-                <p className="mt-3 text-center text-sm text-ink/70">
+                <p className="mt-3 text-center text-sm text-ink/80">
                   Valable {DUREE_VALIDITE_JOURS} jours, utilisable une seule fois.
                 </p>
               </div>
@@ -380,7 +380,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
           <div className="text-center">
             <div className="text-7xl mb-3">😢</div>
             <h2 className="text-3xl font-display font-semibold text-ink mb-2">Pas de chance !</h2>
-            <p className="text-lg text-ink/80 mb-6">Vous n&apos;avez rien gagné cette fois...</p>
+            <p className="text-lg text-ink/90 mb-6">Vous n&apos;avez rien gagné cette fois...</p>
             <div className="mb-6 rounded-2xl border-2 border-wine/25 bg-ivory p-5">
               <p className="text-lg font-semibold text-wine-dark">
                 🍀 Revenez {quandRejouer(frequenceJours)} pour retenter votre chance !
@@ -414,7 +414,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
           <div className="text-center">
             <div className="text-7xl mb-3">⏳</div>
             <h2 className="text-3xl font-display font-semibold text-ink mb-2">Déjà joué !</h2>
-            <p className="text-lg text-ink/80 mb-6">
+            <p className="text-lg text-ink/90 mb-6">
               Vous avez déjà participé{frequenceJours === 1 ? " aujourd'hui" : ""}.
             </p>
             <div className="mb-4 rounded-2xl border-2 border-wine/25 bg-ivory p-5">
@@ -518,7 +518,7 @@ function AvisSection({
 
   // Version discrete : apres un retour prive, ou pour un client qui a deja laisse son avis
   const lienGoogleDiscret = (texte: string) => (
-    <p className="mt-4 text-center text-sm text-ink/60">
+    <p className="mt-4 text-center text-sm text-ink/75">
       <a
         href={googleUrl ?? undefined}
         target="_blank"
@@ -563,7 +563,7 @@ function AvisSection({
   if (avisEtape === "note") {
     return (
       <div className="text-left">
-        <p className="text-center text-sm font-medium text-ink/80 mb-3">Comment s&apos;est passée votre visite ?</p>
+        <p className="text-center text-sm font-medium text-ink/90 mb-3">Comment s&apos;est passée votre visite ?</p>
         <div className="flex justify-center gap-2 mb-2">
           {[1, 2, 3, 4, 5].map((n) => (
             <button
@@ -588,7 +588,7 @@ function AvisSection({
   if (avisEtape === "positif") {
     return (
       <div className="text-center">
-        <p className="text-sm text-ink/70 mb-3">Super, merci ! Partagez votre avis sur Google, ça nous aide énormément 🙏</p>
+        <p className="text-sm text-ink/80 mb-3">Super, merci ! Partagez votre avis sur Google, ça nous aide énormément 🙏</p>
         {boutonGoogle()}
         {lienCarte}
       </div>
@@ -600,7 +600,7 @@ function AvisSection({
   if (avisEtape === "negatif") {
     return (
       <div className="text-left">
-        <p className="text-center text-sm text-ink/70 mb-3">Merci pour votre honnêteté. Qu&apos;est-ce qui n&apos;a pas été ? Votre retour va directement au restaurant.</p>
+        <p className="text-center text-sm text-ink/80 mb-3">Merci pour votre honnêteté. Qu&apos;est-ce qui n&apos;a pas été ? Votre retour va directement au restaurant.</p>
         <textarea
           value={commentaireAvis}
           onChange={(e) => setCommentaireAvis(e.target.value)}
@@ -633,8 +633,8 @@ function AvisSection({
   // Etape 3 : retour prive envoye
   return (
     <div className="text-center">
-      <p className="text-sm text-ink/70 mb-1">Merci beaucoup 🙏</p>
-      <p className="text-sm text-ink/75 mb-2">Votre retour a bien été transmis au restaurant.</p>
+      <p className="text-sm text-ink/80 mb-1">Merci beaucoup 🙏</p>
+      <p className="text-sm text-ink/85 mb-2">Votre retour a bien été transmis au restaurant.</p>
       {lienCarte}
       {lienGoogleDiscret("Vous pouvez aussi laisser un avis public sur Google")}
     </div>

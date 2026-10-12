@@ -19,7 +19,7 @@ export function CtaSection() {
           <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-semibold tracking-tight sm:text-4xl">
             Vos tables sont prêtes. Et votre QR code ?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-pretty text-lg leading-relaxed text-ivory/75">
+          <p className="mx-auto mt-4 max-w-xl text-pretty text-lg leading-relaxed text-ivory/85">
             Installez FidèleResto en quelques minutes et laissez vos clients vous donner une bonne
             raison de revenir.
           </p>

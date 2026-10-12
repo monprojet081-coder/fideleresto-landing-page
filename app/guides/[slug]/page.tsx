@@ -69,7 +69,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <SiteHeader />
       <main className="mx-auto max-w-3xl px-4 pt-28 pb-20 sm:px-6 sm:pt-32">
-        <nav aria-label="Fil d'Ariane" className="text-sm text-ink/50">
+        <nav aria-label="Fil d'Ariane" className="text-sm text-ink/70">
           <Link href="/" className="hover:text-wine">Accueil</Link>
           <span className="mx-2">/</span>
           <Link href="/guides" className="hover:text-wine">Guides</Link>
@@ -79,20 +79,20 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
           <h1 className="mt-5 text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-5xl sm:leading-[1.08]">
             {guide.titre}
           </h1>
-          <p className="mt-6 text-pretty text-lg leading-relaxed text-ink/75">{guide.intro}</p>
+          <p className="mt-6 text-pretty text-lg leading-relaxed text-ink/85">{guide.intro}</p>
 
           {guide.sections.map((section) => (
             <section key={section.titre} className="mt-10">
               <h2 className="font-display text-2xl font-semibold text-ink">{section.titre}</h2>
               {section.blocs.map((bloc, i) =>
                 bloc.type === "p" ? (
-                  <p key={i} className="mt-4 text-base leading-relaxed text-ink/75 sm:text-[17px]">
+                  <p key={i} className="mt-4 text-base leading-relaxed text-ink/85 sm:text-[17px]">
                     {bloc.texte}
                   </p>
                 ) : (
                   <ul key={i} className="mt-4 space-y-2.5">
                     {bloc.items.map((item) => (
-                      <li key={item} className="flex gap-3 text-base leading-relaxed text-ink/75 sm:text-[17px]">
+                      <li key={item} className="flex gap-3 text-base leading-relaxed text-ink/85 sm:text-[17px]">
                         <span className="mt-2.5 size-1.5 shrink-0 rounded-full bg-gold" aria-hidden="true" />
                         <span>{item}</span>
                       </li>
@@ -106,7 +106,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
 
         <aside className="mt-14 rounded-2xl bg-wine p-7 text-center sm:p-9">
           <p className="font-display text-2xl font-semibold text-gold-light">Essayez FidèleResto dans votre restaurant</p>
-          <p className="mt-3 text-ivory/75">
+          <p className="mt-3 text-ivory/85">
             QR code, roue de la fidélité, carte de fidélité digitale et relances email. 14 jours d&apos;essai gratuit.
           </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">

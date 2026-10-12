@@ -20,7 +20,7 @@ export function SiteFooter() {
               <span className="block font-display text-xl font-semibold tracking-tight text-ink">
                 Fidèle<span className="text-wine">Resto</span>
               </span>
-              <span className="mt-0.5 block text-sm text-ink/60">Fidélisez. Engagez. Développez.</span>
+              <span className="mt-0.5 block text-sm text-ink/75">Fidélisez. Engagez. Développez.</span>
             </span>
           </a>
 
@@ -29,7 +29,7 @@ export function SiteFooter() {
               <a
                 key={link.label}
                 href={link.href}
-                className="text-sm text-ink/55 transition-colors hover:text-wine"
+                className="text-sm text-ink/70 transition-colors hover:text-wine"
               >
                 {link.label}
               </a>
@@ -37,7 +37,7 @@ export function SiteFooter() {
           </nav>
         </div>
 
-        <div className="mt-8 border-t border-wine/10 pt-6 text-center text-sm text-ink/50">
+        <div className="mt-8 border-t border-wine/10 pt-6 text-center text-sm text-ink/70">
           © {new Date().getFullYear()} FidèleResto. Tous droits réservés.
         </div>
       </div>

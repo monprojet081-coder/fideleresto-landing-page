@@ -876,7 +876,7 @@ function DashboardContent() {
     <div className="min-h-screen flex items-center justify-center bg-ivory">
       <div className="text-center">
         <div className="w-8 h-8 border-4 border-wine border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-ink/50 text-sm">Chargement...</p>
+        <p className="text-ink/70 text-sm">Chargement...</p>
       </div>
     </div>
   )
@@ -1033,10 +1033,10 @@ function DashboardContent() {
             </span>
             <div className="min-w-0 flex-1">
               <span className="text-base font-display font-semibold text-gold-light block leading-tight">FidèleResto</span>
-              <p className="text-xs text-ivory/50 truncate leading-tight">{nomResto}</p>
+              <p className="text-xs text-ivory/75 truncate leading-tight">{nomResto}</p>
             </div>
           </a>
-          <button onClick={() => setSidebarOpen(false)} className="md:hidden text-ivory/60 p-1" aria-label="Fermer le menu">
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden text-ivory/80 p-1" aria-label="Fermer le menu">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -1070,7 +1070,7 @@ function DashboardContent() {
                       onClick={() => allerA(item.id)}
                       aria-current={actif ? "page" : undefined}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                        actif ? "bg-ivory/12 text-ivory shadow-[inset_3px_0_0_#c9962c]" : "text-ivory/70 hover:bg-white/5 hover:text-ivory"
+                        actif ? "bg-ivory/12 text-ivory shadow-[inset_3px_0_0_#c9962c]" : "text-ivory/85 hover:bg-white/5 hover:text-ivory"
                       }`}
                     >
                       <Icon className={`w-4 h-4 ${actif ? "text-gold-light" : ""}`} />
@@ -1088,7 +1088,7 @@ function DashboardContent() {
           {isAdmin && (
             <a
               href="/admin"
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ivory/60 hover:bg-white/5 hover:text-ivory transition-colors"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ivory/80 hover:bg-white/5 hover:text-ivory transition-colors"
             >
               <ShieldCheck className="w-4 h-4" />
               Espace admin
@@ -1099,7 +1099,7 @@ function DashboardContent() {
               await supabase.auth.signOut()
               router.push("/inscription")
             }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ivory/60 hover:bg-white/5 hover:text-ivory transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ivory/80 hover:bg-white/5 hover:text-ivory transition-colors"
           >
             <LogOut className="w-4 h-4" />
             Déconnexion
@@ -1132,7 +1132,7 @@ function DashboardContent() {
                 <button
                   key={o.id}
                   onClick={() => (o.id === "menu-complet" ? setSidebarOpen(true) : allerA(o.id))}
-                  className={`flex flex-col items-center gap-1 py-2.5 ${actif ? "text-wine" : "text-ink/50"}`}
+                  className={`flex flex-col items-center gap-1 py-2.5 ${actif ? "text-wine" : "text-ink/70"}`}
                 >
                   <Icon className="w-5 h-5" />
                   <span className="text-[11px] font-medium">{o.label}</span>
@@ -1149,7 +1149,7 @@ function DashboardContent() {
           <div>
             <div className="mb-6">
               <h1 className="text-2xl sm:text-3xl font-display font-semibold text-ink">Bonjour, {nomResto} 👋</h1>
-              <p className="text-ink/60 mt-1">Voici où en est votre restaurant aujourd&apos;hui.</p>
+              <p className="text-ink/75 mt-1">Voici où en est votre restaurant aujourd&apos;hui.</p>
             </div>
 
             {/* Mise en route : disparait une fois tout fait */}
@@ -1179,14 +1179,14 @@ function DashboardContent() {
                       <li key={e.cle} className={`flex items-center gap-4 px-5 py-4 ${e === prochaine ? "bg-gold/8" : ""}`}>
                         <span
                           className={`flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                            e.fait ? "bg-sage text-white" : e === prochaine ? "bg-wine text-gold-light" : "bg-secondary text-ink/50"
+                            e.fait ? "bg-sage text-white" : e === prochaine ? "bg-wine text-gold-light" : "bg-secondary text-ink/70"
                           }`}
                         >
                           {e.fait ? <Check className="size-4" /> : i + 1}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className={`text-sm font-semibold ${e.fait ? "text-ink/45 line-through" : "text-ink"}`}>{e.titre}</p>
-                          {!e.fait && <p className="mt-0.5 text-xs text-ink/55">{e.texte}</p>}
+                          <p className={`text-sm font-semibold ${e.fait ? "text-ink/65 line-through" : "text-ink"}`}>{e.titre}</p>
+                          {!e.fait && <p className="mt-0.5 text-xs text-ink/70">{e.texte}</p>}
                         </div>
                         {!e.fait && e.cta && e.vers && (
                           <button
@@ -1226,7 +1226,7 @@ function DashboardContent() {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className={`block text-sm font-semibold ${a.fort ? "text-ivory" : "text-ink"}`}>{a.titre}</span>
-                      <span className={`block text-xs ${a.fort ? "text-ivory/70" : "text-ink/55"}`}>{a.texte}</span>
+                      <span className={`block text-xs ${a.fort ? "text-ivory/85" : "text-ink/70"}`}>{a.texte}</span>
                     </span>
                     <ArrowRight className={`size-4 shrink-0 transition-transform group-hover:translate-x-0.5 ${a.fort ? "text-gold-light" : "text-ink/30"}`} />
                   </button>
@@ -1245,8 +1245,8 @@ function DashboardContent() {
                       <Icon className="w-5 h-5" />
                     </div>
                     <p className="text-3xl font-display font-semibold text-ink">{kpi.value}</p>
-                    <p className="text-sm font-medium text-ink/75 mt-1">{kpi.label}</p>
-                    <p className="text-xs text-ink/45 mt-0.5">{kpi.aide}</p>
+                    <p className="text-sm font-medium text-ink/85 mt-1">{kpi.label}</p>
+                    <p className="text-xs text-ink/65 mt-0.5">{kpi.aide}</p>
                   </div>
                 )
               })}
@@ -1276,7 +1276,7 @@ function DashboardContent() {
                       <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #6b1e2e20", fontSize: 13 }} />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="flex justify-center gap-4 text-xs text-ink/60 -mt-2">
+                  <div className="flex justify-center gap-4 text-xs text-ink/75 -mt-2">
                     <span><span className="inline-block size-2 rounded-full bg-gold mr-1" />Gagné ({nbGagne})</span>
                     <span><span className="inline-block size-2 rounded-full bg-[#e7d9c3] mr-1" />Perdu ({nbPerdu})</span>
                   </div>
@@ -1307,27 +1307,27 @@ function DashboardContent() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                   <div className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
-                    <p className="text-sm text-ink/55">Ce mois-ci vs mois dernier</p>
+                    <p className="text-sm text-ink/70">Ce mois-ci vs mois dernier</p>
                     <p className={`text-2xl font-display font-semibold mt-1 ${evolutionMois >= 0 ? "text-sage" : "text-wine"}`}>
                       {evolutionMois >= 0 ? "+" : ""}{evolutionMois}%
                     </p>
-                    <p className="text-xs text-ink/45 mt-1">{clientsMoisEnCours} passages ce mois ({clientsMoisPrecedent} le mois dernier)</p>
+                    <p className="text-xs text-ink/65 mt-1">{clientsMoisEnCours} passages ce mois ({clientsMoisPrecedent} le mois dernier)</p>
                   </div>
                   <div className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
-                    <p className="text-sm text-ink/55">Heure de pointe</p>
+                    <p className="text-sm text-ink/70">Heure de pointe</p>
                     <p className="text-2xl font-display font-semibold text-ink mt-1">{heurePointe.passages > 0 ? heurePointe.heure : "—"}</p>
-                    <p className="text-xs text-ink/45 mt-1">{heurePointe.passages > 0 ? `${heurePointe.passages} passages à cette heure` : "Pas encore de données"}</p>
+                    <p className="text-xs text-ink/65 mt-1">{heurePointe.passages > 0 ? `${heurePointe.passages} passages à cette heure` : "Pas encore de données"}</p>
                   </div>
                   <div className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
-                    <p className="text-sm text-ink/55">Jour le plus actif</p>
+                    <p className="text-sm text-ink/70">Jour le plus actif</p>
                     <p className="text-2xl font-display font-semibold text-ink mt-1">{jourPointe.passages > 0 ? jourPointe.jour : "—"}</p>
-                    <p className="text-xs text-ink/45 mt-1">{jourPointe.passages > 0 ? `${jourPointe.passages} passages ce jour-là` : "Pas encore de données"}</p>
+                    <p className="text-xs text-ink/65 mt-1">{jourPointe.passages > 0 ? `${jourPointe.passages} passages ce jour-là` : "Pas encore de données"}</p>
                   </div>
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
-                    <h3 className="text-sm font-medium text-ink/80 mb-3">Affluence par heure</h3>
+                    <h3 className="text-sm font-medium text-ink/90 mb-3">Affluence par heure</h3>
                     <ResponsiveContainer width="100%" height={200}>
                       <BarChart data={parHeure.filter((_, i) => i >= 8 && i <= 23)}>
                         <XAxis dataKey="heure" fontSize={10} interval={1} />
@@ -1338,7 +1338,7 @@ function DashboardContent() {
                     </ResponsiveContainer>
                   </div>
                   <div className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
-                    <h3 className="text-sm font-medium text-ink/80 mb-3">Affluence par jour de la semaine</h3>
+                    <h3 className="text-sm font-medium text-ink/90 mb-3">Affluence par jour de la semaine</h3>
                     <ResponsiveContainer width="100%" height={200}>
                       <BarChart data={parJourSemaine}>
                         <XAxis dataKey="jour" fontSize={10} />
@@ -1359,13 +1359,13 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Mon QR code</h1>
-              <p className="text-ink/55 mt-1">Imprimez le et posez le sur vos tables, additions ou vitrines</p>
+              <p className="text-ink/70 mt-1">Imprimez le et posez le sur vos tables, additions ou vitrines</p>
             </div>
             <div className="bg-card rounded-xl p-8 border border-wine/10 shadow-sm max-w-md">
               <div className="flex justify-center mb-6 p-4 rounded-xl border border-dashed border-wine/20 bg-ivory">
                 <canvas id="qr-canvas" className="rounded-lg" />
               </div>
-              <p className="text-center text-sm text-ink/55 mb-6">
+              <p className="text-center text-sm text-ink/70 mb-6">
                 URL : <span className="text-wine font-medium">{(process.env.NEXT_PUBLIC_SITE_URL || "fideleresto-landing-page-9dhz.vercel.app").replace(/^https?:\/\//, "")}/r/{user?.id?.slice(0, 8)}</span>
               </p>
               <button
@@ -1392,7 +1392,7 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Mon flyer</h1>
-              <p className="text-ink/55 mt-1">Choisissez un modèle, votre nom et votre QR code s'ajoutent automatiquement</p>
+              <p className="text-ink/70 mt-1">Choisissez un modèle, votre nom et votre QR code s'ajoutent automatiquement</p>
             </div>
 
             <div className="max-w-2xl">
@@ -1402,16 +1402,16 @@ function DashboardContent() {
                 {restaurant?.logo_url && (
                   <div className="flex items-center gap-3 rounded-lg bg-secondary/40 px-4 py-3 mb-4">
                     <img src={restaurant.logo_url} alt="Logo" className="w-10 h-10 object-contain rounded" />
-                    <p className="text-sm text-ink/70">Logo actuel</p>
+                    <p className="text-sm text-ink/80">Logo actuel</p>
                   </div>
                 )}
 
                 <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-wine/20 rounded-xl py-6 cursor-pointer hover:border-gold/50 transition-colors">
                   <ImageIcon className="size-6 text-wine/40" />
-                  <p className="text-sm text-ink/70">
+                  <p className="text-sm text-ink/80">
                     {uploadingLogo ? "Envoi en cours..." : "Cliquez pour choisir votre logo"}
                   </p>
-                  <p className="text-xs text-ink/40">JPG, PNG ou WEBP</p>
+                  <p className="text-xs text-ink/65">JPG, PNG ou WEBP</p>
                   <input
                     type="file"
                     accept=".jpg,.jpeg,.png,.webp"
@@ -1429,7 +1429,7 @@ function DashboardContent() {
                   <button
                     onClick={() => setFlyerAffichage("nom")}
                     className={`rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
-                      flyerAffichage === "nom" ? "border-wine bg-wine/5 text-wine" : "border-wine/15 text-ink/60 hover:border-wine/30"
+                      flyerAffichage === "nom" ? "border-wine bg-wine/5 text-wine" : "border-wine/15 text-ink/75 hover:border-wine/30"
                     }`}
                   >
                     Nom du restaurant
@@ -1438,13 +1438,13 @@ function DashboardContent() {
                     onClick={() => restaurant?.logo_url && setFlyerAffichage("logo")}
                     disabled={!restaurant?.logo_url}
                     className={`rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
-                      flyerAffichage === "logo" ? "border-wine bg-wine/5 text-wine" : "border-wine/15 text-ink/60 hover:border-wine/30"
+                      flyerAffichage === "logo" ? "border-wine bg-wine/5 text-wine" : "border-wine/15 text-ink/75 hover:border-wine/30"
                     } disabled:opacity-40 disabled:cursor-not-allowed`}
                   >
                     Mon logo {!restaurant?.logo_url && "(ajoutez-en un ci-dessus)"}
                   </button>
                 </div>
-                <p className="mt-2 text-xs text-ink/40">Un seul des deux s'affiche à la fois, en grand, pour un rendu plus propre.</p>
+                <p className="mt-2 text-xs text-ink/65">Un seul des deux s'affiche à la fois, en grand, pour un rendu plus propre.</p>
               </div>
 
               <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
@@ -1460,7 +1460,7 @@ function DashboardContent() {
                       }`}
                     >
                       <img src={m.fichierThumb} alt={m.nom} className="w-full aspect-[3/4] object-cover" />
-                      <p className="text-xs text-center py-1.5 bg-secondary/40 text-ink/70">{m.nom}</p>
+                      <p className="text-xs text-center py-1.5 bg-secondary/40 text-ink/80">{m.nom}</p>
                     </button>
                   ))}
                 </div>
@@ -1473,7 +1473,7 @@ function DashboardContent() {
                   <Download className="w-4 h-4" />
                   {generatingFlyer ? "Génération en cours..." : "Télécharger le flyer (PDF)"}
                 </button>
-                <p className="text-xs text-ink/40 mt-3 text-center">
+                <p className="text-xs text-ink/65 mt-3 text-center">
                   Le flyer reprend automatiquement le nom de votre restaurant, votre QR code et, si ajouté, votre logo.
                 </p>
               </div>
@@ -1513,8 +1513,8 @@ function DashboardContent() {
 
                 <div className="mb-6">
                   <h1 className="text-2xl font-display font-semibold text-ink">{clientDetail.prenom}</h1>
-                  <p className="text-ink/55 mt-1">{clientDetail.email}</p>
-                  <p className="text-sm text-ink/50 mt-3">
+                  <p className="text-ink/70 mt-1">{clientDetail.email}</p>
+                  <p className="text-sm text-ink/70 mt-3">
                     {clientDetail.parties.length} participation{clientDetail.parties.length > 1 ? "s" : ""} ·{" "}
                     {gagnees.length} gain{gagnees.length > 1 ? "s" : ""} ·{" "}
                     {utilisees.length} utilisé{utilisees.length > 1 ? "s" : ""}
@@ -1536,14 +1536,14 @@ function DashboardContent() {
                           <p className="text-sm font-medium text-ink">
                             {statut.type === "perdu" ? "Pas de gain" : partie.recompense}
                           </p>
-                          <p className="text-xs text-ink/50 mt-0.5">
+                          <p className="text-xs text-ink/70 mt-0.5">
                             Jouée le {formatDateHeure(partie.created_at)}
                           </p>
                         </div>
 
                         <div className="flex items-center gap-3 shrink-0">
                           {statut.type === "perdu" && (
-                            <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-ink/50">Perdu</span>
+                            <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-ink/70">Perdu</span>
                           )}
                           {statut.type === "utilisee" && (
                             <span className="rounded-full bg-sage/15 px-2.5 py-1 text-xs font-medium text-sage text-right">
@@ -1574,7 +1574,7 @@ function DashboardContent() {
                     )
                   })}
                 </div>
-                <p className="text-xs text-ink/40 mt-3 max-w-3xl">
+                <p className="text-xs text-ink/65 mt-3 max-w-3xl">
                   Une récompense est valable {DUREE_VALIDITE_JOURS} jours après le gain et ne peut être validée qu&apos;une seule fois.
                 </p>
               </div>
@@ -1586,12 +1586,12 @@ function DashboardContent() {
             <div>
               <div className="mb-6">
                 <h1 className="text-2xl font-display font-semibold text-ink">Mes clients</h1>
-                <p className="text-ink/55 mt-1">Clients collectés via votre QR code. Cliquez sur un client pour voir ses gains.</p>
+                <p className="text-ink/70 mt-1">Clients collectés via votre QR code. Cliquez sur un client pour voir ses gains.</p>
               </div>
 
               {clients.length > 0 && (
                 <div className="relative mb-4 max-w-md">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-ink/35" aria-hidden="true" />
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-ink/65" aria-hidden="true" />
                   <input
                     type="search"
                     value={rechercheClient}
@@ -1612,7 +1612,7 @@ function DashboardContent() {
                     <span className="flex size-12 items-center justify-center rounded-full bg-wine/8 text-wine mb-4">
                       <Users className="w-6 h-6" />
                     </span>
-                    <p className="text-sm text-ink/60 max-w-sm">
+                    <p className="text-sm text-ink/75 max-w-sm">
                       Aucun client pour le moment. Partagez votre QR code pour commencer à collecter des contacts !
                     </p>
                     <button
@@ -1624,7 +1624,7 @@ function DashboardContent() {
                     </button>
                   </div>
                 ) : clientsFiltres.length === 0 ? (
-                  <p className="p-8 text-center text-sm text-ink/55">Aucun client ne correspond à « {rechercheClient} ».</p>
+                  <p className="p-8 text-center text-sm text-ink/70">Aucun client ne correspond à « {rechercheClient} ».</p>
                 ) : (
                   <div className="divide-y divide-wine/10">
                     {clientsFiltres.map((c) => (
@@ -1635,7 +1635,7 @@ function DashboardContent() {
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-ink truncate">{c.prenom}</p>
-                          <p className="text-xs text-ink/50 truncate">{c.email}</p>
+                          <p className="text-xs text-ink/70 truncate">{c.email}</p>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
                           {c.aUtiliser > 0 && (
@@ -1643,7 +1643,7 @@ function DashboardContent() {
                               {c.aUtiliser} à utiliser
                             </span>
                           )}
-                          <span className="text-xs text-ink/45 hidden sm:inline">
+                          <span className="text-xs text-ink/65 hidden sm:inline">
                             {c.parties.length} participation{c.parties.length > 1 ? "s" : ""}
                           </span>
                           <ArrowRight className="w-4 h-4 text-ink/30" aria-hidden="true" />
@@ -1661,13 +1661,13 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Ma roue</h1>
-              <p className="text-ink/55 mt-1">Choisissez ce que vos clients peuvent gagner et leurs chances. L&apos;aperçu se met à jour en direct.</p>
+              <p className="text-ink/70 mt-1">Choisissez ce que vos clients peuvent gagner et leurs chances. L&apos;aperçu se met à jour en direct.</p>
             </div>
             <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
             {/* Apercu en direct, tel que le client le verra */}
             <aside className="order-first xl:order-last xl:sticky xl:top-6">
               <div className="rounded-2xl border border-wine/10 bg-card p-5 shadow-sm">
-                <p className="mb-7 text-center text-xs font-semibold uppercase tracking-[0.12em] text-ink/45">Aperçu client</p>
+                <p className="mb-7 text-center text-xs font-semibold uppercase tracking-[0.12em] text-ink/65">Aperçu client</p>
                 <div className="mx-auto max-w-[220px] sm:max-w-[300px]">
                   <RoueChance rewards={rewards.filter((r) => r.probabilite > 0 && r.label.trim())} rotation={0} spinning={false} />
                 </div>
@@ -1679,7 +1679,7 @@ function DashboardContent() {
             <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm min-w-0">
               <div className="mb-6 rounded-xl bg-gold/10 p-4">
                 <p className="text-sm font-semibold text-ink">Partir d&apos;un modèle adapté à votre restaurant</p>
-                <p className="mt-1 text-xs text-ink/55">Des réglages rentables prêts à l&apos;emploi, que vous pouvez ensuite modifier.</p>
+                <p className="mt-1 text-xs text-ink/70">Des réglages rentables prêts à l&apos;emploi, que vous pouvez ensuite modifier.</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {MODELES_ROUE.map((m) => (
                     <button
@@ -1744,9 +1744,9 @@ function DashboardContent() {
                             updated[index].probabilite = clamp
                             setRewards(updated)
                           }}
-                          className="text-sm font-medium text-ink/70 w-14 text-right flex-shrink-0 bg-transparent border border-transparent rounded px-1 py-0.5 focus:border-wine/30 focus:outline-none focus:bg-card"
+                          className="text-sm font-medium text-ink/80 w-14 text-right flex-shrink-0 bg-transparent border border-transparent rounded px-1 py-0.5 focus:border-wine/30 focus:outline-none focus:bg-card"
                         />
-                        <span className="text-sm font-medium text-ink/70 flex-shrink-0">%</span>
+                        <span className="text-sm font-medium text-ink/80 flex-shrink-0">%</span>
                       </div>
                       <input
                         type="color"
@@ -1768,7 +1768,7 @@ function DashboardContent() {
                       )}
                     </div>
                     {!estPerdu(reward) && (
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:basis-full text-xs text-ink/65">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:basis-full text-xs text-ink/75">
                         <label className="flex items-center gap-1.5">
                           Vous coûte
                           <input
@@ -1850,7 +1850,7 @@ function DashboardContent() {
               </div>
 
               <div className="p-4 bg-secondary/40 rounded-lg mb-6">
-                <label className="block text-sm font-medium text-ink/80 mb-2">
+                <label className="block text-sm font-medium text-ink/90 mb-2">
                   Un client peut retenter sa chance...
                 </label>
                 <select
@@ -1865,7 +1865,7 @@ function DashboardContent() {
                   <option value={14}>Toutes les 2 semaines</option>
                   <option value={30}>Une fois par mois</option>
                 </select>
-                <p className="text-xs text-ink/45 mt-2">
+                <p className="text-xs text-ink/65 mt-2">
                   Utile si vous préférez limiter le nombre de récompenses offertes chaque jour.
                 </p>
               </div>
@@ -1880,7 +1880,7 @@ function DashboardContent() {
                   rentable: "border-sage/40 bg-sage/10 text-sage",
                   surveiller: "border-gold/50 bg-gold/10 text-[#8a6213]",
                   risque: "border-wine/40 bg-wine/8 text-wine",
-                  inconnu: "border-wine/10 bg-secondary/40 text-ink/60",
+                  inconnu: "border-wine/10 bg-secondary/40 text-ink/75",
                 }[v.niveau]
                 const titre = {
                   rentable: "✓ Roue rentable",
@@ -1892,24 +1892,24 @@ function DashboardContent() {
                 return (
                   <div className="mb-6 rounded-xl border border-wine/10 p-4">
                     <p className="text-sm font-semibold text-ink">Rentabilité de ma roue</p>
-                    <p className="mt-1 text-xs text-ink/55">
+                    <p className="mt-1 text-xs text-ink/70">
                       « Vous coûte » = ce que le lot vous coûte vraiment (prix d&apos;achat), pas son prix de vente. Une boisson vendue 2,50 € vous coûte souvent autour de 0,50 €.
                     </p>
                     <div className="mt-3 grid grid-cols-2 gap-3">
-                      <label className="text-xs text-ink/65">
+                      <label className="text-xs text-ink/75">
                         Panier moyen d&apos;un client
                         <div className="mt-1 flex items-center gap-1.5">
                           <input type="number" min={1} step="0.5" value={panierMoyen} onChange={e => setPanierMoyen(parseFloat(e.target.value) || 0)} className="w-full border border-wine/15 bg-card rounded-md px-2 py-1.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold" />€
                         </div>
                       </label>
-                      <label className="text-xs text-ink/65">
+                      <label className="text-xs text-ink/75">
                         Parties estimées par jour
                         <input type="number" min={0} step="1" value={partiesJour} onChange={e => setPartiesJour(parseInt(e.target.value) || 0)} className="mt-1 w-full border border-wine/15 bg-card rounded-md px-2 py-1.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold" />
                       </label>
                     </div>
                     <div className={`mt-4 rounded-lg border p-3 ${couleurs}`}>
                       <p className="text-sm font-semibold">{titre}</p>
-                      <ul className="mt-2 space-y-1 text-sm text-ink/80">
+                      <ul className="mt-2 space-y-1 text-sm text-ink/90">
                         <li>🎯 <strong>{unClientSur(rewards)}</strong> gagne quelque chose ({tauxGain(rewards)} %)</li>
                         {v.niveau !== "inconnu" && (
                           <>
@@ -1932,7 +1932,7 @@ function DashboardContent() {
                         </button>
                       )}
                     </div>
-                    <p className="mt-2 text-[11px] text-ink/45">
+                    <p className="mt-2 text-[11px] text-ink/65">
                       Au-delà de {SEUIL_RISQUE} % du panier moyen, la roue devient risquée. Astuce : un « maximum par jour » sur les lots les plus chers vous protège même les jours de grosse affluence.
                     </p>
                   </div>
@@ -1940,7 +1940,7 @@ function DashboardContent() {
               })()}
 
               <div className="flex items-center justify-between p-3 bg-secondary/40 rounded-lg mb-6">
-                <span className="text-sm text-ink/65">Total des probabilités :</span>
+                <span className="text-sm text-ink/75">Total des probabilités :</span>
                 <span className={`text-sm font-bold ${totalOk ? "text-sage" : "text-wine"}`}>
                   {totalProba.toLocaleString("fr-FR")}% {totalOk ? "✓" : "(doit être égal à 100%)"}
                 </span>
@@ -1964,7 +1964,7 @@ function DashboardContent() {
               <Lock className="w-5 h-5" />
             </div>
             <h1 className="text-xl font-display font-semibold text-ink">Inclus dans le plan Complet</h1>
-            <p className="text-ink/60 mt-2">
+            <p className="text-ink/75 mt-2">
               {activeSection === "menu" && "Le menu digital est réservé au plan Complet."}
               {activeSection === "fidelite" && "La carte de fidélité digitale est réservée au plan Complet."}
               {activeSection === "relance" && "Les emails de relance automatiques sont réservés au plan Complet."}
@@ -1982,13 +1982,13 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Menu digital</h1>
-              <p className="text-ink/55 mt-1">Importez votre menu existant, visible par vos clients sur leur carte de fidélité</p>
+              <p className="text-ink/70 mt-1">Importez votre menu existant, visible par vos clients sur leur carte de fidélité</p>
             </div>
 
             <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-2xl">
               {restaurant?.menu_type && (
                 <div className="flex items-center justify-between rounded-lg bg-secondary/40 px-4 py-3 mb-5">
-                  <p className="text-sm text-ink/70">
+                  <p className="text-sm text-ink/80">
                     Menu actuel : <span className="font-medium text-ink capitalize">{restaurant.menu_type}</span>
                   </p>
                   <a href={restaurant.menu_url} target="_blank" rel="noreferrer" className="text-sm text-wine font-medium hover:underline">
@@ -1999,10 +1999,10 @@ function DashboardContent() {
 
               <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-wine/20 rounded-xl py-10 cursor-pointer hover:border-gold/50 transition-colors">
                 <BookOpen className="size-8 text-wine/40" />
-                <p className="text-sm text-ink/70">
+                <p className="text-sm text-ink/80">
                   {uploadingMenu ? "Envoi en cours..." : "Cliquez pour choisir votre fichier"}
                 </p>
-                <p className="text-xs text-ink/40">PDF, JPG, PNG, Word (.docx) ou Excel (.xlsx)</p>
+                <p className="text-xs text-ink/65">PDF, JPG, PNG, Word (.docx) ou Excel (.xlsx)</p>
                 <input
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png,.webp,.docx,.xlsx,.xls"
@@ -2020,150 +2020,184 @@ function DashboardContent() {
 
         {activeSection === "scanner" && (
           <div>
-            <div className="mb-8">
-              <h1 className="text-2xl font-display font-semibold text-ink">Scanner</h1>
-              <p className="text-ink/55 mt-1">
-                {estComplet
-                  ? "Validez les récompenses de la roue et les passages sur la carte de fidélité"
-                  : "Validez les récompenses gagnées à la roue par vos clients"}
+            <div className="mb-6">
+              <h1 className="text-2xl sm:text-3xl font-display font-semibold text-ink">Scanner un client</h1>
+              <p className="text-ink/75 mt-1">
+                Le client vous montre son QR code : celui de l&apos;email de sa récompense
+                {estComplet ? ", ou celui de sa carte de fidélité" : ""}.
               </p>
             </div>
-            <div className="max-w-xl">
-              {/* Scanner : récompenses de la roue (tous plans) + passages carte fidélité (Complet) */}
-              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
-                <p className="text-sm font-medium text-ink mb-4">{estComplet ? "Scanner une carte ou une récompense" : "Scanner une récompense"}</p>
 
-                {scanning ? (
-                  <div className="mb-4">
-                    <div className="relative rounded-lg overflow-hidden bg-ink aspect-square max-w-xs mx-auto">
-                      <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
-                      <div className="absolute inset-6 border-2 border-gold rounded-lg pointer-events-none" />
+            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+              <div className="space-y-4 min-w-0">
+                {/* Resultat d'une recompense de roue : tres visible, lisible de loin au comptoir */}
+                {recompenseScanResult && (
+                  recompenseScanResult.success ? (
+                    <div className="rounded-2xl bg-sage p-6 text-white shadow-lg shadow-sage/20">
+                      <div className="flex items-center gap-4">
+                        <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-white/20">
+                          <Check className="size-8" strokeWidth={3} />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="font-display text-2xl font-semibold">Récompense validée !</p>
+                          <p className="mt-0.5 text-white/90">
+                            <span className="font-semibold">{recompenseScanResult.prenom}</span> : {recompenseScanResult.recompense}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="mt-4 text-sm text-white/85">Vous pouvez lui offrir sa récompense. Elle ne pourra plus être réutilisée.</p>
+                      <button
+                        onClick={() => { setRecompenseScanResult(null); setClientTrouve(null); demarrerScan() }}
+                        className="mt-5 w-full rounded-xl bg-white py-3 text-sm font-semibold text-sage hover:bg-white/90"
+                      >
+                        Scanner un autre client
+                      </button>
                     </div>
-                    <canvas ref={scanCanvasRef} className="hidden" />
-                    <button
-                      onClick={arreterScan}
-                      className="mt-3 w-full text-sm text-ink/60 hover:text-wine"
-                    >
-                      Annuler le scan
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={demarrerScan}
-                    className="w-full flex items-center justify-center gap-2 bg-wine hover:bg-wine-dark text-gold-light font-medium py-3 rounded-lg text-sm mb-4"
-                  >
-                    <QrCode className="size-4" />
-                    {estComplet ? "Scanner (carte fidélité ou récompense roue)" : "Scanner le QR de la récompense"}
-                  </button>
+                  ) : (
+                    <div className="rounded-2xl border-2 border-wine/30 bg-wine/5 p-6">
+                      <div className="flex items-center gap-4">
+                        <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-wine text-gold-light">
+                          <X className="size-8" strokeWidth={3} />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="font-display text-xl font-semibold text-wine">Récompense refusée</p>
+                          <p className="mt-0.5 text-ink/85">{recompenseScanResult.error}</p>
+                          {recompenseScanResult.prenom && (
+                            <p className="mt-1 text-sm text-ink/70">{recompenseScanResult.prenom} : {recompenseScanResult.recompense}</p>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => { setRecompenseScanResult(null); demarrerScan() }}
+                        className="mt-5 w-full rounded-xl bg-wine py-3 text-sm font-semibold text-gold-light hover:bg-wine-dark"
+                      >
+                        Scanner à nouveau
+                      </button>
+                    </div>
+                  )
                 )}
 
-                {estComplet && (
-                <details className="mb-2">
-                  <summary className="text-xs text-ink/50 cursor-pointer hover:text-ink/70">
-                    Ou rechercher par email
-                  </summary>
-                  <div className="flex gap-2 mt-2">
-                    <input
-                      type="email"
-                      placeholder="Email du client"
-                      value={rechercheEmail}
-                      onChange={e => setRechercheEmail(e.target.value)}
-                      className="flex-1 border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
-                    />
-                    <button
-                      onClick={rechercherClient}
-                      disabled={rechercheLoading}
-                      className="bg-secondary hover:bg-secondary/70 text-ink px-3 rounded-lg"
-                    >
-                      <Search className="size-4" />
-                    </button>
-                  </div>
-                </details>
-                )}
-
-                {rechercheError && <p className="text-sm text-wine mt-3 mb-2">{rechercheError}</p>}
-
+                {/* Carte de fidelite trouvee : ajouter un tampon */}
                 {clientTrouve && (
-                  <div className="rounded-lg bg-secondary/40 p-4 mt-4">
-                    <p className="text-sm text-ink mb-3">
-                      <span className="font-medium">{clientTrouve.email}</span> — {clientTrouve.tampons}/{tamponsRequis} tampons
-                    </p>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        step="0.01"
-                        placeholder="Montant dépensé (€)"
-                        value={montantPassage}
-                        onChange={e => setMontantPassage(e.target.value)}
-                        className="flex-1 border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
-                      />
+                  <div className="rounded-2xl border border-gold/40 bg-card p-6 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink/65">Carte de fidélité</p>
+                    <p className="mt-1 font-display text-xl font-semibold text-ink break-all">{clientTrouve.prenom || clientTrouve.email}</p>
+                    <div className="mt-3 flex items-center gap-3">
+                      <div className="flex flex-1 gap-1" aria-hidden="true">
+                        {Array.from({ length: tamponsRequis }).map((_, i) => (
+                          <span key={i} className={`h-2.5 flex-1 rounded-full ${i < clientTrouve.tampons ? "bg-wine" : "bg-wine/10"}`} />
+                        ))}
+                      </div>
+                      <span className="shrink-0 text-sm font-semibold text-wine">{clientTrouve.tampons} / {tamponsRequis}</span>
+                    </div>
+                    <label className="mt-5 block text-sm font-medium text-ink/85">Montant de l&apos;addition</label>
+                    <div className="mt-1.5 flex gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="number"
+                          step="0.01"
+                          inputMode="decimal"
+                          placeholder="0,00"
+                          value={montantPassage}
+                          onChange={e => setMontantPassage(e.target.value)}
+                          className="w-full rounded-xl border border-wine/20 px-4 py-3 pr-9 text-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                        />
+                        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink/65">€</span>
+                      </div>
                       <button
                         onClick={validerPassage}
                         disabled={validationLoading}
-                        className="bg-wine hover:bg-wine-dark disabled:opacity-60 text-gold-light font-medium px-4 rounded-lg text-sm whitespace-nowrap"
+                        className="shrink-0 rounded-xl bg-wine px-5 text-sm font-semibold text-gold-light hover:bg-wine-dark disabled:opacity-60"
                       >
-                        Valider
+                        {validationLoading ? "..." : "Ajouter un tampon"}
                       </button>
                     </div>
-                    {validationMessage && <p className="text-sm text-sage mt-3">{validationMessage}</p>}
+                    {validationMessage && <p className="mt-3 rounded-lg bg-sage/10 px-3 py-2 text-sm font-medium text-sage">{validationMessage}</p>}
+                    <button
+                      onClick={() => { setClientTrouve(null); setValidationMessage(""); demarrerScan() }}
+                      className="mt-4 w-full text-sm font-medium text-wine hover:underline"
+                    >
+                      Scanner un autre client
+                    </button>
                   </div>
                 )}
 
-                {/* Resultat d'une recompense de roue scannee */}
-                {recompenseScanResult && (
-                  <div className={`rounded-lg p-4 mt-4 ${recompenseScanResult.success ? "bg-sage/10" : "bg-wine/5"}`}>
-                    {recompenseScanResult.success ? (
-                      <p className="text-sm text-sage">
-                        ✓ Récompense validée pour <span className="font-medium">{recompenseScanResult.prenom}</span> : {recompenseScanResult.recompense}
-                      </p>
-                    ) : (
-                      <div>
-                        <p className="text-sm text-wine">{recompenseScanResult.error}</p>
-                        {recompenseScanResult.prenom && (
-                          <p className="text-xs text-ink/50 mt-1">{recompenseScanResult.prenom} — {recompenseScanResult.recompense}</p>
-                        )}
+                {/* Camera */}
+                <div className="rounded-2xl border border-wine/10 bg-card p-5 shadow-sm sm:p-6">
+                  {scanning ? (
+                    <div>
+                      <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-2xl bg-ink">
+                        <video ref={videoRef} className="h-full w-full object-cover" muted playsInline />
+                        <div className="pointer-events-none absolute inset-[12%]">
+                          {["left-0 top-0 border-l-4 border-t-4 rounded-tl-2xl", "right-0 top-0 border-r-4 border-t-4 rounded-tr-2xl", "left-0 bottom-0 border-l-4 border-b-4 rounded-bl-2xl", "right-0 bottom-0 border-r-4 border-b-4 rounded-br-2xl"].map((c) => (
+                            <span key={c} className={`absolute size-12 border-gold ${c}`} />
+                          ))}
+                          <span className="fr-ligne-scan absolute inset-x-2 h-1 rounded-full bg-gold shadow-[0_0_16px_4px_rgba(235,198,119,0.8)]" />
+                        </div>
+                        <p className="absolute inset-x-0 bottom-3 text-center text-sm font-medium text-ivory/90">Placez le QR code dans le cadre</p>
                       </div>
-                    )}
-                  </div>
-                )}
+                      <canvas ref={scanCanvasRef} className="hidden" />
+                      <button onClick={arreterScan} className="mt-4 w-full rounded-xl border border-wine/20 py-3 text-sm font-medium text-ink/85 hover:bg-secondary/50">
+                        Fermer la caméra
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center rounded-2xl border-2 border-dashed border-wine/15 px-4 py-8 text-center">
+                      <span className="flex size-16 items-center justify-center rounded-2xl bg-wine/8 text-wine">
+                        <ScanLine className="size-8" />
+                      </span>
+                      <p className="mt-4 font-display text-lg font-semibold text-ink">Scannez le QR code du client</p>
+                      <p className="mt-1 max-w-sm text-sm text-ink/75">
+                        {estComplet ? "Récompense de la roue ou carte de fidélité : le bon écran s'ouvre tout seul." : "Celui de l'email de récompense reçu après la roue."}
+                      </p>
+                      <button
+                        onClick={() => { setRecompenseScanResult(null); setClientTrouve(null); demarrerScan() }}
+                        className="mt-6 flex w-full max-w-sm items-center justify-center gap-2 rounded-xl bg-wine py-4 text-base font-semibold text-gold-light shadow-lg shadow-wine/20 hover:bg-wine-dark"
+                      >
+                        <ScanLine className="size-5" />
+                        Ouvrir la caméra
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-                {/* Recherche de secours d'une recompense par email, si pas de scanner sous la main */}
-                <details className="mt-4">
-                  <summary className="text-xs text-ink/50 cursor-pointer hover:text-ink/70">
-                    Ou retrouver une récompense par email
-                  </summary>
-                  <div className="flex gap-2 mt-2">
+              {/* Sans QR code : recherche par email */}
+              <aside className="space-y-4">
+                <div className="rounded-2xl border border-wine/10 bg-card p-5 shadow-sm">
+                  <p className="font-display text-base font-semibold text-ink">Le client n&apos;a pas son QR code ?</p>
+                  <p className="mt-1 text-sm text-ink/75">Retrouvez-le avec son adresse email.</p>
+
+                  <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.1em] text-ink/65">Récompense de la roue</label>
+                  <div className="mt-1.5 flex gap-2">
                     <input
                       type="email"
-                      placeholder="Email du client"
+                      placeholder="email@client.fr"
                       value={rechercheRecompenseEmail}
                       onChange={e => setRechercheRecompenseEmail(e.target.value)}
-                      className="flex-1 border border-wine/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+                      onKeyDown={e => { if (e.key === "Enter") rechercherRecompense() }}
+                      className="min-w-0 flex-1 rounded-lg border border-wine/15 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
                     />
-                    <button
-                      onClick={rechercherRecompense}
-                      disabled={rechercheRecompenseLoading}
-                      className="bg-secondary hover:bg-secondary/70 text-ink px-3 rounded-lg"
-                    >
+                    <button onClick={rechercherRecompense} disabled={rechercheRecompenseLoading} className="shrink-0 rounded-lg bg-secondary px-3 text-ink hover:bg-secondary/70" aria-label="Rechercher la récompense">
                       <Search className="size-4" />
                     </button>
                   </div>
-                  {rechercheRecompenseError && <p className="text-sm text-wine mt-2">{rechercheRecompenseError}</p>}
+                  {rechercheRecompenseError && <p className="mt-2 text-sm text-wine">{rechercheRecompenseError}</p>}
                   {recompensesTrouvees.length > 0 && (
                     <div className="mt-3 space-y-2">
                       {recompensesTrouvees.map((r) => (
-                        <div key={r.id} className="flex items-center justify-between gap-3 rounded-lg bg-secondary/40 p-3">
+                        <div key={r.id} className="flex items-center justify-between gap-3 rounded-lg bg-secondary/50 p-3">
                           <div className="min-w-0">
-                            <p className="text-sm text-ink truncate">{r.recompense}</p>
-                            <p className="text-xs text-ink/50">
-                              {new Date(r.created_at).toLocaleDateString("fr-FR")}
-                              {r.recompense_utilisee && " — déjà utilisée"}
+                            <p className="truncate text-sm font-medium text-ink">{r.recompense}</p>
+                            <p className="text-xs text-ink/70">
+                              Gagnée le {new Date(r.created_at).toLocaleDateString("fr-FR")}
+                              {r.recompense_utilisee && " · déjà utilisée"}
                             </p>
                           </div>
                           <button
                             onClick={() => validerRecompenseParId(r.id)}
                             disabled={r.recompense_utilisee}
-                            className="shrink-0 bg-wine hover:bg-wine-dark disabled:opacity-40 text-gold-light font-medium px-3 py-1.5 rounded-lg text-xs whitespace-nowrap"
+                            className="shrink-0 rounded-lg bg-wine px-3 py-1.5 text-xs font-semibold text-gold-light hover:bg-wine-dark disabled:opacity-40"
                           >
                             Valider
                           </button>
@@ -2171,8 +2205,36 @@ function DashboardContent() {
                       ))}
                     </div>
                   )}
-                </details>
-              </div>
+
+                  {estComplet && (
+                    <>
+                      <label className="mt-5 block text-xs font-semibold uppercase tracking-[0.1em] text-ink/65">Carte de fidélité</label>
+                      <div className="mt-1.5 flex gap-2">
+                        <input
+                          type="email"
+                          placeholder="email@client.fr"
+                          value={rechercheEmail}
+                          onChange={e => setRechercheEmail(e.target.value)}
+                          onKeyDown={e => { if (e.key === "Enter") rechercherClient() }}
+                          className="min-w-0 flex-1 rounded-lg border border-wine/15 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+                        />
+                        <button onClick={rechercherClient} disabled={rechercheLoading} className="shrink-0 rounded-lg bg-secondary px-3 text-ink hover:bg-secondary/70" aria-label="Rechercher la carte">
+                          <Search className="size-4" />
+                        </button>
+                      </div>
+                      {rechercheError && <p className="mt-2 text-sm text-wine">{rechercheError}</p>}
+                    </>
+                  )}
+                </div>
+
+                <div className="rounded-2xl bg-gold/12 p-5 text-sm text-ink/85">
+                  <p className="font-semibold text-ink">💡 Bon à savoir</p>
+                  <ul className="mt-2 space-y-1.5">
+                    <li>Le QR code de la récompense est dans l&apos;email reçu par le client (pensez à ses spams).</li>
+                    <li>Une récompense est valable {DUREE_VALIDITE_JOURS} jours et ne peut être utilisée qu&apos;une fois.</li>
+                  </ul>
+                </div>
+              </aside>
             </div>
           </div>
         )}
@@ -2181,7 +2243,7 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Carte fidélité</h1>
-              <p className="text-ink/55 mt-1">Réglez votre carte et validez les passages de vos clients</p>
+              <p className="text-ink/70 mt-1">Réglez votre carte et validez les passages de vos clients</p>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2 max-w-4xl">
@@ -2189,7 +2251,7 @@ function DashboardContent() {
               <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
                 <p className="text-sm font-medium text-ink mb-4">Réglages de la carte</p>
 
-                <label className="block text-sm text-ink/70 mb-1">
+                <label className="block text-sm text-ink/80 mb-1">
                   Nombre de tampons requis : <span className="font-semibold text-wine">{tamponsRequis}</span>
                 </label>
                 <input
@@ -2201,7 +2263,7 @@ function DashboardContent() {
                   className="w-full accent-wine mb-4"
                 />
 
-                <label className="block text-sm text-ink/70 mb-1">Montant minimum pour valider un tampon (€)</label>
+                <label className="block text-sm text-ink/80 mb-1">Montant minimum pour valider un tampon (€)</label>
                 <input
                   type="number"
                   step="0.5"
@@ -2211,7 +2273,7 @@ function DashboardContent() {
                   className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-gold"
                 />
 
-                <label className="block text-sm text-ink/70 mb-1">Récompense offerte</label>
+                <label className="block text-sm text-ink/80 mb-1">Récompense offerte</label>
                 <input
                   type="text"
                   value={recompenseFidelite}
@@ -2231,7 +2293,7 @@ function DashboardContent() {
               {/* La validation des passages se fait dans l'onglet Scanner (commun aux deux plans) */}
               <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
                 <p className="text-sm font-medium text-ink mb-2">Valider un passage client</p>
-                <p className="text-sm text-ink/60 mb-4">Scannez la carte du client ou retrouvez-le par email depuis l&apos;onglet Scanner.</p>
+                <p className="text-sm text-ink/75 mb-4">Scannez la carte du client ou retrouvez-le par email depuis l&apos;onglet Scanner.</p>
                 <button
                   onClick={() => setActiveSection("scanner")}
                   className="w-full flex items-center justify-center gap-2 bg-wine hover:bg-wine-dark text-gold-light font-medium py-3 rounded-lg text-sm"
@@ -2249,9 +2311,9 @@ function DashboardContent() {
               </p>
 
               {chargementClientsFidelite ? (
-                <p className="text-sm text-ink/50">Chargement...</p>
+                <p className="text-sm text-ink/70">Chargement...</p>
               ) : clientsFidelite.length === 0 ? (
-                <p className="text-sm text-ink/50">Aucun client n&apos;a encore créé de carte de fidélité.</p>
+                <p className="text-sm text-ink/70">Aucun client n&apos;a encore créé de carte de fidélité.</p>
               ) : (
                 <div className="space-y-3">
                   {clientsFidelite.map((c) => (
@@ -2271,7 +2333,7 @@ function DashboardContent() {
                           </span>
                         ))}
                       </div>
-                      <p className="text-xs text-ink/50 whitespace-nowrap">{c.tampons} / {tamponsRequis}</p>
+                      <p className="text-xs text-ink/70 whitespace-nowrap">{c.tampons} / {tamponsRequis}</p>
                     </div>
                   ))}
                 </div>
@@ -2284,17 +2346,17 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Retours clients</h1>
-              <p className="text-ink/55 mt-1">
+              <p className="text-ink/70 mt-1">
                 Les avis mitigés interceptés avant Google. Lisez-les pour vous améliorer, ou supprimez-les.
               </p>
             </div>
 
             {loadingAvisPrives ? (
-              <p className="text-sm text-ink/50">Chargement...</p>
+              <p className="text-sm text-ink/70">Chargement...</p>
             ) : avisPrives.length === 0 ? (
               <div className="bg-card rounded-xl p-8 border border-wine/10 shadow-sm text-center max-w-lg">
                 <div className="text-4xl mb-3">📭</div>
-                <p className="text-sm text-ink/55">Aucun retour pour le moment.</p>
+                <p className="text-sm text-ink/70">Aucun retour pour le moment.</p>
               </div>
             ) : (
               <div className="space-y-3 max-w-2xl">
@@ -2307,16 +2369,16 @@ function DashboardContent() {
                       </div>
                       <button
                         onClick={() => handleSupprimerAvisPrive(a.id)}
-                        className="text-ink/40 hover:text-wine transition-colors"
+                        className="text-ink/65 hover:text-wine transition-colors"
                         aria-label="Supprimer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                     {a.commentaire && (
-                      <p className="mt-2 text-sm text-ink/75 leading-relaxed">{a.commentaire}</p>
+                      <p className="mt-2 text-sm text-ink/85 leading-relaxed">{a.commentaire}</p>
                     )}
-                    <div className="mt-3 flex items-center gap-3 text-xs text-ink/45">
+                    <div className="mt-3 flex items-center gap-3 text-xs text-ink/65">
                       {a.prenom && <span>{a.prenom}</span>}
                       {a.email && <span>{a.email}</span>}
                       <span>{new Date(a.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</span>
@@ -2332,7 +2394,7 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Abonnement</h1>
-              <p className="text-ink/55 mt-1">Choisissez le plan adapté à votre restaurant</p>
+              <p className="text-ink/70 mt-1">Choisissez le plan adapté à votre restaurant</p>
             </div>
 
             {compteVerrouille && (
@@ -2353,14 +2415,14 @@ function DashboardContent() {
             {restaurant?.plan && (
               <div className="mb-6 max-w-2xl flex items-center justify-between rounded-xl border border-wine/10 bg-card px-5 py-4 shadow-sm">
                 <div>
-                  <p className="text-sm text-ink/55">Votre plan actuel</p>
+                  <p className="text-sm text-ink/70">Votre plan actuel</p>
                   <p className="font-display text-lg font-semibold text-ink">{restaurant.plan === "standard" ? "Complet" : restaurant.plan === "essentiel" ? "Essentiel" : restaurant.plan}</p>
                 </div>
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                   restaurant.statut_abonnement === "actif" ? "bg-sage/12 text-sage" :
                   restaurant.statut_abonnement === "essai" ? "bg-gold/15 text-wine-dark" :
                   restaurant.statut_abonnement === "impaye" ? "bg-wine/10 text-wine" :
-                  "bg-secondary text-ink/50"
+                  "bg-secondary text-ink/70"
                 }`}>
                   {restaurant.statut_abonnement === "actif" ? "Actif" :
                    restaurant.statut_abonnement === "essai" ? "Essai gratuit en cours" :
@@ -2374,7 +2436,7 @@ function DashboardContent() {
               <div className="mb-8 max-w-2xl rounded-xl border border-wine/10 bg-card px-5 py-4 shadow-sm">
                 {restaurant?.resiliation_prevue ? (
                   <div className="flex items-center justify-between gap-4">
-                    <p className="text-sm text-ink/70">
+                    <p className="text-sm text-ink/80">
                       Résiliation programmée{restaurant?.fin_periode_actuelle && (
                         <> — actif jusqu&apos;au {new Date(restaurant.fin_periode_actuelle).toLocaleDateString("fr-FR")}</>
                       )}
@@ -2389,7 +2451,7 @@ function DashboardContent() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-between gap-4">
-                    <p className="text-sm text-ink/55">Vous pouvez résilier à tout moment, sans engagement.</p>
+                    <p className="text-sm text-ink/70">Vous pouvez résilier à tout moment, sans engagement.</p>
                     <button
                       onClick={handleCancelSubscription}
                       disabled={cancelling}
@@ -2407,7 +2469,7 @@ function DashboardContent() {
               <button
                 onClick={() => setBillingPeriod("mensuel")}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  billingPeriod === "mensuel" ? "bg-wine text-gold-light" : "text-ink/60"
+                  billingPeriod === "mensuel" ? "bg-wine text-gold-light" : "text-ink/75"
                 }`}
               >
                 Mensuel
@@ -2415,7 +2477,7 @@ function DashboardContent() {
               <button
                 onClick={() => setBillingPeriod("semestriel")}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  billingPeriod === "semestriel" ? "bg-wine text-gold-light" : "text-ink/60"
+                  billingPeriod === "semestriel" ? "bg-wine text-gold-light" : "text-ink/75"
                 }`}
               >
                 Semestriel <span className="opacity-75">(-10%)</span>
@@ -2423,7 +2485,7 @@ function DashboardContent() {
               <button
                 onClick={() => setBillingPeriod("annuel")}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  billingPeriod === "annuel" ? "bg-wine text-gold-light" : "text-ink/60"
+                  billingPeriod === "annuel" ? "bg-wine text-gold-light" : "text-ink/75"
                 }`}
               >
                 Annuel <span className="opacity-75">(-20%)</span>
@@ -2459,12 +2521,12 @@ function DashboardContent() {
                     <h3 className="font-display text-xl font-semibold text-ink">{offre.nom}</h3>
                     <div className="mt-2 flex items-end gap-1.5">
                       {offre.prixBarre && (
-                        <span className="mb-1 text-lg text-ink/35 line-through">{offre.prixBarre}€</span>
+                        <span className="mb-1 text-lg text-ink/65 line-through">{offre.prixBarre}€</span>
                       )}
                       <span className="font-display text-3xl font-semibold text-wine">
                         {prixAffiche}€
                       </span>
-                      <span className="text-sm text-ink/50 mb-1">/mois</span>
+                      <span className="text-sm text-ink/70 mb-1">/mois</span>
                     </div>
                     {offre.prixBarre && (
                       <p className="mt-1 text-xs font-semibold text-gold-light bg-wine inline-block px-2 py-0.5 rounded-full">
@@ -2472,7 +2534,7 @@ function DashboardContent() {
                       </p>
                     )}
                     {totalPeriode && (
-                      <p className="mt-1 text-sm text-ink/60">
+                      <p className="mt-1 text-sm text-ink/75">
                         soit {totalPeriode}€ facturés {
                           periodeEffective === "semestriel" ? "tous les 6 mois" :
                           "1x/an"
@@ -2480,7 +2542,7 @@ function DashboardContent() {
                       </p>
                     )}
                     {!offre.periodesDisponibles && (
-                      <p className="mt-1 text-xs text-ink/45">Facturation mensuelle uniquement</p>
+                      <p className="mt-1 text-xs text-ink/65">Facturation mensuelle uniquement</p>
                     )}
                     {offre.essaiGratuit && (
                       <p className="mt-2 inline-flex items-center rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-wine-dark">
@@ -2489,7 +2551,7 @@ function DashboardContent() {
                     )}
                     <ul className="mt-5 space-y-2.5">
                       {offre.features.map((f) => (
-                        <li key={f} className="flex items-start gap-2 text-sm text-ink/75">
+                        <li key={f} className="flex items-start gap-2 text-sm text-ink/85">
                           <Check className="size-4 mt-0.5 text-sage flex-shrink-0" />
                           {f}
                         </li>
@@ -2498,7 +2560,7 @@ function DashboardContent() {
 
                     {!estPlanActuel && (
                       <div className="mt-4 space-y-2">
-                        <label className="flex items-start gap-2.5 rounded-lg bg-secondary/50 p-3 text-sm text-ink/75 cursor-pointer">
+                        <label className="flex items-start gap-2.5 rounded-lg bg-secondary/50 p-3 text-sm text-ink/85 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={avecCreationSite}
@@ -2507,7 +2569,7 @@ function DashboardContent() {
                           />
                           <span>
                             Je n&apos;ai pas encore de site, créez-moi en un
-                            <span className="block text-xs text-ink/50">
+                            <span className="block text-xs text-ink/70">
                               {OPTION_SITE.offreLancementActive && <span className="line-through mr-1">{OPTION_SITE.fraisUniquesBarre}€</span>}
                               <span className="font-semibold text-wine">{OPTION_SITE.fraisUniques}€</span> de frais uniques
                               {OPTION_SITE.offreLancementActive && " (offre de lancement)"}, puis{" "}
@@ -2540,11 +2602,11 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Relance</h1>
-              <p className="text-ink/55 mt-1">Emails automatiques pour faire revenir vos clients inactifs</p>
+              <p className="text-ink/70 mt-1">Emails automatiques pour faire revenir vos clients inactifs</p>
             </div>
             <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-lg">
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-ink/80">Emails de relance automatiques</label>
+                <label className="block text-sm font-medium text-ink/90">Emails de relance automatiques</label>
                 <button
                   onClick={() => setRelanceActive(!relanceActive)}
                   className={`relative w-10 h-5.5 rounded-full transition-colors ${relanceActive ? "bg-wine" : "bg-secondary"}`}
@@ -2552,13 +2614,13 @@ function DashboardContent() {
                   <span className={`absolute top-0.5 left-0.5 w-4.5 h-4.5 rounded-full bg-white transition-transform ${relanceActive ? "translate-x-4.5" : ""}`} />
                 </button>
               </div>
-              <p className="text-xs text-ink/45 mb-3">
+              <p className="text-xs text-ink/65 mb-3">
                 Envoie un email automatique avec une petite réduction aux clients qui ne sont pas revenus depuis un moment (uniquement à ceux ayant accepté de recevoir des offres).
               </p>
               {relanceActive && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-ink/60 mb-1">Après combien de jours d'inactivité</label>
+                    <label className="block text-xs font-medium text-ink/75 mb-1">Après combien de jours d'inactivité</label>
                     <input
                       type="number"
                       min={1}
@@ -2569,7 +2631,7 @@ function DashboardContent() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-ink/60 mb-1">% de réduction offert</label>
+                    <label className="block text-xs font-medium text-ink/75 mb-1">% de réduction offert</label>
                     <input
                       type="number"
                       min={5}
@@ -2597,12 +2659,12 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Paramètres</h1>
-              <p className="text-ink/55 mt-1">Gérez les informations de votre restaurant</p>
+              <p className="text-ink/70 mt-1">Gérez les informations de votre restaurant</p>
             </div>
             <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-lg">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-ink/80 mb-1">Nom du restaurant</label>
+                  <label className="block text-sm font-medium text-ink/90 mb-1">Nom du restaurant</label>
                   <input
                     type="text"
                     value={nomRestaurantInput}
@@ -2611,16 +2673,16 @@ function DashboardContent() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-ink/80 mb-1">Email</label>
+                  <label className="block text-sm font-medium text-ink/90 mb-1">Email</label>
                   <input
                     type="email"
                     defaultValue={user?.email}
                     disabled
-                    className="w-full border border-wine/10 rounded-lg px-4 py-2.5 text-sm bg-secondary/40 text-ink/40"
+                    className="w-full border border-wine/10 rounded-lg px-4 py-2.5 text-sm bg-secondary/40 text-ink/65"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-ink/80 mb-1">Lien de votre page avis Google</label>
+                  <label className="block text-sm font-medium text-ink/90 mb-1">Lien de votre page avis Google</label>
                   <input
                     type="text"
                     placeholder="Ex : https://g.page/r/XXXXXXXXXXXX/review"
@@ -2628,7 +2690,7 @@ function DashboardContent() {
                     onChange={e => setGoogleAvisUrl(e.target.value)}
                     className="w-full border border-wine/15 rounded-lg px-4 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
                   />
-                  <p className="mt-1 text-xs text-ink/45">Vos clients seront redirigés vers ce lien après avoir gagné à la roue.</p>
+                  <p className="mt-1 text-xs text-ink/65">Vos clients seront redirigés vers ce lien après avoir gagné à la roue.</p>
                 </div>
 
                 <button
@@ -2660,11 +2722,11 @@ function DashboardContent() {
       {confirmModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4">
           <div className="bg-card rounded-2xl shadow-xl max-w-sm w-full p-6 border border-wine/10">
-            <p className="text-sm text-ink/80 leading-relaxed">{confirmModal.message}</p>
+            <p className="text-sm text-ink/90 leading-relaxed">{confirmModal.message}</p>
             <div className="mt-5 flex justify-end gap-2">
               <button
                 onClick={() => setConfirmModal(null)}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-ink/60 hover:bg-secondary/60 transition-colors"
+                className="px-4 py-2 rounded-lg text-sm font-medium text-ink/75 hover:bg-secondary/60 transition-colors"
               >
                 Annuler
               </button>

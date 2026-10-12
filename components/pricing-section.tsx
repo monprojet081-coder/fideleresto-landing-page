@@ -17,7 +17,7 @@ export function PricingSection() {
           <h2 className="text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
             Un tarif simple et transparent
           </h2>
-          <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/65">
+          <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/75">
             Choisissez la formule adaptée à votre établissement. Sans engagement, sans frais cachés.
           </p>
         </div>
@@ -33,7 +33,7 @@ export function PricingSection() {
                 key={opt.key}
                 onClick={() => setPeriode(opt.key)}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  periode === opt.key ? "bg-wine text-gold-light" : "text-ink/60"
+                  periode === opt.key ? "bg-wine text-gold-light" : "text-ink/75"
                 }`}
               >
                 {opt.label} {"badge" in opt && <span className="opacity-75">({opt.badge})</span>}
@@ -76,7 +76,7 @@ export function PricingSection() {
                   </p>
 
                   {plan.prixBarre && (
-                    <p className="mt-3 font-display text-xl text-ivory/45 line-through">{plan.prixBarre}€/mois</p>
+                    <p className="mt-3 font-display text-xl text-ivory/75 line-through">{plan.prixBarre}€/mois</p>
                   )}
 
                   <div className={`flex items-end justify-center gap-1 font-display ${plan.prixBarre ? "mt-0.5" : "mt-3"}`}>
@@ -118,10 +118,10 @@ export function PricingSection() {
                     ))}
                     {plan.nonInclus.map((item) => (
                       <li key={item} className="flex items-start gap-3">
-                        <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-ink/8 text-ink/45">
+                        <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-ink/8 text-ink/65">
                           <Minus className="size-3.5" aria-hidden="true" />
                         </span>
-                        <span className="text-sm leading-relaxed text-ink/55">
+                        <span className="text-sm leading-relaxed text-ink/70">
                           {item}
                           <span className="sr-only"> (non inclus)</span>
                         </span>
@@ -144,7 +144,7 @@ export function PricingSection() {
             )
           })}
         </div>
-        <p className="mt-8 text-center text-sm text-ink/50">
+        <p className="mt-8 text-center text-sm text-ink/70">
           Option création de site disponible sur les deux plans, quel que soit le rythme choisi.
         </p>
       </div>

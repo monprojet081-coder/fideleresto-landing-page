@@ -33,7 +33,7 @@ export function SiteHeader() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-ink/70 transition-colors hover:text-wine"
+                className="text-sm font-medium text-ink/80 transition-colors hover:text-wine"
               >
                 {link.label}
               </a>
@@ -81,7 +81,7 @@ export function SiteHeader() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-2 py-2 text-sm font-medium text-ink/70 transition-colors hover:bg-wine/5 hover:text-wine"
+                  className="rounded-md px-2 py-2 text-sm font-medium text-ink/80 transition-colors hover:bg-wine/5 hover:text-wine"
                 >
                   {link.label}
                 </a>

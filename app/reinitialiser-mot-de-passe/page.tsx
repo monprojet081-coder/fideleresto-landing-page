@@ -48,12 +48,12 @@ export default function ReinitialiserMotDePassePage() {
       <div className="bg-card p-8 rounded-2xl shadow-sm w-full max-w-md border border-wine/10">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-display font-semibold text-ink">Nouveau mot de passe</h1>
-          <p className="text-ink/55 mt-1 text-sm">Choisissez un nouveau mot de passe</p>
+          <p className="text-ink/70 mt-1 text-sm">Choisissez un nouveau mot de passe</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-ink/80 mb-1">Nouveau mot de passe</label>
+            <label className="block text-sm font-medium text-ink/90 mb-1">Nouveau mot de passe</label>
             <input
               type="password"
               value={motDePasse}
@@ -63,7 +63,7 @@ export default function ReinitialiserMotDePassePage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-ink/80 mb-1">Confirmer le mot de passe</label>
+            <label className="block text-sm font-medium text-ink/90 mb-1">Confirmer le mot de passe</label>
             <input
               type="password"
               value={confirmer}

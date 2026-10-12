@@ -321,7 +321,7 @@ export function LegendeLots({ rewards }: { rewards: Lot[] }) {
                 ) : null}
               </span>
             </span>
-            <span className="mt-0.5 shrink-0 whitespace-nowrap text-sm text-ink/75">{chanceSur(lot.probabilite)}</span>
+            <span className="mt-0.5 shrink-0 whitespace-nowrap text-sm text-ink/85">{chanceSur(lot.probabilite)}</span>
           </li>
         ))}
       </ul>

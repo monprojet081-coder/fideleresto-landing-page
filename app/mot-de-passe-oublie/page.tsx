@@ -39,13 +39,13 @@ export default function MotDePasseOubliePage() {
       <div className="bg-card p-8 rounded-2xl shadow-sm w-full max-w-md border border-wine/10">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-display font-semibold text-ink">Mot de passe oublié</h1>
-          <p className="text-ink/55 mt-1 text-sm">Recevez un lien pour le réinitialiser</p>
+          <p className="text-ink/70 mt-1 text-sm">Recevez un lien pour le réinitialiser</p>
         </div>
 
         {envoye ? (
           <div className="text-center">
             <div className="text-5xl mb-4">📩</div>
-            <p className="text-ink/70 text-sm">
+            <p className="text-ink/80 text-sm">
               Si un compte existe avec cette adresse, un email contenant un lien de réinitialisation vient
               d&apos;être envoyé. Pensez à vérifier vos spams.
             </p>
@@ -56,7 +56,7 @@ export default function MotDePasseOubliePage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-ink/80 mb-1">Email</label>
+              <label className="block text-sm font-medium text-ink/90 mb-1">Email</label>
               <input
                 type="email"
                 value={email}
@@ -76,7 +76,7 @@ export default function MotDePasseOubliePage() {
               {loading ? "Envoi..." : "Envoyer le lien"}
             </button>
 
-            <p className="text-center text-sm text-ink/55">
+            <p className="text-center text-sm text-ink/70">
               <a href="/connexion" className="text-wine font-medium hover:underline">
                 Retour à la connexion
               </a>

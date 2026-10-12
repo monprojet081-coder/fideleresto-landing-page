@@ -160,7 +160,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
   if (step === "checking") {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center p-4">
-        <p className="text-ink/50 text-sm">Chargement...</p>
+        <p className="text-ink/70 text-sm">Chargement...</p>
       </div>
     )
   }
@@ -171,7 +171,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
         <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8 text-center">
           <div className="text-6xl mb-4">🔍</div>
           <h1 className="text-2xl font-display font-semibold text-ink mb-2">Page introuvable</h1>
-          <p className="text-ink/55 text-sm">Ce lien ne correspond à aucun restaurant.</p>
+          <p className="text-ink/70 text-sm">Ce lien ne correspond à aucun restaurant.</p>
         </div>
       </div>
     )
@@ -183,7 +183,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
         <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8 text-center">
           <div className="text-6xl mb-4">🔒</div>
           <h1 className="text-2xl font-display font-semibold text-ink mb-2">Fonctionnalité non disponible</h1>
-          <p className="text-ink/55 text-sm">Ce restaurant ne propose pas encore de menu digital ni de carte de fidélité.</p>
+          <p className="text-ink/70 text-sm">Ce restaurant ne propose pas encore de menu digital ni de carte de fidélité.</p>
         </div>
       </div>
     )
@@ -197,9 +197,9 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
           <span className="flex size-12 items-center justify-center rounded-full bg-wine text-gold-light mx-auto mb-3">
             <UtensilsCrossed className="size-5.5" aria-hidden="true" />
           </span>
-          <p className="text-xs font-medium tracking-wide text-ink/40 uppercase mb-1">FidèleResto</p>
+          <p className="text-xs font-medium tracking-wide text-ink/65 uppercase mb-1">FidèleResto</p>
           <h1 className="text-2xl font-display font-semibold text-ink">{restaurant?.nom_restaurant}</h1>
-          <p className="text-ink/55 text-sm mt-2">Menu et carte de fidélité</p>
+          <p className="text-ink/70 text-sm mt-2">Menu et carte de fidélité</p>
         </div>
 
         {step === "auth" && (
@@ -208,7 +208,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
               <button
                 onClick={() => setMode("inscription")}
                 className={`flex-1 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  mode === "inscription" ? "bg-wine text-gold-light" : "text-ink/60"
+                  mode === "inscription" ? "bg-wine text-gold-light" : "text-ink/75"
                 }`}
               >
                 Créer mon compte
@@ -216,21 +216,21 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
               <button
                 onClick={() => setMode("connexion")}
                 className={`flex-1 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  mode === "connexion" ? "bg-wine text-gold-light" : "text-ink/60"
+                  mode === "connexion" ? "bg-wine text-gold-light" : "text-ink/75"
                 }`}
               >
                 Se connecter
               </button>
             </div>
 
-            <p className="text-xs text-ink/50 text-center mb-4">
+            <p className="text-xs text-ink/70 text-center mb-4">
               Un seul compte pour toutes vos cartes de fidélité FidèleResto
             </p>
 
             <form onSubmit={handleAuth} className="space-y-4">
               {mode === "inscription" && (
                 <div>
-                  <label className="block text-sm font-medium text-ink/80 mb-1">Prénom</label>
+                  <label className="block text-sm font-medium text-ink/90 mb-1">Prénom</label>
                   <input
                     type="text"
                     required
@@ -241,7 +241,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-ink/80 mb-1">Email</label>
+                <label className="block text-sm font-medium text-ink/90 mb-1">Email</label>
                 <input
                   type="email"
                   required
@@ -251,7 +251,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink/80 mb-1">Mot de passe</label>
+                <label className="block text-sm font-medium text-ink/90 mb-1">Mot de passe</label>
                 <input
                   type="password"
                   required
@@ -287,7 +287,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
                 <div className="flex justify-center">
                   <canvas id="qr-carte-canvas" className="rounded-lg bg-card p-2 shadow-sm" />
                 </div>
-                <p className="mt-3 text-xs text-ink/55">Montrez ce QR code au comptoir au moment de payer</p>
+                <p className="mt-3 text-xs text-ink/70">Montrez ce QR code au comptoir au moment de payer</p>
               </div>
             </div>
 
@@ -295,7 +295,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
             <div className="min-w-0">
               <p className="text-sm font-medium text-ink mb-3">Le menu</p>
               {!restaurant.menu_type ? (
-                <p className="text-sm text-ink/50 text-center py-6">Le menu n'est pas encore disponible.</p>
+                <p className="text-sm text-ink/70 text-center py-6">Le menu n'est pas encore disponible.</p>
               ) : restaurant.menu_type === "image" ? (
                 <a href={restaurant.menu_url!} target="_blank" rel="noreferrer" className="block group">
                   <img src={restaurant.menu_url!} alt="Menu du restaurant" className="w-full rounded-lg border border-wine/10" />

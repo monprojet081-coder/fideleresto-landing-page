@@ -29,7 +29,7 @@ export function HowItWorksSection() {
           <h2 className="text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
             De la table au comptoir, en trois gestes
           </h2>
-          <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/70">
+          <p className="mt-4 text-pretty text-lg leading-relaxed text-ink/80">
             Aucun compte à créer côté client, aucune installation. Le client joue en moins d&apos;une minute,
             et vous gagnez une raison de plus de le revoir.
           </p>
@@ -55,7 +55,7 @@ export function HowItWorksSection() {
                 </span>
                 <div>
                   <h3 className="font-display text-xl font-semibold text-ink">{etape.titre}</h3>
-                  <p className="mt-2 text-pretty text-base leading-relaxed text-ink/70">{etape.texte}</p>
+                  <p className="mt-2 text-pretty text-base leading-relaxed text-ink/80">{etape.texte}</p>
                 </div>
               </li>
             ))}

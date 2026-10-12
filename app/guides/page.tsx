@@ -17,7 +17,7 @@ export default function GuidesPage() {
       <SiteHeader />
       <main className="mx-auto max-w-3xl px-4 pt-28 pb-20 sm:px-6 sm:pt-32">
         <h1 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-5xl">Guides pour restaurateurs</h1>
-        <p className="mt-5 text-lg leading-relaxed text-ink/70">
+        <p className="mt-5 text-lg leading-relaxed text-ink/80">
           Des conseils concrets pour faire revenir vos clients et améliorer votre visibilité sur Google.
         </p>
         <ul className="mt-10 divide-y divide-wine/10 border-y border-wine/10">
@@ -25,7 +25,7 @@ export default function GuidesPage() {
             <li key={g.slug} className="py-6">
               <Link href={`/guides/${g.slug}`} className="group block">
                 <h2 className="font-display text-xl font-semibold text-ink group-hover:text-wine sm:text-2xl">{g.titre}</h2>
-                <p className="mt-2 text-base leading-relaxed text-ink/65">{g.description}</p>
+                <p className="mt-2 text-base leading-relaxed text-ink/75">{g.description}</p>
               </Link>
             </li>
           ))}

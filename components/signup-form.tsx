@@ -116,7 +116,7 @@ function SignupFormContent() {
         <h1 className="text-3xl font-bold text-ink mb-2">
           Créez votre compte restaurant
         </h1>
-        <p className="text-ink/55">
+        <p className="text-ink/70">
           Rejoignez FidèleResto et commencez à fidéliser vos clients dès aujourd'hui.
         </p>
       </div>
@@ -125,7 +125,7 @@ function SignupFormContent() {
         <form onSubmit={handleSubmit} className="space-y-5">
 
           <div>
-            <label className="block text-sm font-medium text-ink/80 mb-1">
+            <label className="block text-sm font-medium text-ink/90 mb-1">
               Nom du restaurant
             </label>
             <input
@@ -139,7 +139,7 @@ function SignupFormContent() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink/80 mb-1">
+            <label className="block text-sm font-medium text-ink/90 mb-1">
               Type de cuisine
             </label>
             <select
@@ -161,7 +161,7 @@ function SignupFormContent() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-ink/80 mb-1">
+              <label className="block text-sm font-medium text-ink/90 mb-1">
                 Ville
               </label>
               <input
@@ -176,7 +176,7 @@ function SignupFormContent() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-ink/80 mb-1">
+              <label className="block text-sm font-medium text-ink/90 mb-1">
                 Téléphone
               </label>
               <input
@@ -192,7 +192,7 @@ function SignupFormContent() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-ink/80 mb-1">
+            <label className="block text-sm font-medium text-ink/90 mb-1">
               Lien de votre page avis Google
             </label>
             <input
@@ -202,12 +202,12 @@ function SignupFormContent() {
               value={formData.googleAvisUrl}
               onChange={(e) => setFormData({ ...formData, googleAvisUrl: e.target.value })}
             />
-            <p className="mt-1 text-xs text-ink/45">
+            <p className="mt-1 text-xs text-ink/65">
               Vous pouvez le laisser vide pour l'instant, mais pensez à l'ajouter dans Paramètres avant de commencer à utiliser la roue, sinon vos clients ne pourront pas laisser d'avis après avoir gagné.
             </p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-ink/80 mb-1">
+            <label className="block text-sm font-medium text-ink/90 mb-1">
               Email professionnel
             </label>
             <input
@@ -222,7 +222,7 @@ function SignupFormContent() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-ink/80 mb-1">
+              <label className="block text-sm font-medium text-ink/90 mb-1">
                 Mot de passe
               </label>
               <input
@@ -235,7 +235,7 @@ function SignupFormContent() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-ink/80 mb-1">
+              <label className="block text-sm font-medium text-ink/90 mb-1">
                 Confirmer le mot de passe
               </label>
               <input
@@ -269,21 +269,21 @@ function SignupFormContent() {
                 checked={avecCreationSite}
                 onChange={(e) => setAvecCreationSite(e.target.checked)}
               />
-              <span className="text-sm text-ink/80">
+              <span className="text-sm text-ink/90">
                 Je n&apos;ai pas encore de site, créez-moi en un
                 <span className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
                   {OPTION_SITE.offreLancementActive && (
-                    <span className="text-sm text-ink/45 line-through">{OPTION_SITE.fraisUniquesBarre}€</span>
+                    <span className="text-sm text-ink/65 line-through">{OPTION_SITE.fraisUniquesBarre}€</span>
                   )}
                   <span className="text-lg font-bold text-wine">{OPTION_SITE.fraisUniques}€</span>
-                  <span className="text-xs text-ink/60">de frais uniques</span>
+                  <span className="text-xs text-ink/75">de frais uniques</span>
                 </span>
-                <span className="block text-xs text-ink/55">
+                <span className="block text-xs text-ink/70">
                   puis {libelleMaintenanceSite(plan.endsWith("annuel") ? "annuel" : plan.endsWith("semestriel") ? "semestriel" : "mensuel")} de maintenance
                 </span>
               </span>
             </div>
-            <p className="mt-2 text-xs text-ink/45">
+            <p className="mt-2 text-xs text-ink/65">
               Facultatif, modifiable plus tard depuis votre dashboard, onglet Abonnement.
             </p>
           </label>
@@ -296,7 +296,7 @@ function SignupFormContent() {
               checked={formData.conditions}
               onChange={(e) => setFormData({ ...formData, conditions: e.target.checked })}
             />
-            <label htmlFor="conditions" className="text-sm text-ink/70">
+            <label htmlFor="conditions" className="text-sm text-ink/80">
               J'accepte les{" "}
               <a href="/cgv" className="text-wine hover:underline">
                 conditions générales
@@ -320,7 +320,7 @@ function SignupFormContent() {
             {loading ? "Création en cours..." : "Créer mon compte"}
           </button>
 
-          <p className="text-center text-sm text-ink/55">
+          <p className="text-center text-sm text-ink/70">
             Déjà un compte ?{" "}
             <a href="/connexion" className="text-wine hover:underline font-medium">
               Se connecter
@@ -330,7 +330,7 @@ function SignupFormContent() {
         </form>
       </div>
 
-      <p className="text-center text-xs text-ink/45 mt-6">
+      <p className="text-center text-xs text-ink/65 mt-6">
         14 jours d'essai gratuit · Sans engagement
       </p>
     </div>
