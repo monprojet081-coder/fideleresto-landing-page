@@ -2480,43 +2480,57 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Retours clients</h1>
-              <p className="text-ink/70 mt-1">
-                Les avis mitigés interceptés avant Google. Lisez-les pour vous améliorer, ou supprimez-les.
+              <p className="mt-1 max-w-2xl text-ink/80">
+                Les messages que vos clients déçus vous ont écrits en privé. Répondez-leur vite : un client à qui l&apos;on
+                répond revient souvent. Vous recevez aussi chaque retour par email.
               </p>
             </div>
 
             {loadingAvisPrives ? (
-              <p className="text-sm text-ink/70">Chargement...</p>
+              <p className="text-sm text-ink/75">Chargement...</p>
             ) : avisPrives.length === 0 ? (
-              <div className="bg-card rounded-xl p-8 border border-wine/10 shadow-sm text-center max-w-lg">
-                <div className="text-4xl mb-3">📭</div>
-                <p className="text-sm text-ink/70">Aucun retour pour le moment.</p>
+              <div className="max-w-lg rounded-2xl border border-wine/10 bg-card p-8 text-center shadow-sm">
+                <div className="mb-3 text-4xl">📭</div>
+                <p className="font-display text-lg font-semibold text-ink">Aucun retour pour le moment</p>
+                <p className="mt-1 text-sm text-ink/80">C&apos;est plutôt bon signe ! Les messages privés de vos clients apparaîtront ici.</p>
               </div>
             ) : (
-              <div className="space-y-3 max-w-2xl">
+              <div className="max-w-2xl space-y-3">
                 {avisPrives.map((a) => (
-                  <div key={a.id} className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
+                  <div key={a.id} className="rounded-2xl border border-wine/10 bg-card p-5 shadow-sm">
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-wine">{a.note}/5</span>
-                        <span className="text-amber-500 text-sm">{"⭐".repeat(a.note)}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-wine/10 font-display font-semibold text-wine">
+                          {(a.prenom || "?").trim().charAt(0).toUpperCase()}
+                        </span>
+                        <div>
+                          <p className="font-medium text-ink">{a.prenom || "Client"}</p>
+                          <p className="text-sm text-ink/75">
+                            <span className="text-gold">{"★".repeat(a.note)}</span><span className="text-ink/25">{"★".repeat(Math.max(0, 5 - a.note))}</span>
+                            {" · "}{new Date(a.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}
+                          </p>
+                        </div>
                       </div>
                       <button
                         onClick={() => handleSupprimerAvisPrive(a.id)}
-                        className="text-ink/65 hover:text-wine transition-colors"
-                        aria-label="Supprimer"
+                        className="rounded-lg p-2 text-ink/65 transition-colors hover:bg-wine/10 hover:text-wine"
+                        aria-label="Supprimer ce retour"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="size-4" />
                       </button>
                     </div>
                     {a.commentaire && (
-                      <p className="mt-2 text-sm text-ink/85 leading-relaxed">{a.commentaire}</p>
+                      <p className="mt-3 rounded-xl bg-ivory px-4 py-3 text-base leading-relaxed text-ink">{a.commentaire}</p>
                     )}
-                    <div className="mt-3 flex items-center gap-3 text-xs text-ink/65">
-                      {a.prenom && <span>{a.prenom}</span>}
-                      {a.email && <span>{a.email}</span>}
-                      <span>{new Date(a.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</span>
-                    </div>
+                    {a.email && (
+                      <a
+                        href={`mailto:${a.email}?subject=${encodeURIComponent(`Votre passage chez ${restaurant?.nom_restaurant || "nous"}`)}`}
+                        className="mt-3 inline-flex items-center gap-2 rounded-xl border-2 border-wine px-4 py-2 text-sm font-semibold text-wine transition-colors hover:bg-wine hover:text-gold-light"
+                      >
+                        <Mail className="size-4" />
+                        Répondre à {a.prenom || "ce client"}
+                      </a>
+                    )}
                   </div>
                 ))}
               </div>
