@@ -226,7 +226,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   }
 
   return (
-    <div className="min-h-screen bg-ivory flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen overflow-x-clip bg-ivory flex flex-col items-center justify-center p-4">
       <div className="bg-card rounded-2xl shadow-sm border border-wine/10 w-full max-w-md p-8">
 
         {step === "form" && (
@@ -296,7 +296,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
         {step === "wheel" && (
           <div className="text-center">
-            <RoueChance rewards={rewards} rotation={rotation} spinning={spinning} />
+            <RoueChance rewards={rewards} rotation={rotation} spinning={spinning} issue={result ? (result.label === LABEL_PERDU ? "perdu" : "gagne") : null} />
             <p className="mt-7 text-ink/80 text-lg font-medium">
               {spinning ? "La roue tourne... 🎡" : rotation === 0 ? "C'est parti !" : "Et le résultat est..."}
             </p>

@@ -183,3 +183,26 @@
     scroll-behavior: smooth;
   }
 }
+
+/* ---- Roue de la fidelite : ampoules, case gagnante, confettis ---- */
+@keyframes fr-ampoule {
+  0%, 49% { fill: #fff4d1; filter: drop-shadow(0 0 3px #ffe39a); }
+  50%, 100% { fill: #c9962c; filter: none; }
+}
+.fr-ampoule { fill: #c9962c; animation: fr-ampoule 0.6s infinite; }
+.fr-ampoule-vite { animation-duration: 0.22s; }
+@keyframes fr-case-gagnante {
+  0%, 100% { fill: rgba(255, 240, 190, 0.05); }
+  50% { fill: rgba(255, 240, 190, 0.22); }
+}
+.fr-case-gagnante { animation: fr-case-gagnante 0.5s ease-in-out infinite; }
+@keyframes fr-confetti {
+  0% { transform: translate(-50%, -50%) rotate(0deg); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy) + 140px)) rotate(var(--rot)); opacity: 0; }
+}
+.fr-confetti { animation: fr-confetti 1.3s cubic-bezier(0.15, 0.7, 0.4, 1) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .fr-ampoule, .fr-ampoule-vite, .fr-case-gagnante { animation: none; }
+  .fr-confetti { display: none; }
+}

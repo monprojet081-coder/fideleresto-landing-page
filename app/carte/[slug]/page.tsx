@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic'
 import React, { useState } from "react"
 import { UtensilsCrossed } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { CarteFideliteVisuelle } from "@/components/carte-fidelite-visuelle"
 
 type Step = "checking" | "not_found" | "no_access" | "auth" | "compte"
 type Restaurant = {
@@ -273,38 +274,20 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
         )}
 
         {step === "compte" && restaurant && (
-          <div className="grid gap-8 md:grid-cols-[300px_1fr] items-start">
+          <div className="grid gap-8 md:grid-cols-[340px_1fr] items-start">
             {/* Carte de fidélité */}
-            <div className="overflow-hidden rounded-xl border border-gold/30 bg-gold/8">
-              <div className="h-1.5 bg-gradient-to-r from-gold via-wine to-gold" aria-hidden="true" />
-              <div className="p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <UtensilsCrossed className="size-4 text-wine" aria-hidden="true" />
-                  <p className="text-sm font-medium text-wine-dark">Votre carte de fidélité</p>
-                </div>
-
-                <div className="flex justify-center mb-4">
+            <div className="space-y-4">
+              <CarteFideliteVisuelle
+                nomRestaurant={restaurant.nom_restaurant}
+                tampons={tampons}
+                requis={restaurant.fidelite_tampons_requis}
+                recompense={restaurant.fidelite_recompense}
+              />
+              <div className="rounded-2xl border border-gold/30 bg-gold/8 p-4 text-center">
+                <div className="flex justify-center">
                   <canvas id="qr-carte-canvas" className="rounded-lg bg-card p-2 shadow-sm" />
                 </div>
-                <p className="text-xs text-ink/50 text-center mb-4">
-                  Montrez ce QR code au comptoir au moment de payer
-                </p>
-
-                <div className="flex gap-1.5 flex-wrap mb-3">
-                  {Array.from({ length: restaurant.fidelite_tampons_requis }).map((_, i) => (
-                    <span
-                      key={i}
-                      className={`flex size-8 items-center justify-center rounded-full text-sm transition-colors ${
-                        i < tampons ? "bg-wine text-gold-light shadow-sm" : "bg-card border border-wine/15 text-ink/20"
-                      }`}
-                    >
-                      {i < tampons ? "★" : ""}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-xs text-ink/60">
-                  {tampons} / {restaurant.fidelite_tampons_requis} — Récompense : <span className="font-medium">{restaurant.fidelite_recompense}</span>
-                </p>
+                <p className="mt-3 text-xs text-ink/55">Montrez ce QR code au comptoir au moment de payer</p>
               </div>
             </div>
 
