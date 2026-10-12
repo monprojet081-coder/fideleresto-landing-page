@@ -6,11 +6,13 @@ export type Lot = { label: string; probabilite: number; couleur: string }
 // Lot qui signifie "rien gagne" (meme valeur que celle comparee cote serveur)
 export const LABEL_PERDU = "Perdu 😢"
 
-export const REWARDS_PAR_DEFAUT: Lot[] = [
-  { label: "Boisson offerte 🥤", probabilite: 25, couleur: "#6b1e2e" },
-  { label: "Dessert offert 🍰", probabilite: 25, couleur: "#c9962c" },
-  { label: "10% de réduction 🏷️", probabilite: 25, couleur: "#3f6b4f" },
-  { label: LABEL_PERDU, probabilite: 25, couleur: "#a8536a" },
+// Reglages par defaut PRUDENTS : environ 1 client sur 2,5 gagne, avec des lots qui coutent peu
+// (cout = prix d'achat estime). Avant : 75 % de gagnants, ce qui pouvait couter tres cher.
+export const REWARDS_PAR_DEFAUT: (Lot & { cout?: number })[] = [
+  { label: "Café offert ☕", probabilite: 20, couleur: "#6b1e2e", cout: 0.3 },
+  { label: "Boisson offerte 🥤", probabilite: 12, couleur: "#c9962c", cout: 0.6 },
+  { label: "Dessert offert 🍰", probabilite: 8, couleur: "#3f6b4f", cout: 1.2 },
+  { label: LABEL_PERDU, probabilite: 60, couleur: "#a8536a", cout: 0 },
 ]
 
 // Duree du tour de roue (assez longue pour laisser lire les lots) puis pause une fois

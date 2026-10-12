@@ -12,6 +12,8 @@ import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
 import { plans, OPTION_SITE, libelleMaintenanceSite } from "@/lib/pricing"
+import { REWARDS_PAR_DEFAUT } from "@/lib/roue"
+import { type LotEco, estPerdu, tauxGain, unClientSur, coutParPartie, coutMaxParJour, verdict, ajusterPourRentabilite, SEUIL_RENTABLE, SEUIL_RISQUE, CIBLE_AJUSTEMENT } from "@/lib/rentabilite"
 import { statutRecompense, regrouperParClient, normaliserRecherche, DUREE_VALIDITE_JOURS } from "@/lib/recompenses"
 
 export default function DashboardPage() {
@@ -39,12 +41,10 @@ function DashboardContent() {
     setConfirmModal({ message, onConfirm })
   }
   const [activeSection, setActiveSection] = useState("accueil")
-  const [rewards, setRewards] = useState([
-    { label: "Boisson offerte 🥤", probabilite: 25, couleur: "#6b1e2e" },
-    { label: "Dessert offert 🍰", probabilite: 25, couleur: "#c9962c" },
-    { label: "10% de réduction 🏷️", probabilite: 25, couleur: "#3f6b4f" },
-    { label: "Perdu 😢", probabilite: 25, couleur: "#a8536a" },
-  ])
+  const [rewards, setRewards] = useState<LotEco[]>(REWARDS_PAR_DEFAUT.map((r) => ({ ...r, max_par_jour: null })))
+  // Calculateur de rentabilite de la roue
+  const [panierMoyen, setPanierMoyen] = useState(15)
+  const [partiesJour, setPartiesJour] = useState(30)
   const [newLabel, setNewLabel] = useState("")
   const [saving, setSaving] = useState(false)
   const [clients, setClients] = useState<any[]>([])
@@ -138,6 +138,8 @@ function DashboardContent() {
             label: r.label,
             probabilite: r.probabilite,
             couleur: r.couleur,
+            cout: r.cout ?? null,
+            max_par_jour: r.max_par_jour ?? null,
           })))
         }
 
@@ -162,6 +164,8 @@ function DashboardContent() {
           setGoogleAvisUrl(restoData.google_avis_url || "")
           setNomRestaurantInput(restoData.nom_restaurant || "")
           setRoueFrequenceJours(restoData.roue_frequence_jours || 1)
+          if (restoData.panier_moyen) setPanierMoyen(Number(restoData.panier_moyen))
+          if (restoData.parties_estimees_jour) setPartiesJour(Number(restoData.parties_estimees_jour))
           setRelanceActive(restoData.relance_active || false)
           setRelanceJours(restoData.relance_jours_inactivite || 10)
           setRelancePourcentage(restoData.relance_pourcentage || 10)
@@ -421,9 +425,22 @@ function DashboardContent() {
       setSaving(false)
       return
     }
-    const { error: insertError } = await supabase
-      .from("roue_config")
-      .insert(rewards.map(r => ({ ...r, restaurant_id: slug })))
+    // On enregistre aussi le cout et le plafond par jour de chaque lot ; si ces colonnes
+    // n'existent pas encore en base, on reessaie sans (pour ne jamais perdre la roue).
+    const lignes = rewards.map(r => ({
+      label: r.label,
+      probabilite: r.probabilite,
+      couleur: r.couleur,
+      cout: r.cout === null || r.cout === undefined || (r.cout as any) === "" ? null : Number(r.cout),
+      max_par_jour: r.max_par_jour ? Number(r.max_par_jour) : null,
+      restaurant_id: slug,
+    }))
+    let { error: insertError } = await supabase.from("roue_config").insert(lignes)
+    if (insertError && /cout|max_par_jour|column/i.test(insertError.message)) {
+      ;({ error: insertError } = await supabase
+        .from("roue_config")
+        .insert(lignes.map(({ cout, max_par_jour, ...reste }) => reste)))
+    }
     if (insertError) {
       console.error("Erreur insert:", insertError)
       afficherToast("Erreur lors de la sauvegarde : " + insertError.message, "erreur")
@@ -439,6 +456,12 @@ function DashboardContent() {
     } else {
       setRestaurant({ ...restaurant, roue_frequence_jours: roueFrequenceJours })
     }
+    // Panier moyen et parties/jour du calculateur (non bloquant si les colonnes n'existent pas)
+    await supabase
+      .from("restaurants")
+      .update({ panier_moyen: panierMoyen, parties_estimees_jour: partiesJour })
+      .eq("slug", slug)
+      .then(({ error }) => { if (error) console.warn("Calculateur non sauvegarde :", error.message) })
     setSaving(false)
     afficherToast("Roue sauvegardée !")
   }
@@ -1488,7 +1511,7 @@ function DashboardContent() {
             <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-2xl">
               <div className="space-y-4 mb-6">
                 {rewards.map((reward, index) => (
-                  <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 bg-secondary/40 rounded-xl">
+                  <div key={index} className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4 p-4 bg-secondary/40 rounded-xl">
                     <div className="flex items-center gap-3">
                       <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: reward.couleur }} />
                       <input
@@ -1551,6 +1574,46 @@ function DashboardContent() {
                         </button>
                       )}
                     </div>
+                    {!estPerdu(reward) && (
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:basis-full text-xs text-ink/65">
+                        <label className="flex items-center gap-1.5">
+                          Vous coûte
+                          <input
+                            type="number"
+                            min={0}
+                            step="0.1"
+                            inputMode="decimal"
+                            placeholder="0,50"
+                            value={reward.cout ?? ""}
+                            onChange={e => {
+                              const updated = [...rewards]
+                              updated[index] = { ...updated[index], cout: e.target.value === "" ? null : parseFloat(e.target.value) }
+                              setRewards(updated)
+                            }}
+                            className="w-16 border border-wine/15 bg-card rounded-md px-2 py-1 text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                          />
+                          €
+                        </label>
+                        <label className="flex items-center gap-1.5">
+                          Maximum
+                          <input
+                            type="number"
+                            min={0}
+                            step="1"
+                            inputMode="numeric"
+                            placeholder="illimité"
+                            value={reward.max_par_jour ?? ""}
+                            onChange={e => {
+                              const updated = [...rewards]
+                              updated[index] = { ...updated[index], max_par_jour: e.target.value === "" ? null : parseInt(e.target.value) }
+                              setRewards(updated)
+                            }}
+                            className="w-20 border border-wine/15 bg-card rounded-md px-2 py-1 text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                          />
+                          par jour
+                        </label>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1566,7 +1629,7 @@ function DashboardContent() {
                 <button
                   onClick={() => {
                     if (!newLabel.trim()) return
-                    setRewards([...rewards, { label: newLabel, probabilite: 10, couleur: "#c9962c" }])
+                    setRewards([...rewards, { label: newLabel, probabilite: 5, couleur: "#c9962c", cout: null, max_par_jour: null }])
                     setNewLabel("")
                   }}
                   className="bg-secondary hover:bg-secondary/70 text-ink font-medium px-4 py-2 rounded-lg text-sm"
@@ -1595,6 +1658,75 @@ function DashboardContent() {
                   Utile si vous préférez limiter le nombre de récompenses offertes chaque jour.
                 </p>
               </div>
+
+              {/* Calculateur de rentabilite */}
+              {(() => {
+                const v = verdict(rewards, panierMoyen)
+                const cout = coutParPartie(rewards)
+                const parJour = cout * partiesJour
+                const maxJour = coutMaxParJour(rewards)
+                const couleurs = {
+                  rentable: "border-sage/40 bg-sage/10 text-sage",
+                  surveiller: "border-gold/50 bg-gold/10 text-[#8a6213]",
+                  risque: "border-wine/40 bg-wine/8 text-wine",
+                  inconnu: "border-wine/10 bg-secondary/40 text-ink/60",
+                }[v.niveau]
+                const titre = {
+                  rentable: "✓ Roue rentable",
+                  surveiller: "⚠ À surveiller",
+                  risque: "✕ Roue trop généreuse : vous risquez de perdre de l'argent",
+                  inconnu: "Indiquez ce que coûte chaque lot pour voir la rentabilité",
+                }[v.niveau]
+                const fmt = (n: number) => n.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: n < 10 ? 2 : 0 })
+                return (
+                  <div className="mb-6 rounded-xl border border-wine/10 p-4">
+                    <p className="text-sm font-semibold text-ink">Rentabilité de ma roue</p>
+                    <p className="mt-1 text-xs text-ink/55">
+                      « Vous coûte » = ce que le lot vous coûte vraiment (prix d&apos;achat), pas son prix de vente. Une boisson vendue 2,50 € vous coûte souvent autour de 0,50 €.
+                    </p>
+                    <div className="mt-3 grid grid-cols-2 gap-3">
+                      <label className="text-xs text-ink/65">
+                        Panier moyen d&apos;un client
+                        <div className="mt-1 flex items-center gap-1.5">
+                          <input type="number" min={1} step="0.5" value={panierMoyen} onChange={e => setPanierMoyen(parseFloat(e.target.value) || 0)} className="w-full border border-wine/15 bg-card rounded-md px-2 py-1.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold" />€
+                        </div>
+                      </label>
+                      <label className="text-xs text-ink/65">
+                        Parties estimées par jour
+                        <input type="number" min={0} step="1" value={partiesJour} onChange={e => setPartiesJour(parseInt(e.target.value) || 0)} className="mt-1 w-full border border-wine/15 bg-card rounded-md px-2 py-1.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </label>
+                    </div>
+                    <div className={`mt-4 rounded-lg border p-3 ${couleurs}`}>
+                      <p className="text-sm font-semibold">{titre}</p>
+                      <ul className="mt-2 space-y-1 text-sm text-ink/80">
+                        <li>🎯 <strong>{unClientSur(rewards)}</strong> gagne quelque chose ({tauxGain(rewards)} %)</li>
+                        {v.niveau !== "inconnu" && (
+                          <>
+                            <li>💶 Coût moyen par partie : <strong>{fmt(cout)}</strong>, soit <strong>{v.pourcent.toFixed(1).replace(".", ",")} %</strong> du panier moyen (conseillé : moins de {SEUIL_RENTABLE} %)</li>
+                            <li>📅 Pour {partiesJour} parties par jour : environ <strong>{fmt(parJour)} / jour</strong>, soit {fmt(parJour * 30)} / mois</li>
+                            {maxJour !== null && <li>🛡️ Grâce à vos maximums par jour, la roue ne vous coûtera jamais plus de <strong>{fmt(maxJour)} / jour</strong></li>}
+                          </>
+                        )}
+                      </ul>
+                      {(v.niveau === "risque" || v.niveau === "surveiller") && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRewards(ajusterPourRentabilite(rewards, panierMoyen))
+                            afficherToast(`Chances ajustées pour viser ${CIBLE_AJUSTEMENT} % du panier moyen. Pensez à sauvegarder.`)
+                          }}
+                          className="mt-3 w-full rounded-lg bg-wine px-4 py-2 text-sm font-medium text-gold-light hover:bg-wine-dark"
+                        >
+                          Rendre ma roue rentable automatiquement
+                        </button>
+                      )}
+                    </div>
+                    <p className="mt-2 text-[11px] text-ink/45">
+                      Au-delà de {SEUIL_RISQUE} % du panier moyen, la roue devient risquée. Astuce : un « maximum par jour » sur les lots les plus chers vous protège même les jours de grosse affluence.
+                    </p>
+                  </div>
+                )
+              })()}
 
               <div className="flex items-center justify-between p-3 bg-secondary/40 rounded-lg mb-6">
                 <span className="text-sm text-ink/65">Total des probabilités :</span>
