@@ -18,6 +18,18 @@ import { RoueChance, LegendeLots } from "@/components/roue-chance"
 import { type LotEco, estPerdu, tauxGain, unClientSur, coutParPartie, coutMaxParJour, verdict, ajusterPourRentabilite, SEUIL_RENTABLE, SEUIL_RISQUE, CIBLE_AJUSTEMENT } from "@/lib/rentabilite"
 import { statutRecompense, regrouperParClient, normaliserRecherche, DUREE_VALIDITE_JOURS } from "@/lib/recompenses"
 
+function EtapeNumerotee({ n, titre, children }: { n: number; titre: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-wine/10 bg-card p-5 shadow-sm sm:p-6">
+      <div className="mb-4 flex items-center gap-3">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-wine font-display text-sm font-semibold text-gold-light">{n}</span>
+        <h2 className="font-display text-lg font-semibold text-ink">{titre}</h2>
+      </div>
+      {children}
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   return (
     <Suspense fallback={null}>
@@ -43,6 +55,7 @@ function DashboardContent() {
     setConfirmModal({ message, onConfirm })
   }
   const [activeSection, setActiveSection] = useState("accueil")
+  const [lienCopie, setLienCopie] = useState(false)
   const [rewards, setRewards] = useState<LotEco[]>(REWARDS_PAR_DEFAUT.map((r) => ({ ...r, max_par_jour: null })))
   // Calculateur de rentabilite de la roue
   const [panierMoyen, setPanierMoyen] = useState(15)
@@ -93,7 +106,7 @@ function DashboardContent() {
   // Flyer
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [logoUploadError, setLogoUploadError] = useState("")
-  const [selectedModele, setSelectedModele] = useState<ModeleFlyer | null>(null)
+  const [selectedModele, setSelectedModele] = useState<ModeleFlyer | null>(MODELES_FLYER[0] ?? null)
   const [flyerAffichage, setFlyerAffichage] = useState<"nom" | "logo">("nom")
   const [generatingFlyer, setGeneratingFlyer] = useState(false)
 
@@ -983,8 +996,7 @@ function DashboardContent() {
           titre: "Ma roue et mes outils",
           items: [
             { id: "roue", label: "Ma roue", icon: Sliders },
-            { id: "qrcode", label: "Mon QR code", icon: QrCode },
-            { id: "flyer", label: "Mes flyers", icon: FileText },
+            { id: "qrcode", label: "QR code et flyers", icon: QrCode },
             { id: "fidelite", label: "Carte de fidélité", icon: Award, verrou: !estComplet },
             { id: "menu", label: "Menu digital", icon: BookOpen, verrou: !estComplet },
             { id: "relance", label: "Relances email", icon: Mail, verrou: !estComplet },
@@ -1158,7 +1170,7 @@ function DashboardContent() {
               const etapes = [
                 { cle: "roue", titre: "Vérifiez votre roue", texte: "Lots, chances de gagner et rentabilité : tout est déjà réglé, jetez un œil.", fait: !!etapesFaites.roue, cta: "Voir ma roue", vers: "roue" },
                 { cle: "google", titre: "Ajoutez votre lien d'avis Google", texte: "Pour que vos clients puissent vous laisser un avis en un clic.", fait: !!restaurant?.google_avis_url, cta: "Ajouter le lien", vers: "parametres" },
-                { cle: "qr", titre: "Imprimez votre QR code ou un flyer", texte: "Posez-le sur vos tables, le comptoir ou l'addition.", fait: !!etapesFaites.qr || (restaurant?.scan_qr || 0) > 0, cta: "Mon QR code", vers: "qrcode" },
+                { cle: "qr", titre: "Imprimez votre QR code ou un flyer", texte: "Posez-le sur vos tables, le comptoir ou l'addition.", fait: !!etapesFaites.qr || (restaurant?.scan_qr || 0) > 0, cta: "Imprimer", vers: "qrcode" },
                 { cle: "client", titre: "Votre premier client joue", texte: "Dès qu'un client scanne et tourne la roue, il apparaît ici.", fait: clients.length > 0, cta: null, vers: null },
               ]
               const faites = etapes.filter((e) => e.fait).length
@@ -1356,131 +1368,143 @@ function DashboardContent() {
           </div>
         )}
 
-        {activeSection === "qrcode" && (
+        {activeSection === "qrcode" && (() => {
+          const urlRoue = `${(process.env.NEXT_PUBLIC_SITE_URL || "https://fideleresto-landing-page-9dhz.vercel.app").replace(/\/$/, "")}/r/${user?.id?.slice(0, 8)}`
+          return (
           <div>
             <div className="mb-8">
-              <h1 className="text-2xl font-display font-semibold text-ink">Mon QR code</h1>
-              <p className="text-ink/70 mt-1">Imprimez le et posez le sur vos tables, additions ou vitrines</p>
-            </div>
-            <div className="bg-card rounded-xl p-8 border border-wine/10 shadow-sm max-w-md">
-              <div className="flex justify-center mb-6 p-4 rounded-xl border border-dashed border-wine/20 bg-ivory">
-                <canvas id="qr-canvas" className="rounded-lg" />
-              </div>
-              <p className="text-center text-sm text-ink/70 mb-6">
-                URL : <span className="text-wine font-medium">{(process.env.NEXT_PUBLIC_SITE_URL || "fideleresto-landing-page-9dhz.vercel.app").replace(/^https?:\/\//, "")}/r/{user?.id?.slice(0, 8)}</span>
+              <h1 className="text-2xl font-display font-semibold text-ink">QR code et flyers</h1>
+              <p className="mt-1 max-w-2xl text-ink/80">
+                Vos clients scannent ce QR code pour tourner la roue. Le plus simple : téléchargez un flyer prêt à poser
+                sur vos tables, il contient déjà votre QR code.
               </p>
-              <button
-                onClick={() => {
-                  const canvas = document.getElementById("qr-canvas") as HTMLCanvasElement
-                  if (canvas) {
-                    const link = document.createElement("a")
-                    marquerEtape("qr")
-                    link.download = "qrcode-fideleresto.png"
-                    link.href = canvas.toDataURL()
-                    link.click()
-                  }
-                }}
-                className="w-full bg-wine hover:bg-wine-dark text-gold-light font-medium py-2.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Télécharger en PNG
-              </button>
-            </div>
-          </div>
-        )}
-
-        {activeSection === "flyer" && (
-          <div>
-            <div className="mb-8">
-              <h1 className="text-2xl font-display font-semibold text-ink">Mon flyer</h1>
-              <p className="text-ink/70 mt-1">Choisissez un modèle, votre nom et votre QR code s'ajoutent automatiquement</p>
             </div>
 
-            <div className="max-w-2xl">
-              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm mb-6">
-                <p className="text-sm font-medium text-ink mb-3">Votre logo (optionnel)</p>
-
-                {restaurant?.logo_url && (
-                  <div className="flex items-center gap-3 rounded-lg bg-secondary/40 px-4 py-3 mb-4">
-                    <img src={restaurant.logo_url} alt="Logo" className="w-10 h-10 object-contain rounded" />
-                    <p className="text-sm text-ink/80">Logo actuel</p>
+            <div className="grid gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
+              {/* Flyer : le parcours recommande */}
+              <div className="space-y-5">
+                <EtapeNumerotee n={1} titre="Choisissez un modèle de flyer">
+                  <div className="grid grid-cols-3 gap-3">
+                    {MODELES_FLYER.map((m) => (
+                      <button
+                        key={m.id}
+                        onClick={() => setSelectedModele(m)}
+                        className={`relative overflow-hidden rounded-xl border-2 text-left transition-all ${
+                          selectedModele?.id === m.id ? "border-wine shadow-md shadow-wine/15" : "border-transparent hover:border-wine/30"
+                        }`}
+                      >
+                        <img src={m.fichierThumb} alt={m.nom} className="aspect-[3/4] w-full object-cover" />
+                        <p className={`py-2 text-center text-xs font-medium ${selectedModele?.id === m.id ? "bg-wine text-gold-light" : "bg-secondary/40 text-ink/85"}`}>{m.nom}</p>
+                        {selectedModele?.id === m.id && (
+                          <span className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-wine text-gold-light shadow">
+                            <Check className="size-3.5" />
+                          </span>
+                        )}
+                      </button>
+                    ))}
                   </div>
-                )}
+                </EtapeNumerotee>
 
-                <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-wine/20 rounded-xl py-6 cursor-pointer hover:border-gold/50 transition-colors">
-                  <ImageIcon className="size-6 text-wine/40" />
-                  <p className="text-sm text-ink/80">
-                    {uploadingLogo ? "Envoi en cours..." : "Cliquez pour choisir votre logo"}
-                  </p>
-                  <p className="text-xs text-ink/65">JPG, PNG ou WEBP</p>
-                  <input
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.webp"
-                    className="hidden"
-                    disabled={uploadingLogo}
-                    onChange={handleLogoUpload}
-                  />
-                </label>
-                {logoUploadError && <p className="text-sm text-wine mt-3">{logoUploadError}</p>}
-              </div>
-
-              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm mb-6">
-                <p className="text-sm font-medium text-ink mb-3">Afficher sur le flyer</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setFlyerAffichage("nom")}
-                    className={`rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
-                      flyerAffichage === "nom" ? "border-wine bg-wine/5 text-wine" : "border-wine/15 text-ink/75 hover:border-wine/30"
-                    }`}
-                  >
-                    Nom du restaurant
-                  </button>
-                  <button
-                    onClick={() => restaurant?.logo_url && setFlyerAffichage("logo")}
-                    disabled={!restaurant?.logo_url}
-                    className={`rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
-                      flyerAffichage === "logo" ? "border-wine bg-wine/5 text-wine" : "border-wine/15 text-ink/75 hover:border-wine/30"
-                    } disabled:opacity-40 disabled:cursor-not-allowed`}
-                  >
-                    Mon logo {!restaurant?.logo_url && "(ajoutez-en un ci-dessus)"}
-                  </button>
-                </div>
-                <p className="mt-2 text-xs text-ink/65">Un seul des deux s'affiche à la fois, en grand, pour un rendu plus propre.</p>
-              </div>
-
-              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
-                <p className="text-sm font-medium text-ink mb-4">Choisissez votre modèle</p>
-
-                <div className="grid grid-cols-3 gap-3 mb-6">
-                  {MODELES_FLYER.map((m) => (
+                <EtapeNumerotee n={2} titre="Votre nom ou votre logo">
+                  <div className="grid grid-cols-2 gap-3">
                     <button
-                      key={m.id}
-                      onClick={() => setSelectedModele(m)}
-                      className={`rounded-lg overflow-hidden border-2 transition-colors text-left ${
-                        selectedModele?.id === m.id ? "border-wine" : "border-transparent hover:border-wine/30"
+                      onClick={() => setFlyerAffichage("nom")}
+                      className={`rounded-xl border-2 px-4 py-3 text-sm font-medium transition-colors ${
+                        flyerAffichage === "nom" ? "border-wine bg-wine/5 text-wine" : "border-wine/15 text-ink/80 hover:border-wine/30"
                       }`}
                     >
-                      <img src={m.fichierThumb} alt={m.nom} className="w-full aspect-[3/4] object-cover" />
-                      <p className="text-xs text-center py-1.5 bg-secondary/40 text-ink/80">{m.nom}</p>
+                      Nom du restaurant
+                      <span className="mt-0.5 block truncate text-xs font-normal text-ink/70">{restaurant?.nom_restaurant || "—"}</span>
                     </button>
-                  ))}
+                    <button
+                      onClick={() => restaurant?.logo_url && setFlyerAffichage("logo")}
+                      disabled={!restaurant?.logo_url}
+                      className={`rounded-xl border-2 px-4 py-3 text-sm font-medium transition-colors ${
+                        flyerAffichage === "logo" ? "border-wine bg-wine/5 text-wine" : "border-wine/15 text-ink/80 hover:border-wine/30"
+                      } disabled:cursor-not-allowed disabled:opacity-50`}
+                    >
+                      Mon logo
+                      <span className="mt-0.5 block text-xs font-normal text-ink/70">{restaurant?.logo_url ? "Ajouté" : "Aucun logo pour l'instant"}</span>
+                    </button>
+                  </div>
+
+                  <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-wine/20 px-4 py-3 transition-colors hover:border-gold/60">
+                    {restaurant?.logo_url ? (
+                      <img src={restaurant.logo_url} alt="Logo" className="size-10 rounded object-contain" />
+                    ) : (
+                      <ImageIcon className="size-6 shrink-0 text-wine/60" />
+                    )}
+                    <span className="text-sm text-ink/85">
+                      {uploadingLogo ? "Envoi en cours..." : restaurant?.logo_url ? "Changer mon logo" : "Ajouter mon logo (facultatif)"}
+                      <span className="block text-xs text-ink/65">JPG, PNG ou WEBP</span>
+                    </span>
+                    <input type="file" accept=".jpg,.jpeg,.png,.webp" className="hidden" disabled={uploadingLogo} onChange={handleLogoUpload} />
+                  </label>
+                  {logoUploadError && <p className="mt-3 text-sm text-wine">{logoUploadError}</p>}
+                </EtapeNumerotee>
+
+                <EtapeNumerotee n={3} titre="Téléchargez et imprimez">
+                  <button
+                    onClick={generateFlyer}
+                    disabled={generatingFlyer || !selectedModele}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-wine py-3.5 text-base font-semibold text-gold-light shadow-lg shadow-wine/20 transition-colors hover:bg-wine-dark disabled:opacity-60"
+                  >
+                    <Download className="size-5" />
+                    {generatingFlyer ? "Création du flyer..." : !selectedModele ? "Choisissez d'abord un modèle" : "Télécharger mon flyer (PDF)"}
+                  </button>
+                  <p className="mt-3 text-center text-sm text-ink/75">
+                    Format A5, à imprimer chez vous ou chez un imprimeur. Votre QR code est déjà dessus.
+                  </p>
+                </EtapeNumerotee>
+              </div>
+
+              {/* QR code seul + conseils */}
+              <div className="space-y-5 lg:sticky lg:top-6">
+                <div className="rounded-2xl border border-wine/10 bg-card p-5 shadow-sm">
+                  <h2 className="font-display text-lg font-semibold text-ink">Le QR code seul</h2>
+                  <p className="mt-1 text-sm text-ink/75">Pour l'ajouter vous-même sur un menu, une addition ou une vitrine.</p>
+                  <div className="my-4 flex justify-center rounded-xl border border-dashed border-wine/20 bg-ivory p-4">
+                    <canvas id="qr-canvas" className="rounded-lg" />
+                  </div>
+                  <button
+                    onClick={() => {
+                      const canvas = document.getElementById("qr-canvas") as HTMLCanvasElement
+                      if (canvas) {
+                        const link = document.createElement("a")
+                        marquerEtape("qr")
+                        link.download = "qrcode-fideleresto.png"
+                        link.href = canvas.toDataURL()
+                        link.click()
+                      }
+                    }}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-wine py-2.5 text-sm font-semibold text-wine transition-colors hover:bg-wine hover:text-gold-light"
+                  >
+                    <Download className="size-4" />
+                    Télécharger le QR code (PNG)
+                  </button>
+                  <button
+                    onClick={() => { navigator.clipboard?.writeText(urlRoue); setLienCopie(true); setTimeout(() => setLienCopie(false), 2000) }}
+                    className="mt-2 w-full rounded-xl py-2 text-sm text-ink/80 underline decoration-wine/30 underline-offset-4 hover:text-wine"
+                  >
+                    {lienCopie ? "Lien copié ✓" : "Copier le lien de ma roue"}
+                  </button>
                 </div>
 
-                <button
-                  onClick={generateFlyer}
-                  disabled={generatingFlyer || !selectedModele}
-                  className="w-full bg-wine hover:bg-wine-dark text-gold-light font-medium py-2.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 disabled:opacity-60"
-                >
-                  <Download className="w-4 h-4" />
-                  {generatingFlyer ? "Génération en cours..." : "Télécharger le flyer (PDF)"}
-                </button>
-                <p className="text-xs text-ink/65 mt-3 text-center">
-                  Le flyer reprend automatiquement le nom de votre restaurant, votre QR code et, si ajouté, votre logo.
-                </p>
+                <div className="rounded-2xl border border-gold/40 bg-gold/10 p-5">
+                  <p className="font-display font-semibold text-ink">💡 Où le poser ?</p>
+                  <ul className="mt-2 space-y-1.5 text-sm text-ink/85">
+                    <li>• Sur chaque table, bien en vue</li>
+                    <li>• Au comptoir, à côté de la caisse</li>
+                    <li>• Glissé avec l'addition ou le ticket</li>
+                    <li>• Sur les sacs et boîtes à emporter</li>
+                  </ul>
+                  <p className="mt-3 text-sm text-ink/80">Et dites-le à voix haute : « Scannez, vous pouvez gagner un cadeau ! » Ça double les scans.</p>
+                </div>
               </div>
             </div>
           </div>
-        )}
+          )
+        })()}
 
         {activeSection === "clients" && (() => {
           const clientsRegroupes = regrouperParClient(clients)
