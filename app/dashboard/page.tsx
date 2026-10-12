@@ -104,6 +104,7 @@ function DashboardContent() {
   const [savingFidelite, setSavingFidelite] = useState(false)
   const [rechercheEmail, setRechercheEmail] = useState("")
   const [clientTrouve, setClientTrouve] = useState<any>(null)
+  const [filtreClients, setFiltreClients] = useState<"tous" | "a_utiliser" | "semaine" | "habitues">("tous")
   const [roueFrequenceJours, setRoueFrequenceJours] = useState(1)
   const [clientsFidelite, setClientsFidelite] = useState<{ client_id: string; prenom: string | null; tampons: number; updated_at: string }[]>([])
   const [chargementClientsFidelite, setChargementClientsFidelite] = useState(false)
@@ -1484,10 +1485,20 @@ function DashboardContent() {
         {activeSection === "clients" && (() => {
           const clientsRegroupes = regrouperParClient(clients)
           const terme = normaliserRecherche(rechercheClient)
-          const clientsFiltres = terme
-            ? clientsRegroupes.filter(c =>
-                normaliserRecherche(c.prenom).includes(terme) || normaliserRecherche(c.email).includes(terme))
-            : clientsRegroupes
+          const ilYaUneSemaine = Date.now() - 7 * 86400000
+          const filtres = {
+            tous: { label: "Tous", test: () => true },
+            a_utiliser: { label: "Récompense à utiliser", test: (c: typeof clientsRegroupes[number]) => c.aUtiliser > 0 },
+            semaine: { label: "Venus cette semaine", test: (c: typeof clientsRegroupes[number]) => new Date(c.derniereVisite).getTime() >= ilYaUneSemaine },
+            habitues: { label: "Habitués (3 visites et +)", test: (c: typeof clientsRegroupes[number]) => c.parties.length >= 3 },
+          } as const
+          const clientsFiltres = clientsRegroupes
+            .filter(filtres[filtreClients].test)
+            .filter(c => !terme || normaliserRecherche(c.prenom).includes(terme) || normaliserRecherche(c.email).includes(terme))
+          const depuis = (d: string) => {
+            const j = Math.floor((Date.now() - new Date(d).getTime()) / 86400000)
+            return j <= 0 ? "aujourd'hui" : j === 1 ? "hier" : `il y a ${j} jours`
+          }
           const clientDetail = clientSelectionne
             ? clientsRegroupes.find(c => c.email === clientSelectionne) || null
             : null
@@ -1511,14 +1522,27 @@ function DashboardContent() {
                   Retour aux clients
                 </button>
 
-                <div className="mb-6">
-                  <h1 className="text-2xl font-display font-semibold text-ink">{clientDetail.prenom}</h1>
-                  <p className="text-ink/70 mt-1">{clientDetail.email}</p>
-                  <p className="text-sm text-ink/70 mt-3">
-                    {clientDetail.parties.length} participation{clientDetail.parties.length > 1 ? "s" : ""} ·{" "}
-                    {gagnees.length} gain{gagnees.length > 1 ? "s" : ""} ·{" "}
-                    {utilisees.length} utilisé{utilisees.length > 1 ? "s" : ""}
-                  </p>
+                <div className="mb-6 flex items-center gap-4">
+                  <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-wine font-display text-2xl font-semibold text-gold-light">
+                    {(clientDetail.prenom || "?").trim().charAt(0).toUpperCase()}
+                  </span>
+                  <div className="min-w-0">
+                    <h1 className="text-2xl font-display font-semibold text-ink">{clientDetail.prenom}</h1>
+                    <p className="text-ink/75 break-all">{clientDetail.email}</p>
+                  </div>
+                </div>
+                <div className="mb-6 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
+                  {[
+                    { n: clientDetail.parties.length, l: clientDetail.parties.length > 1 ? "visites" : "visite" },
+                    { n: gagnees.length, l: gagnees.length > 1 ? "gains" : "gain" },
+                    { n: utilisees.length, l: "utilisés" },
+                    { n: clientDetail.aUtiliser, l: "à utiliser", fort: clientDetail.aUtiliser > 0 },
+                  ].map((x) => (
+                    <div key={x.l} className={`rounded-xl border px-4 py-3 ${x.fort ? "border-gold bg-gold/15" : "border-wine/10 bg-card"}`}>
+                      <p className="font-display text-2xl font-semibold text-ink">{x.n}</p>
+                      <p className="text-xs text-ink/70">{x.l}</p>
+                    </div>
+                  ))}
                 </div>
 
                 {messageHistorique && (
@@ -1585,21 +1609,50 @@ function DashboardContent() {
           return (
             <div>
               <div className="mb-6">
-                <h1 className="text-2xl font-display font-semibold text-ink">Mes clients</h1>
-                <p className="text-ink/70 mt-1">Clients collectés via votre QR code. Cliquez sur un client pour voir ses gains.</p>
+                <h1 className="text-2xl sm:text-3xl font-display font-semibold text-ink">Mes clients</h1>
+                <p className="text-ink/75 mt-1">Tous les clients qui ont joué à votre roue. Touchez un client pour voir ses gains et valider une récompense.</p>
               </div>
 
               {clients.length > 0 && (
-                <div className="relative mb-4 max-w-md">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-ink/65" aria-hidden="true" />
-                  <input
-                    type="search"
-                    value={rechercheClient}
-                    onChange={e => setRechercheClient(e.target.value)}
-                    placeholder="Rechercher par prénom ou email"
-                    className="w-full rounded-lg border border-wine/15 bg-card py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
-                  />
-                </div>
+                <>
+                  <div className="mb-5 grid grid-cols-3 gap-3 max-w-2xl">
+                    {[
+                      { n: clientsRegroupes.length, l: "clients" },
+                      { n: clientsRegroupes.filter(filtres.a_utiliser.test).length, l: "récompenses à utiliser" },
+                      { n: clientsRegroupes.filter(filtres.semaine.test).length, l: "venus cette semaine" },
+                    ].map((x) => (
+                      <div key={x.l} className="rounded-xl border border-wine/10 bg-card px-4 py-3 shadow-sm">
+                        <p className="font-display text-2xl font-semibold text-ink">{x.n}</p>
+                        <p className="text-xs text-ink/70">{x.l}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <div className="relative w-full sm:max-w-xs">
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-ink/65" aria-hidden="true" />
+                      <input
+                        type="search"
+                        value={rechercheClient}
+                        onChange={e => setRechercheClient(e.target.value)}
+                        placeholder="Prénom ou email"
+                        className="w-full rounded-lg border border-wine/15 bg-card py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(Object.keys(filtres) as (keyof typeof filtres)[]).map((k) => (
+                        <button
+                          key={k}
+                          onClick={() => setFiltreClients(k)}
+                          className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                            filtreClients === k ? "bg-wine text-gold-light" : "border border-wine/15 bg-card text-ink/80 hover:border-wine/40"
+                          }`}
+                        >
+                          {filtres[k].label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
               )}
 
               <div className="bg-card rounded-xl border border-wine/10 shadow-sm">
@@ -1624,28 +1677,32 @@ function DashboardContent() {
                     </button>
                   </div>
                 ) : clientsFiltres.length === 0 ? (
-                  <p className="p-8 text-center text-sm text-ink/70">Aucun client ne correspond à « {rechercheClient} ».</p>
+                  <p className="p-8 text-center text-sm text-ink/70">Aucun client ne correspond{rechercheClient ? <> à « {rechercheClient} »</> : " à ce filtre"}.</p>
                 ) : (
                   <div className="divide-y divide-wine/10">
                     {clientsFiltres.map((c) => (
                       <button
                         key={c.email}
                         onClick={() => setClientSelectionne(c.email)}
-                        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left hover:bg-secondary/30 transition-colors"
+                        className="flex w-full items-center justify-between gap-4 px-4 sm:px-5 py-3.5 text-left hover:bg-secondary/30 transition-colors"
                       >
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-ink truncate">{c.prenom}</p>
-                          <p className="text-xs text-ink/70 truncate">{c.email}</p>
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-wine/10 font-display text-base font-semibold text-wine">
+                            {(c.prenom || c.email || "?").trim().charAt(0).toUpperCase()}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-ink truncate">{c.prenom}</p>
+                            <p className="text-xs text-ink/70 truncate">
+                              {c.parties.length} visite{c.parties.length > 1 ? "s" : ""} · dernière {depuis(c.derniereVisite)}
+                            </p>
+                          </div>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
                           {c.aUtiliser > 0 && (
-                            <span className="rounded-full bg-gold/20 px-2.5 py-1 text-xs font-medium text-wine-dark">
-                              {c.aUtiliser} à utiliser
+                            <span className="rounded-full bg-gold/25 px-2.5 py-1 text-xs font-semibold text-wine-dark">
+                              🎁 {c.aUtiliser} à utiliser
                             </span>
                           )}
-                          <span className="text-xs text-ink/65 hidden sm:inline">
-                            {c.parties.length} participation{c.parties.length > 1 ? "s" : ""}
-                          </span>
                           <ArrowRight className="w-4 h-4 text-ink/30" aria-hidden="true" />
                         </div>
                       </button>
