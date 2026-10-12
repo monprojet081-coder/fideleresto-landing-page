@@ -16,6 +16,7 @@ import { REWARDS_PAR_DEFAUT, MODELES_ROUE, lotsPourTypeCuisine, modelePourTypeCu
 import { insererLotsRoue } from "@/lib/roue-config"
 import { RoueChance, LegendeLots } from "@/components/roue-chance"
 import { CarteFideliteVisuelle } from "@/components/carte-fidelite-visuelle"
+import { VideoYoutube } from "@/components/video-youtube"
 import { type LotEco, estPerdu, tauxGain, unClientSur, coutParPartie, coutMaxParJour, verdict, ajusterPourRentabilite, SEUIL_RENTABLE, SEUIL_RISQUE, CIBLE_AJUSTEMENT } from "@/lib/rentabilite"
 import { statutRecompense, regrouperParClient, normaliserRecherche, DUREE_VALIDITE_JOURS } from "@/lib/recompenses"
 
@@ -1246,6 +1247,18 @@ function DashboardContent() {
                   </button>
                 )
               })}
+            </div>
+
+            {/* Tutoriel video */}
+            <div className="mb-8 grid items-center gap-5 rounded-2xl border border-wine/10 bg-card p-4 shadow-sm sm:p-5 md:grid-cols-[minmax(0,1.15fr)_1fr]">
+              <VideoYoutube id="PYdBxJs02oQ" poster="/assets/video-tutoriel-poster.webp" titre="Tutoriel FidèleResto : prise en main" duree="1:44" sizes="(min-width: 768px) 520px, 100vw" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-wine">Tutoriel vidéo</p>
+                <h2 className="mt-1 font-display text-xl font-semibold text-ink">Prise en main en 2 minutes</h2>
+                <p className="mt-2 text-sm leading-relaxed text-ink/80">
+                  Régler votre roue, ajouter votre lien Google, imprimer votre QR code et valider une récompense au comptoir : tout est montré pas à pas.
+                </p>
+              </div>
             </div>
 
             <h2 className="mb-3 font-display text-lg font-semibold text-ink">Vos chiffres</h2>
