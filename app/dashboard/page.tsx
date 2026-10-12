@@ -2679,112 +2679,230 @@ function DashboardContent() {
           </div>
         )}
 
-        {activeSection === "relance" && estComplet && (
+        {activeSection === "relance" && estComplet && (() => {
+          // Meme logique que le cron : dernier passage par email
+          const derniers = new Map<string, any>()
+          for (const c of clients) if (c.email && !derniers.has(c.email)) derniers.set(c.email, c)
+          const seuil = Date.now() - (relanceJours || 10) * 86400000
+          const liste = [...derniers.values()]
+          const abonnes = liste.filter((c) => c.consentement_marketing).length
+          const aRelancer = liste.filter((c) => c.consentement_marketing && !c.relance_envoyee && new Date(c.created_at).getTime() <= seuil).length
+          const dejaRelances = liste.filter((c) => c.relance_envoyee).length
+          const coutRelance = ((panierMoyen || 15) * (relancePourcentage || 0)) / 100
+          const Puce = ({ actif, onClick, children }: { actif: boolean; onClick: () => void; children: React.ReactNode }) => (
+            <button onClick={onClick} className={`rounded-full border-2 px-4 py-2 text-sm font-semibold transition-colors ${actif ? "border-wine bg-wine text-gold-light" : "border-wine/15 bg-card text-ink/85 hover:border-wine/40"}`}>{children}</button>
+          )
+          return (
           <div>
             <div className="mb-8">
-              <h1 className="text-2xl font-display font-semibold text-ink">Relance</h1>
-              <p className="text-ink/70 mt-1">Emails automatiques pour faire revenir vos clients inactifs</p>
-            </div>
-            <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-lg">
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-ink/90">Emails de relance automatiques</label>
-                <button
-                  onClick={() => setRelanceActive(!relanceActive)}
-                  className={`relative w-10 h-5.5 rounded-full transition-colors ${relanceActive ? "bg-wine" : "bg-secondary"}`}
-                >
-                  <span className={`absolute top-0.5 left-0.5 w-4.5 h-4.5 rounded-full bg-white transition-transform ${relanceActive ? "translate-x-4.5" : ""}`} />
-                </button>
-              </div>
-              <p className="text-xs text-ink/65 mb-3">
-                Envoie un email automatique avec une petite réduction aux clients qui ne sont pas revenus depuis un moment (uniquement à ceux ayant accepté de recevoir des offres).
+              <h1 className="text-2xl font-display font-semibold text-ink">Relances email</h1>
+              <p className="mt-1 max-w-2xl text-ink/80">
+                Quand un client n&apos;est pas revenu depuis un moment, FidèleResto lui envoie tout seul un email avec une
+                petite réduction pour le faire revenir. Vous réglez une fois, ensuite vous n&apos;avez plus rien à faire.
               </p>
-              {relanceActive && (
-                <div className="grid grid-cols-2 gap-3">
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
+              <div className="space-y-5">
+                {/* Interrupteur principal */}
+                <div className={`flex items-center justify-between gap-4 rounded-2xl border-2 p-5 sm:p-6 ${relanceActive ? "border-sage/50 bg-sage/10" : "border-wine/10 bg-card"}`}>
                   <div>
-                    <label className="block text-xs font-medium text-ink/75 mb-1">Après combien de jours d'inactivité</label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={90}
-                      value={relanceJours}
-                      onChange={e => setRelanceJours(Number(e.target.value))}
-                      className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
-                    />
+                    <p className="font-display text-lg font-semibold text-ink">
+                      Relances automatiques : {relanceActive ? <span className="text-sage">activées</span> : <span className="text-ink/70">désactivées</span>}
+                    </p>
+                    <p className="mt-1 text-sm text-ink/80">
+                      {relanceActive ? "Les emails partent chaque jour, automatiquement." : "Aucun email n'est envoyé. Activez pour faire revenir vos clients."}
+                    </p>
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-ink/75 mb-1">% de réduction offert</label>
-                    <input
-                      type="number"
-                      min={5}
-                      max={50}
-                      value={relancePourcentage}
-                      onChange={e => setRelancePourcentage(Number(e.target.value))}
-                      className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
-                    />
-                  </div>
+                  <button
+                    role="switch"
+                    aria-checked={relanceActive}
+                    aria-label="Activer les relances automatiques"
+                    onClick={() => setRelanceActive(!relanceActive)}
+                    className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${relanceActive ? "bg-sage" : "bg-ink/25"}`}
+                  >
+                    <span className={`absolute left-1 top-1 size-6 rounded-full bg-white shadow transition-transform ${relanceActive ? "translate-x-6" : ""}`} />
+                  </button>
                 </div>
-              )}
+
+                <div className={`space-y-5 transition-opacity ${relanceActive ? "" : "pointer-events-none opacity-50"}`}>
+                  <EtapeNumerotee n={1} titre="Quand envoyer l'email ?">
+                    <p className="mb-3 text-sm text-ink/80">Après combien de jours <strong>sans visite</strong> le client reçoit-il l&apos;email :</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {[7, 14, 21, 30].map((j) => (
+                        <Puce key={j} actif={relanceJours === j} onClick={() => setRelanceJours(j)}>{j} jours</Puce>
+                      ))}
+                      <label className="flex items-center gap-2 text-sm text-ink/80">
+                        ou
+                        <input type="number" min={1} max={90} value={relanceJours} onChange={(e) => setRelanceJours(Number(e.target.value))}
+                          className="w-20 rounded-lg border border-wine/20 px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold" />
+                        jours
+                      </label>
+                    </div>
+                    <p className="mt-3 rounded-lg bg-ivory px-3 py-2 text-sm text-ink/80">
+                      💡 <strong>14 jours</strong> pour un kebab, une pizzeria ou un fast-food (clients qui viennent souvent),
+                      <strong> 30 jours</strong> pour un restaurant traditionnel.
+                    </p>
+                  </EtapeNumerotee>
+
+                  <EtapeNumerotee n={2} titre="Quelle réduction offrir ?">
+                    <p className="mb-3 text-sm text-ink/80">Le pourcentage de réduction écrit dans l&apos;email, valable sur sa prochaine visite :</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {[5, 10, 15, 20].map((pct) => (
+                        <Puce key={pct} actif={relancePourcentage === pct} onClick={() => setRelancePourcentage(pct)}>-{pct} %</Puce>
+                      ))}
+                      <label className="flex items-center gap-2 text-sm text-ink/80">
+                        ou
+                        <input type="number" min={5} max={50} value={relancePourcentage} onChange={(e) => setRelancePourcentage(Number(e.target.value))}
+                          className="w-20 rounded-lg border border-wine/20 px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold" />
+                        %
+                      </label>
+                    </div>
+                    <p className="mt-3 rounded-lg bg-ivory px-3 py-2 text-sm text-ink/80">
+                      💡 <strong>-10 %</strong> suffit en général. Sur un panier de {(panierMoyen || 15).toLocaleString("fr-FR")} €, ça vous coûte
+                      environ <strong>{coutRelance.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €</strong>, et seulement si le client revient.
+                    </p>
+                  </EtapeNumerotee>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <button
+                    onClick={saveParametres}
+                    disabled={savingParams}
+                    className="rounded-xl bg-wine px-8 py-3 text-base font-semibold text-gold-light shadow-lg shadow-wine/20 transition-colors hover:bg-wine-dark disabled:opacity-50"
+                  >
+                    {savingParams ? "Enregistrement..." : "Enregistrer"}
+                  </button>
+                  <p className="text-sm text-ink/75">Un seul email par client, uniquement à ceux qui ont accepté de recevoir des offres.</p>
+                </div>
+              </div>
+
+              <div className="space-y-5 lg:sticky lg:top-6">
+                {/* Apercu de l'email */}
+                <div className="overflow-hidden rounded-2xl border border-wine/10 bg-card shadow-sm">
+                  <div className="border-b border-wine/10 bg-ivory px-4 py-2.5 text-xs text-ink/75">
+                    <p><strong className="text-ink/90">De :</strong> FidèleResto</p>
+                    <p className="truncate"><strong className="text-ink/90">Objet :</strong> Julie, on ne vous a pas vu depuis un moment 👋</p>
+                  </div>
+                  <div className="p-5 text-center">
+                    <p className="text-balance font-display text-lg font-semibold text-wine">On vous attend chez {restaurant?.nom_restaurant || "votre restaurant"}&nbsp;!</p>
+                    <p className="mt-2 text-sm text-ink/80">Pour vous donner envie de revenir, voici une réduction sur votre prochaine visite :</p>
+                    <div className="mx-auto mt-4 rounded-xl border-2 border-dashed border-wine bg-ivory px-4 py-3">
+                      <p className="font-display text-3xl font-bold text-wine">-{relancePourcentage || 0}%</p>
+                      <p className="text-xs text-ink/75">Présentez cet email sur place</p>
+                    </div>
+                    <span className="mt-4 inline-block rounded-lg bg-wine px-5 py-2 text-sm font-semibold text-ivory">Rejouer à la roue</span>
+                  </div>
+                  <p className="border-t border-wine/10 px-4 py-2 text-center text-xs text-ink/70">Aperçu de l&apos;email reçu par vos clients</p>
+                </div>
+
+                {/* Chiffres */}
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  {[
+                    { v: abonnes, l: "acceptent les offres" },
+                    { v: relanceActive ? aRelancer : 0, l: "à relancer demain" },
+                    { v: dejaRelances, l: "déjà relancés" },
+                  ].map((t) => (
+                    <div key={t.l} className="rounded-xl border border-wine/10 bg-card px-2 py-3">
+                      <p className="font-display text-2xl font-semibold text-ink">{t.v}</p>
+                      <p className="text-xs leading-tight text-ink/75">{t.l}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          )
+        })()}
+
+        {activeSection === "parametres" && (() => {
+          const lienGoogleOk = /^https?:\/\/(g\.page|maps\.app\.goo\.gl|goo\.gl|(www\.)?google\.[a-z.]+|search\.google\.com)\//i.test(googleAvisUrl.trim())
+          return (
+          <div>
+            <div className="mb-8">
+              <h1 className="text-2xl font-display font-semibold text-ink">Paramètres</h1>
+              <p className="mt-1 text-ink/80">Les informations de votre restaurant. Pensez à enregistrer en bas de la page.</p>
+            </div>
+            <div className="max-w-2xl space-y-5">
+              <div className="rounded-2xl border border-wine/10 bg-card p-5 shadow-sm sm:p-6">
+                <h2 className="font-display text-lg font-semibold text-ink">Votre restaurant</h2>
+                <label htmlFor="param-nom" className="mt-4 block text-sm font-semibold text-ink">Nom du restaurant</label>
+                <p className="mb-2 text-sm text-ink/75">Affiché sur la roue, les emails envoyés à vos clients et vos flyers.</p>
+                <input
+                  id="param-nom"
+                  type="text"
+                  value={nomRestaurantInput}
+                  onChange={e => setNomRestaurantInput(e.target.value)}
+                  className="w-full rounded-xl border border-wine/20 px-4 py-3 text-base text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                />
+              </div>
+
+              <div className="rounded-2xl border border-wine/10 bg-card p-5 shadow-sm sm:p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="font-display text-lg font-semibold text-ink">Avis Google</h2>
+                  {googleAvisUrl.trim() ? (
+                    lienGoogleOk
+                      ? <span className="rounded-full bg-sage/15 px-3 py-1 text-xs font-semibold text-sage">✓ Lien valide</span>
+                      : <span className="rounded-full bg-gold/20 px-3 py-1 text-xs font-semibold text-wine">Lien à vérifier</span>
+                  ) : <span className="rounded-full bg-wine/10 px-3 py-1 text-xs font-semibold text-wine">À remplir</span>}
+                </div>
+                <label htmlFor="param-google" className="mt-4 block text-sm font-semibold text-ink">Lien pour laisser un avis sur votre fiche Google</label>
+                <p className="mb-2 text-sm text-ink/75">Après la roue, le bouton « Laisser un avis Google » envoie vos clients sur ce lien.</p>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input
+                    id="param-google"
+                    type="url"
+                    placeholder="https://g.page/r/XXXXXXXXXXXX/review"
+                    value={googleAvisUrl}
+                    onChange={e => setGoogleAvisUrl(e.target.value)}
+                    className="min-w-0 flex-1 rounded-xl border border-wine/20 px-4 py-3 text-base text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                  />
+                  {googleAvisUrl.trim() && (
+                    <a href={googleAvisUrl.trim()} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center justify-center rounded-xl border-2 border-wine px-4 py-2.5 text-sm font-semibold text-wine hover:bg-wine hover:text-gold-light">
+                      Tester le lien
+                    </a>
+                  )}
+                </div>
+                <details className="mt-4 rounded-xl bg-ivory px-4 py-3 text-sm text-ink/85">
+                  <summary className="cursor-pointer font-semibold text-ink">Où trouver ce lien ? (1 minute)</summary>
+                  <ol className="mt-2 list-decimal space-y-1 pl-5">
+                    <li>Sur Google, cherchez le nom de votre restaurant, connecté au compte qui gère la fiche.</li>
+                    <li>Dans le panneau de votre fiche, cliquez sur <strong>« Demander des avis »</strong>.</li>
+                    <li>Copiez le lien affiché (il commence souvent par g.page/r/…) et collez-le ici.</li>
+                  </ol>
+                </details>
+              </div>
+
+              <div className="rounded-2xl border border-wine/10 bg-card p-5 shadow-sm sm:p-6">
+                <h2 className="font-display text-lg font-semibold text-ink">Mon compte</h2>
+                <label htmlFor="param-email" className="mt-4 block text-sm font-semibold text-ink">Email de connexion</label>
+                <input
+                  id="param-email"
+                  type="email"
+                  defaultValue={user?.email}
+                  disabled
+                  className="mt-2 w-full rounded-xl border border-wine/10 bg-secondary/40 px-4 py-3 text-base text-ink/75"
+                />
+                <p className="mt-2 text-sm text-ink/75">
+                  Pour changer d&apos;email, écrivez-nous à{" "}
+                  <a href="mailto:contact@fideleresto.fr" className="text-wine underline underline-offset-2">contact@fideleresto.fr</a>.{" "}
+                  Mot de passe oublié ?{" "}
+                  <a href="/mot-de-passe-oublie" className="text-wine underline underline-offset-2">Le réinitialiser</a>
+                </p>
+              </div>
 
               <button
                 onClick={saveParametres}
                 disabled={savingParams}
-                className="mt-5 bg-wine hover:bg-wine-dark disabled:opacity-50 text-gold-light font-medium py-2.5 px-6 rounded-lg transition-colors text-sm"
+                className="w-full rounded-xl bg-wine px-8 py-3.5 text-base font-semibold text-gold-light shadow-lg shadow-wine/20 transition-colors hover:bg-wine-dark disabled:opacity-50 sm:w-auto"
               >
-                {savingParams ? "Sauvegarde..." : "Sauvegarder"}
+                {savingParams ? "Enregistrement..." : "Enregistrer les modifications"}
               </button>
             </div>
           </div>
-        )}
-
-        {activeSection === "parametres" && (
-          <div>
-            <div className="mb-8">
-              <h1 className="text-2xl font-display font-semibold text-ink">Paramètres</h1>
-              <p className="text-ink/70 mt-1">Gérez les informations de votre restaurant</p>
-            </div>
-            <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-lg">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-ink/90 mb-1">Nom du restaurant</label>
-                  <input
-                    type="text"
-                    value={nomRestaurantInput}
-                    onChange={e => setNomRestaurantInput(e.target.value)}
-                    className="w-full border border-wine/15 rounded-lg px-4 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-ink/90 mb-1">Email</label>
-                  <input
-                    type="email"
-                    defaultValue={user?.email}
-                    disabled
-                    className="w-full border border-wine/10 rounded-lg px-4 py-2.5 text-sm bg-secondary/40 text-ink/65"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-ink/90 mb-1">Lien de votre page avis Google</label>
-                  <input
-                    type="text"
-                    placeholder="Ex : https://g.page/r/XXXXXXXXXXXX/review"
-                    value={googleAvisUrl}
-                    onChange={e => setGoogleAvisUrl(e.target.value)}
-                    className="w-full border border-wine/15 rounded-lg px-4 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
-                  />
-                  <p className="mt-1 text-xs text-ink/65">Vos clients seront redirigés vers ce lien après avoir gagné à la roue.</p>
-                </div>
-
-                <button
-                  onClick={saveParametres}
-                  disabled={savingParams}
-                  className="bg-wine hover:bg-wine-dark disabled:opacity-50 text-gold-light font-medium py-2.5 px-6 rounded-lg transition-colors text-sm"
-                >
-                  {savingParams ? "Sauvegarde..." : "Sauvegarder"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+          )
+        })()}
 
       </main>
 
