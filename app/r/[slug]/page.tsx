@@ -239,7 +239,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
         {step === "form" && (
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-display font-semibold text-ink">Tentez votre chance !</h1>
+            <h1 className="text-3xl font-display font-semibold text-ink">Tentez votre chance&nbsp;!</h1>
             <p className="text-ink/85 text-base mt-2">Voici ce que vous pouvez gagner. Remplissez vos infos puis lancez la roue.</p>
           </div>
         )}
@@ -314,7 +314,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         {step === "win" && result && (
           <div className="text-center">
             <div className="text-7xl mb-3">🎉</div>
-            <h2 className="text-3xl font-display font-semibold text-ink mb-2">Félicitations !</h2>
+            <h2 className="text-3xl font-display font-semibold text-ink mb-2">Félicitations&nbsp;!</h2>
             <p className="text-lg text-ink/90 mb-5">Vous avez gagné :</p>
             <div className="bg-gold/15 border-2 border-gold/50 rounded-2xl p-7 mb-6">
               <p className="text-3xl font-display font-semibold text-wine-dark leading-tight">{result.label}</p>
@@ -379,7 +379,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         {step === "lose" && (
           <div className="text-center">
             <div className="text-7xl mb-3">😢</div>
-            <h2 className="text-3xl font-display font-semibold text-ink mb-2">Pas de chance !</h2>
+            <h2 className="text-3xl font-display font-semibold text-ink mb-2">Pas de chance&nbsp;!</h2>
             <p className="text-lg text-ink/90 mb-6">Vous n&apos;avez rien gagné cette fois...</p>
             <div className="mb-6 rounded-2xl border-2 border-wine/25 bg-ivory p-5">
               <p className="text-lg font-semibold text-wine-dark">
@@ -413,7 +413,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         {step === "already_played" && (
           <div className="text-center">
             <div className="text-7xl mb-3">⏳</div>
-            <h2 className="text-3xl font-display font-semibold text-ink mb-2">Déjà joué !</h2>
+            <h2 className="text-3xl font-display font-semibold text-ink mb-2">Déjà joué&nbsp;!</h2>
             <p className="text-lg text-ink/90 mb-6">
               Vous avez déjà participé{frequenceJours === 1 ? " aujourd'hui" : ""}.
             </p>

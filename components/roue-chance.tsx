@@ -311,17 +311,18 @@ export function LegendeLots({ rewards }: { rewards: Lot[] }) {
       <p className="mb-3 text-center font-display text-base font-semibold text-wine-dark">Ce que vous pouvez gagner</p>
       <ul className="space-y-2">
         {gagnables.map((lot) => (
-          <li key={lot.label} className="flex items-start justify-between gap-3">
-            <span className="flex min-w-0 items-start gap-2.5">
-              <span className="mt-1.5 size-3.5 shrink-0 rounded-full border border-wine/20" style={{ background: lot.couleur }} aria-hidden="true" />
-              <span className="min-w-0">
-                <span className="block text-base font-medium text-ink">{lot.label}</span>
-                {lot.garanti_apres_visites ? (
-                  <span className="block text-xs font-medium text-wine">Offert à coup sûr à votre {lot.garanti_apres_visites}e passage</span>
-                ) : null}
+          <li key={lot.label} className="flex items-start gap-2.5">
+            <span className="mt-1.5 size-3.5 shrink-0 rounded-full border border-wine/20" style={{ background: lot.couleur }} aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <span className="flex flex-wrap items-baseline justify-between gap-x-3">
+                {/* l'emoji reste colle au dernier mot */}
+                <span className="text-base font-medium text-ink">{lot.label.replace(/ (\S+)$/, "\u00a0$1")}</span>
+                <span className="whitespace-nowrap text-sm text-ink/80">{chanceSur(lot.probabilite)}</span>
               </span>
+              {lot.garanti_apres_visites ? (
+                <span className="block text-xs font-medium text-wine">Offert à coup sûr à votre {lot.garanti_apres_visites}e passage</span>
+              ) : null}
             </span>
-            <span className="mt-0.5 shrink-0 whitespace-nowrap text-sm text-ink/85">{chanceSur(lot.probabilite)}</span>
           </li>
         ))}
       </ul>
