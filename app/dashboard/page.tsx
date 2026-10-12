@@ -14,6 +14,7 @@ import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
 import { plans, OPTION_SITE, libelleMaintenanceSite } from "@/lib/pricing"
 import { REWARDS_PAR_DEFAUT, MODELES_ROUE, lotsPourTypeCuisine, modelePourTypeCuisine } from "@/lib/roue"
 import { insererLotsRoue } from "@/lib/roue-config"
+import { RoueChance, LegendeLots } from "@/components/roue-chance"
 import { type LotEco, estPerdu, tauxGain, unClientSur, coutParPartie, coutMaxParJour, verdict, ajusterPourRentabilite, SEUIL_RENTABLE, SEUIL_RISQUE, CIBLE_AJUSTEMENT } from "@/lib/rentabilite"
 import { statutRecompense, regrouperParClient, normaliserRecherche, DUREE_VALIDITE_JOURS } from "@/lib/recompenses"
 
@@ -69,6 +70,18 @@ function DashboardContent() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [cancelling, setCancelling] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  // Etapes de mise en route deja faites (memorisees sur cet appareil)
+  const [etapesFaites, setEtapesFaites] = useState<Record<string, boolean>>({})
+  useEffect(() => {
+    try { setEtapesFaites(JSON.parse(localStorage.getItem("fr_etapes") || "{}")) } catch {}
+  }, [])
+  const marquerEtape = (cle: string) => {
+    setEtapesFaites((prev) => {
+      const suivant = { ...prev, [cle]: true }
+      try { localStorage.setItem("fr_etapes", JSON.stringify(suivant)) } catch {}
+      return suivant
+    })
+  }
   const [avisPrives, setAvisPrives] = useState<{ id: string; note: number; commentaire: string | null; prenom: string | null; email: string | null; created_at: string }[]>([])
   const [loadingAvisPrives, setLoadingAvisPrives] = useState(false)
 
@@ -530,6 +543,7 @@ function DashboardContent() {
   const generateFlyer = async () => {
     if (!selectedModele) return
     setGeneratingFlyer(true)
+    marquerEtape("qr")
     try {
       const { jsPDF } = await import("jspdf")
       const QRCode = await import("qrcode")
@@ -872,10 +886,10 @@ function DashboardContent() {
   const totalOk = Math.abs(totalProba - 100) < 0.05
 
   const kpis = [
-    { label: "Scans QR", value: restaurant?.scan_qr?.toString() || "0", icon: QrCode, color: "bg-wine/8 text-wine" },
-    { label: "Clients collectés", value: clients.length.toString(), icon: Users, color: "bg-sage/10 text-sage" },
-    { label: "Récompenses distribuées", value: clients.filter((c) => c.a_gagne).length.toString(), icon: Gift, color: "bg-gold/12 text-wine-dark" },
-    { label: "Avis Google", value: restaurant?.avis_google_clics?.toString() || "0", icon: Star, color: "bg-wine/8 text-wine" },
+    { label: "Scans du QR code", aide: "Clients qui ont ouvert la roue", value: restaurant?.scan_qr?.toString() || "0", icon: QrCode, color: "bg-wine/8 text-wine" },
+    { label: "Parties jouées", aide: "Clients qui ont donné leur email", value: clients.length.toString(), icon: Users, color: "bg-sage/10 text-sage" },
+    { label: "Récompenses gagnées", aide: "Lots offerts par la roue", value: clients.filter((c) => c.a_gagne).length.toString(), icon: Gift, color: "bg-gold/12 text-wine-dark" },
+    { label: "Clics vers Google", aide: "Clients partis laisser un avis", value: restaurant?.avis_google_clics?.toString() || "0", icon: Star, color: "bg-wine/8 text-wine" },
   ]
 
   // Clients collectés par jour, sur les 14 derniers jours
@@ -951,22 +965,44 @@ function DashboardContent() {
   // Même logique que la page roue (/r/[slug]) : tout statut qui n'est pas "actif" ou "essai" verrouille.
   const compteVerrouille = !restaurant?.plan || !["actif", "essai"].includes(restaurant?.statut_abonnement)
 
-  const navItems = compteVerrouille
-    ? [{ id: "abonnement", label: "Abonnement", icon: CreditCard }]
+  type ItemNav = { id: string; label: string; icon: any; verrou?: boolean }
+  // Menu regroupe par usage, pour que le restaurateur trouve tout de suite ce qu'il cherche
+  const groupesNav: { titre: string; items: ItemNav[] }[] = compteVerrouille
+    ? [{ titre: "Mon compte", items: [{ id: "abonnement", label: "Abonnement", icon: CreditCard }] }]
     : [
-        { id: "accueil", label: "Tableau de bord", icon: LayoutDashboard },
-        { id: "qrcode", label: "Mon QR code", icon: QrCode },
-        { id: "flyer", label: "Mon flyer", icon: FileText },
-        { id: "scanner", label: "Scanner", icon: ScanLine },
-        { id: "clients", label: "Mes clients", icon: Users },
-        { id: "roue", label: "Ma roue", icon: Sliders },
-        { id: "menu", label: "Menu digital", icon: BookOpen, verrou: !estComplet },
-        { id: "fidelite", label: "Carte fidélité", icon: Award, verrou: !estComplet },
-        ...(restaurant?.plan === "essentiel" || restaurant?.plan === "standard" ? [{ id: "retours", label: "Retours clients", icon: Inbox }] : []),
-        { id: "relance", label: "Relance", icon: Mail, verrou: !estComplet },
-        { id: "abonnement", label: "Abonnement", icon: CreditCard },
-        { id: "parametres", label: "Paramètres", icon: Settings },
+        {
+          titre: "Au quotidien",
+          items: [
+            { id: "accueil", label: "Accueil", icon: LayoutDashboard },
+            { id: "clients", label: "Mes clients", icon: Users },
+            ...(restaurant?.plan === "essentiel" || restaurant?.plan === "standard" ? [{ id: "retours", label: "Retours clients", icon: Inbox }] : []),
+          ],
+        },
+        {
+          titre: "Ma roue et mes outils",
+          items: [
+            { id: "roue", label: "Ma roue", icon: Sliders },
+            { id: "qrcode", label: "Mon QR code", icon: QrCode },
+            { id: "flyer", label: "Mes flyers", icon: FileText },
+            { id: "fidelite", label: "Carte de fidélité", icon: Award, verrou: !estComplet },
+            { id: "menu", label: "Menu digital", icon: BookOpen, verrou: !estComplet },
+            { id: "relance", label: "Relances email", icon: Mail, verrou: !estComplet },
+          ],
+        },
+        {
+          titre: "Mon compte",
+          items: [
+            { id: "abonnement", label: "Abonnement", icon: CreditCard },
+            { id: "parametres", label: "Paramètres", icon: Settings },
+          ],
+        },
       ]
+  const allerA = (id: string) => {
+    if (id === "roue") marquerEtape("roue")
+    setActiveSection(id)
+    setSidebarOpen(false)
+    if (typeof window !== "undefined") window.scrollTo({ top: 0 })
+  }
 
   return (
     <div className="min-h-screen bg-secondary/40 flex">
@@ -1005,25 +1041,47 @@ function DashboardContent() {
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon
-            return (
-              <button
-                key={item.id}
-                onClick={() => { setActiveSection(item.id); setSidebarOpen(false) }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  activeSection === item.id
-                    ? "bg-gold text-wine-dark"
-                    : "text-ivory/70 hover:bg-white/5 hover:text-ivory"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {item.label}
-                {"verrou" in item && item.verrou && <Lock className="w-3.5 h-3.5 ml-auto opacity-60" aria-label="Plan Complet" />}
-              </button>
-            )
-          })}
+        {/* Action principale au comptoir : toujours a portee de main */}
+        {!compteVerrouille && (
+          <div className="px-3 pt-4">
+            <button
+              onClick={() => allerA("scanner")}
+              className={`w-full flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold shadow-lg shadow-black/20 transition-colors ${
+                activeSection === "scanner" ? "bg-ivory text-wine-dark" : "bg-gold text-wine-dark hover:bg-gold-light"
+              }`}
+            >
+              <ScanLine className="w-4.5 h-4.5" />
+              Scanner un client
+            </button>
+          </div>
+        )}
+
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+          {groupesNav.map((groupe) => (
+            <div key={groupe.titre}>
+              <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-gold-light/60">{groupe.titre}</p>
+              <div className="space-y-0.5">
+                {groupe.items.map((item) => {
+                  const Icon = item.icon
+                  const actif = activeSection === item.id
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => allerA(item.id)}
+                      aria-current={actif ? "page" : undefined}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        actif ? "bg-ivory/12 text-ivory shadow-[inset_3px_0_0_#c9962c]" : "text-ivory/70 hover:bg-white/5 hover:text-ivory"
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 ${actif ? "text-gold-light" : ""}`} />
+                      {item.label}
+                      {item.verrou && <Lock className="w-3.5 h-3.5 ml-auto opacity-60" aria-label="Plan Complet" />}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         <div className="px-3 py-4 border-t border-gold-light/15">
@@ -1049,14 +1107,134 @@ function DashboardContent() {
         </div>
       </aside>
 
-      <main className="md:ml-64 flex-1 p-4 sm:p-8 pt-18 md:pt-8 w-full">
+      {/* Barre d'onglets mobile : les 3 actions du quotidien + le menu complet */}
+      {!compteVerrouille && (
+        <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-wine/10 bg-card/95 backdrop-blur pb-[env(safe-area-inset-bottom)]" aria-label="Navigation rapide">
+          <div className="grid grid-cols-4 items-end">
+            {[
+              { id: "accueil", label: "Accueil", icon: LayoutDashboard },
+              { id: "scanner", label: "Scanner", icon: ScanLine, principal: true },
+              { id: "clients", label: "Clients", icon: Users },
+              { id: "menu-complet", label: "Plus", icon: Menu },
+            ].map((o) => {
+              const Icon = o.icon
+              const actif = activeSection === o.id
+              if (o.principal)
+                return (
+                  <button key={o.id} onClick={() => allerA(o.id)} className="flex flex-col items-center gap-1 pb-2 -mt-5">
+                    <span className={`flex size-14 items-center justify-center rounded-full shadow-lg shadow-wine/30 ring-4 ring-ivory ${actif ? "bg-wine-dark text-gold-light" : "bg-wine text-gold-light"}`}>
+                      <Icon className="w-6 h-6" />
+                    </span>
+                    <span className="text-[11px] font-semibold text-wine">{o.label}</span>
+                  </button>
+                )
+              return (
+                <button
+                  key={o.id}
+                  onClick={() => (o.id === "menu-complet" ? setSidebarOpen(true) : allerA(o.id))}
+                  className={`flex flex-col items-center gap-1 py-2.5 ${actif ? "text-wine" : "text-ink/50"}`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="text-[11px] font-medium">{o.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </nav>
+      )}
+
+      <main className="md:ml-64 flex-1 min-w-0 p-4 sm:p-8 pt-18 md:pt-8 pb-28 md:pb-10 w-full">
 
         {activeSection === "accueil" && (
           <div>
-            <div className="mb-8">
-              <h1 className="text-2xl font-display font-semibold text-ink">Bonjour, {nomResto} 👋</h1>
-              <p className="text-ink/55 mt-1">Voici un aperçu de votre activité</p>
+            <div className="mb-6">
+              <h1 className="text-2xl sm:text-3xl font-display font-semibold text-ink">Bonjour, {nomResto} 👋</h1>
+              <p className="text-ink/60 mt-1">Voici où en est votre restaurant aujourd&apos;hui.</p>
             </div>
+
+            {/* Mise en route : disparait une fois tout fait */}
+            {(() => {
+              const etapes = [
+                { cle: "roue", titre: "Vérifiez votre roue", texte: "Lots, chances de gagner et rentabilité : tout est déjà réglé, jetez un œil.", fait: !!etapesFaites.roue, cta: "Voir ma roue", vers: "roue" },
+                { cle: "google", titre: "Ajoutez votre lien d'avis Google", texte: "Pour que vos clients puissent vous laisser un avis en un clic.", fait: !!restaurant?.google_avis_url, cta: "Ajouter le lien", vers: "parametres" },
+                { cle: "qr", titre: "Imprimez votre QR code ou un flyer", texte: "Posez-le sur vos tables, le comptoir ou l'addition.", fait: !!etapesFaites.qr || (restaurant?.scan_qr || 0) > 0, cta: "Mon QR code", vers: "qrcode" },
+                { cle: "client", titre: "Votre premier client joue", texte: "Dès qu'un client scanne et tourne la roue, il apparaît ici.", fait: clients.length > 0, cta: null, vers: null },
+              ]
+              const faites = etapes.filter((e) => e.fait).length
+              if (faites === etapes.length) return null
+              const prochaine = etapes.find((e) => !e.fait)
+              return (
+                <div className="mb-6 overflow-hidden rounded-2xl border border-gold/30 bg-card shadow-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-wine to-wine-dark px-5 py-4">
+                    <div>
+                      <p className="font-display text-lg font-semibold text-ivory">Mise en route</p>
+                      <p className="text-sm text-gold-light/90">{faites} étape{faites > 1 ? "s" : ""} sur {etapes.length} : encore {etapes.length - faites} et c&apos;est parti !</p>
+                    </div>
+                    <div className="h-2 w-full max-w-[200px] overflow-hidden rounded-full bg-white/15" aria-hidden="true">
+                      <div className="h-full rounded-full bg-gold" style={{ width: `${(faites / etapes.length) * 100}%` }} />
+                    </div>
+                  </div>
+                  <ol className="divide-y divide-wine/8">
+                    {etapes.map((e, i) => (
+                      <li key={e.cle} className={`flex items-center gap-4 px-5 py-4 ${e === prochaine ? "bg-gold/8" : ""}`}>
+                        <span
+                          className={`flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
+                            e.fait ? "bg-sage text-white" : e === prochaine ? "bg-wine text-gold-light" : "bg-secondary text-ink/50"
+                          }`}
+                        >
+                          {e.fait ? <Check className="size-4" /> : i + 1}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-sm font-semibold ${e.fait ? "text-ink/45 line-through" : "text-ink"}`}>{e.titre}</p>
+                          {!e.fait && <p className="mt-0.5 text-xs text-ink/55">{e.texte}</p>}
+                        </div>
+                        {!e.fait && e.cta && e.vers && (
+                          <button
+                            onClick={() => allerA(e.vers!)}
+                            className={`shrink-0 rounded-lg px-3 py-2 text-xs font-semibold ${
+                              e === prochaine ? "bg-wine text-gold-light hover:bg-wine-dark" : "text-wine hover:bg-wine/5"
+                            }`}
+                          >
+                            {e.cta}
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )
+            })()}
+
+            {/* Actions rapides */}
+            <div className="mb-6 grid gap-3 sm:grid-cols-3">
+              {[
+                { id: "scanner", titre: "Scanner un client", texte: "Valider une récompense ou un passage", icon: ScanLine, fort: true },
+                { id: "clients", titre: "Mes clients", texte: `${clients.length} client${clients.length > 1 ? "s" : ""} et leurs récompenses`, icon: Users },
+                { id: "roue", titre: "Ma roue", texte: "Lots, chances et rentabilité", icon: Sliders },
+              ].map((a) => {
+                const Icon = a.icon
+                return (
+                  <button
+                    key={a.id}
+                    onClick={() => allerA(a.id)}
+                    className={`group flex items-center gap-4 rounded-2xl border p-4 text-left shadow-sm transition-colors ${
+                      a.fort ? "border-wine bg-wine text-ivory hover:bg-wine-dark" : "border-wine/10 bg-card hover:border-wine/30"
+                    }`}
+                  >
+                    <span className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${a.fort ? "bg-gold text-wine-dark" : "bg-secondary text-wine"}`}>
+                      <Icon className="size-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className={`block text-sm font-semibold ${a.fort ? "text-ivory" : "text-ink"}`}>{a.titre}</span>
+                      <span className={`block text-xs ${a.fort ? "text-ivory/70" : "text-ink/55"}`}>{a.texte}</span>
+                    </span>
+                    <ArrowRight className={`size-4 shrink-0 transition-transform group-hover:translate-x-0.5 ${a.fort ? "text-gold-light" : "text-ink/30"}`} />
+                  </button>
+                )
+              })}
+            </div>
+
+            <h2 className="mb-3 font-display text-lg font-semibold text-ink">Vos chiffres</h2>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {kpis.map((kpi) => {
@@ -1067,7 +1245,8 @@ function DashboardContent() {
                       <Icon className="w-5 h-5" />
                     </div>
                     <p className="text-3xl font-display font-semibold text-ink">{kpi.value}</p>
-                    <p className="text-sm text-ink/55 mt-1">{kpi.label}</p>
+                    <p className="text-sm font-medium text-ink/75 mt-1">{kpi.label}</p>
+                    <p className="text-xs text-ink/45 mt-0.5">{kpi.aide}</p>
                   </div>
                 )
               })}
@@ -1087,7 +1266,7 @@ function DashboardContent() {
                 </div>
 
                 <div className="bg-card rounded-xl p-5 border border-wine/10 shadow-sm">
-                  <p className="text-sm font-medium text-ink mb-4">Taux de victoire</p>
+                  <p className="text-sm font-medium text-ink mb-4">Gagnants et perdants</p>
                   <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
                       <Pie data={dataVictoire} dataKey="value" nameKey="name" innerRadius={50} outerRadius={75} paddingAngle={3}>
@@ -1173,29 +1352,6 @@ function DashboardContent() {
               </div>
             )}
 
-            <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
-              <h2 className="font-display font-semibold text-ink mb-4">Démarrer rapidement</h2>
-              <div className="space-y-3">
-                {[
-                  { step: "1", text: "Configurez votre roue", action: () => setActiveSection("roue"), cta: "Configurer" },
-                  { step: "2", text: "Téléchargez votre QR code", action: () => setActiveSection("qrcode"), cta: "Voir mon QR code" },
-                  { step: "3", text: "Vos clients scannent et jouent à la roue", action: null, cta: null },
-                ].map((item) => (
-                  <div key={item.step} className="flex items-center gap-4 p-3 rounded-lg bg-secondary/50">
-                    <div className="w-7 h-7 rounded-full bg-wine text-gold-light text-sm font-bold flex items-center justify-center flex-shrink-0">
-                      {item.step}
-                    </div>
-                    <p className="text-sm text-ink/75 flex-1">{item.text}</p>
-                    {item.action && (
-                      <button onClick={item.action} className="text-xs text-wine font-semibold hover:underline flex items-center gap-1">
-                        {item.cta}
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         )}
 
@@ -1217,6 +1373,7 @@ function DashboardContent() {
                   const canvas = document.getElementById("qr-canvas") as HTMLCanvasElement
                   if (canvas) {
                     const link = document.createElement("a")
+                    marquerEtape("qr")
                     link.download = "qrcode-fideleresto.png"
                     link.href = canvas.toDataURL()
                     link.click()
@@ -1504,9 +1661,22 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Ma roue</h1>
-              <p className="text-ink/55 mt-1">Configurez les récompenses et leurs probabilités</p>
+              <p className="text-ink/55 mt-1">Choisissez ce que vos clients peuvent gagner et leurs chances. L&apos;aperçu se met à jour en direct.</p>
             </div>
-            <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-2xl">
+            <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+            {/* Apercu en direct, tel que le client le verra */}
+            <aside className="order-first xl:order-last xl:sticky xl:top-6">
+              <div className="rounded-2xl border border-wine/10 bg-card p-5 shadow-sm">
+                <p className="mb-7 text-center text-xs font-semibold uppercase tracking-[0.12em] text-ink/45">Aperçu client</p>
+                <div className="mx-auto max-w-[220px] sm:max-w-[300px]">
+                  <RoueChance rewards={rewards.filter((r) => r.probabilite > 0 && r.label.trim())} rotation={0} spinning={false} />
+                </div>
+                <div className="hidden xl:block">
+                  <LegendeLots rewards={rewards.filter((r) => r.label.trim())} />
+                </div>
+              </div>
+            </aside>
+            <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm min-w-0">
               <div className="mb-6 rounded-xl bg-gold/10 p-4">
                 <p className="text-sm font-semibold text-ink">Partir d&apos;un modèle adapté à votre restaurant</p>
                 <p className="mt-1 text-xs text-ink/55">Des réglages rentables prêts à l&apos;emploi, que vous pouvez ensuite modifier.</p>
@@ -1783,6 +1953,7 @@ function DashboardContent() {
               >
                 {saving ? "Sauvegarde..." : "Sauvegarder ma roue"}
               </button>
+            </div>
             </div>
           </div>
         )}
@@ -2183,7 +2354,7 @@ function DashboardContent() {
               <div className="mb-6 max-w-2xl flex items-center justify-between rounded-xl border border-wine/10 bg-card px-5 py-4 shadow-sm">
                 <div>
                   <p className="text-sm text-ink/55">Votre plan actuel</p>
-                  <p className="font-display text-lg font-semibold text-ink capitalize">{restaurant.plan}</p>
+                  <p className="font-display text-lg font-semibold text-ink">{restaurant.plan === "standard" ? "Complet" : restaurant.plan === "essentiel" ? "Essentiel" : restaurant.plan}</p>
                 </div>
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                   restaurant.statut_abonnement === "actif" ? "bg-sage/12 text-sage" :
