@@ -12,7 +12,7 @@ import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
 import { plans, OPTION_SITE, libelleMaintenanceSite } from "@/lib/pricing"
-import { REWARDS_PAR_DEFAUT } from "@/lib/roue"
+import { REWARDS_PAR_DEFAUT, MODELES_ROUE } from "@/lib/roue"
 import { type LotEco, estPerdu, tauxGain, unClientSur, coutParPartie, coutMaxParJour, verdict, ajusterPourRentabilite, SEUIL_RENTABLE, SEUIL_RISQUE, CIBLE_AJUSTEMENT } from "@/lib/rentabilite"
 import { statutRecompense, regrouperParClient, normaliserRecherche, DUREE_VALIDITE_JOURS } from "@/lib/recompenses"
 
@@ -140,6 +140,7 @@ function DashboardContent() {
             couleur: r.couleur,
             cout: r.cout ?? null,
             max_par_jour: r.max_par_jour ?? null,
+            garanti_apres_visites: r.garanti_apres_visites ?? null,
           })))
         }
 
@@ -433,13 +434,23 @@ function DashboardContent() {
       couleur: r.couleur,
       cout: r.cout === null || r.cout === undefined || (r.cout as any) === "" ? null : Number(r.cout),
       max_par_jour: r.max_par_jour ? Number(r.max_par_jour) : null,
+      garanti_apres_visites: r.garanti_apres_visites ? Number(r.garanti_apres_visites) : null,
       restaurant_id: slug,
     }))
     let { error: insertError } = await supabase.from("roue_config").insert(lignes)
-    if (insertError && /cout|max_par_jour|column/i.test(insertError.message)) {
+    if (insertError && /cout|max_par_jour|garanti|column/i.test(insertError.message)) {
       ;({ error: insertError } = await supabase
         .from("roue_config")
-        .insert(lignes.map(({ cout, max_par_jour, ...reste }) => reste)))
+        .insert(lignes.map(({ cout, max_par_jour, garanti_apres_visites, ...reste }) => reste)))
+    }
+    if (insertError && /integer/i.test(insertError.message)) {
+      // Base pas encore migree (probabilites entieres) : on arrondit et la case "Perdu" absorbe la difference
+      const arrondies = lignes.map(({ cout, max_par_jour, garanti_apres_visites, ...l }) => ({ ...l, probabilite: Math.round(l.probabilite) }))
+      const somme = arrondies.filter(l => l.label !== "Perdu 😢").reduce((a, l) => a + l.probabilite, 0)
+      const perdu = arrondies.find(l => l.label === "Perdu 😢")
+      if (perdu) perdu.probabilite = Math.max(0, 100 - somme)
+      ;({ error: insertError } = await supabase.from("roue_config").insert(arrondies))
+      if (!insertError) afficherToast("Pourcentages arrondis : demandez la mise à jour de la base pour les décimales.", "erreur")
     }
     if (insertError) {
       console.error("Erreur insert:", insertError)
@@ -871,7 +882,8 @@ function DashboardContent() {
   )
 
   const nomResto = restaurant?.nom_restaurant || "Mon Restaurant"
-  const totalProba = rewards.reduce((a, r) => a + r.probabilite, 0)
+  const totalProba = Math.round(rewards.reduce((a, r) => a + (Number(r.probabilite) || 0), 0) * 10) / 10
+  const totalOk = Math.abs(totalProba - 100) < 0.05
 
   const kpis = [
     { label: "Scans QR", value: restaurant?.scan_qr?.toString() || "0", icon: QrCode, color: "bg-wine/8 text-wine" },
@@ -1509,6 +1521,25 @@ function DashboardContent() {
               <p className="text-ink/55 mt-1">Configurez les récompenses et leurs probabilités</p>
             </div>
             <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-2xl">
+              <div className="mb-6 rounded-xl bg-gold/10 p-4">
+                <p className="text-sm font-semibold text-ink">Partir d&apos;un modèle adapté à votre restaurant</p>
+                <p className="mt-1 text-xs text-ink/55">Des réglages rentables prêts à l&apos;emploi, que vous pouvez ensuite modifier.</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {MODELES_ROUE.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => {
+                        setRewards(m.lots.map((l) => ({ ...l, max_par_jour: l.max_par_jour ?? null, garanti_apres_visites: l.garanti_apres_visites ?? null })))
+                        afficherToast(`Modèle « ${m.nom} » appliqué. Ajustez si besoin puis sauvegardez.`)
+                      }}
+                      className="rounded-full border border-wine/20 bg-card px-3.5 py-1.5 text-sm font-medium text-ink hover:border-wine hover:text-wine"
+                    >
+                      {m.nom}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="space-y-4 mb-6">
                 {rewards.map((reward, index) => (
                   <div key={index} className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4 p-4 bg-secondary/40 rounded-xl">
@@ -1543,15 +1574,17 @@ function DashboardContent() {
                           type="number"
                           min={0}
                           max={100}
+                          step="0.1"
+                          inputMode="decimal"
                           value={reward.probabilite}
                           onChange={e => {
-                            const brut = parseInt(e.target.value)
+                            const brut = Math.round(parseFloat(e.target.value) * 10) / 10
                             const clamp = isNaN(brut) ? 0 : Math.min(100, Math.max(0, brut))
                             const updated = [...rewards]
                             updated[index].probabilite = clamp
                             setRewards(updated)
                           }}
-                          className="text-sm font-medium text-ink/70 w-12 text-right flex-shrink-0 bg-transparent border border-transparent rounded px-1 py-0.5 focus:border-wine/30 focus:outline-none focus:bg-card"
+                          className="text-sm font-medium text-ink/70 w-14 text-right flex-shrink-0 bg-transparent border border-transparent rounded px-1 py-0.5 focus:border-wine/30 focus:outline-none focus:bg-card"
                         />
                         <span className="text-sm font-medium text-ink/70 flex-shrink-0">%</span>
                       </div>
@@ -1611,6 +1644,24 @@ function DashboardContent() {
                             className="w-20 border border-wine/15 bg-card rounded-md px-2 py-1 text-ink focus:outline-none focus:ring-2 focus:ring-gold"
                           />
                           par jour
+                        </label>
+                        <label className="flex items-center gap-1.5">
+                          Offert à coup sûr tous les
+                          <input
+                            type="number"
+                            min={0}
+                            step="1"
+                            inputMode="numeric"
+                            placeholder="—"
+                            value={reward.garanti_apres_visites ?? ""}
+                            onChange={e => {
+                              const updated = [...rewards]
+                              updated[index] = { ...updated[index], garanti_apres_visites: e.target.value === "" ? null : parseInt(e.target.value) }
+                              setRewards(updated)
+                            }}
+                            className="w-16 border border-wine/15 bg-card rounded-md px-2 py-1 text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                          />
+                          passages
                         </label>
                       </div>
                     )}
@@ -1730,14 +1781,14 @@ function DashboardContent() {
 
               <div className="flex items-center justify-between p-3 bg-secondary/40 rounded-lg mb-6">
                 <span className="text-sm text-ink/65">Total des probabilités :</span>
-                <span className={`text-sm font-bold ${totalProba === 100 ? "text-sage" : "text-wine"}`}>
-                  {totalProba}% {totalProba === 100 ? "✓" : "(doit être égal à 100%)"}
+                <span className={`text-sm font-bold ${totalOk ? "text-sage" : "text-wine"}`}>
+                  {totalProba.toLocaleString("fr-FR")}% {totalOk ? "✓" : "(doit être égal à 100%)"}
                 </span>
               </div>
 
               <button
                 onClick={saveRewards}
-                disabled={saving || totalProba !== 100}
+                disabled={saving || !totalOk}
                 className="w-full bg-wine hover:bg-wine-dark disabled:opacity-50 text-gold-light font-medium py-2.5 rounded-lg transition-colors text-sm"
               >
                 {saving ? "Sauvegarde..." : "Sauvegarder ma roue"}

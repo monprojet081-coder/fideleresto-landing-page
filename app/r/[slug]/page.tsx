@@ -74,9 +74,17 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         // AVANT de remplir le formulaire, au lieu de la decouvrir lancee a pleine vitesse
         supabase
           .from("roue_config")
-          .select("label, probabilite, couleur")
+          .select("label, probabilite, couleur, garanti_apres_visites")
           .filter("restaurant_id", "like", `${slug}%`)
-          .then(({ data: lots }) => setRewards(lots && lots.length > 0 ? lots : REWARDS_PAR_DEFAUT))
+          .then(async ({ data: lots, error: errLots }) => {
+            let liste = lots
+            if (errLots) {
+              // colonne "garanti" pas encore creee : on relit sans elle
+              const { data } = await supabase.from("roue_config").select("label, probabilite, couleur").filter("restaurant_id", "like", `${slug}%`)
+              liste = data as any
+            }
+            setRewards(liste && liste.length > 0 ? (liste as Lot[]) : REWARDS_PAR_DEFAUT)
+          })
         // Le scan ne compte que si le restaurant existe réellement
         fetch("/api/send-reward-email/track-scan", {
           method: "POST",

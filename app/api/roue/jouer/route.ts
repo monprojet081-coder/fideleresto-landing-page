@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     {
       const avecPlafond = await supabase
         .from('roue_config')
-        .select('label, probabilite, couleur, max_par_jour')
+        .select('label, probabilite, couleur, max_par_jour, garanti_apres_visites')
         .filter('restaurant_id', 'like', `${slug}%`)
       if (avecPlafond.error) {
         const sansPlafond = await supabase
@@ -100,6 +100,14 @@ export async function POST(req: NextRequest) {
 
     // Tirage au sort reellement cote serveur : impossible a manipuler depuis le navigateur
     let reward: Reward & { max_par_jour?: number | null } = tirerRecompense(rewardsList)
+
+    // Lot "offert a coup sur tous les N passages" : a la Ne (2Ne, 3Ne...) partie de ce client
+    // dans ce restaurant, il gagne ce lot quoi qu'il arrive.
+    const numeroPassage = (visitesPrecedentes || 0) + 1
+    const garanti = rewardsList.find(
+      (l) => l.garanti_apres_visites && l.garanti_apres_visites > 0 && numeroPassage % l.garanti_apres_visites === 0,
+    )
+    if (garanti) reward = garanti
 
     // Lot plafonne et deja sorti assez de fois aujourd'hui : on retire parmi les lots encore
     // disponibles (ou "Perdu"), pour que la roue ne coute jamais plus que prevu au restaurateur.
