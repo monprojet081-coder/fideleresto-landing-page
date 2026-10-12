@@ -32,6 +32,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [dejaVenu, setDejaVenu] = useState(false)
   // Ce client (meme email) a deja clique sur "Laisser un avis Google" lors d'une visite precedente
   const [dejaAvis, setDejaAvis] = useState(false)
+  const [progression, setProgression] = useState<{ label: string; tous: number; passage: number } | null>(null)
   const [clientRowId, setClientRowId] = useState<string | null>(null)
   const [frequenceJours, setFrequenceJours] = useState(1)
   const [emailStatut, setEmailStatut] = useState<"ok" | "echec" | null>(null)
@@ -152,6 +153,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
     setDejaVenu(data.dejaVenu)
     setDejaAvis(!!data.dejaAvis)
+    setProgression(data.progression || null)
     setClientRowId(data.clientRowId || null)
     setFrequenceJours(data.frequenceJours || 1)
     const reward = data.reward
@@ -347,6 +349,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
               </div>
             )}
 
+            {progression && <ProgressionGaranti p={progression} lotGagne={result.label} />}
             <div className="mb-6 rounded-2xl border-2 border-wine/25 bg-ivory p-4">
               <p className="text-lg font-semibold text-wine-dark">
                 🎡 Revenez {quandRejouer(frequenceJours)} pour retenter votre chance !
@@ -381,6 +384,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <div className="text-7xl mb-3">😢</div>
             <h2 className="text-3xl font-display font-semibold text-ink mb-2">Pas de chance&nbsp;!</h2>
             <p className="text-lg text-ink/90 mb-6">Vous n&apos;avez rien gagné cette fois...</p>
+            {progression && <ProgressionGaranti p={progression} lotGagne={null} />}
             <div className="mb-6 rounded-2xl border-2 border-wine/25 bg-ivory p-5">
               <p className="text-lg font-semibold text-wine-dark">
                 🍀 Revenez {quandRejouer(frequenceJours)} pour retenter votre chance !
@@ -637,6 +641,36 @@ function AvisSection({
       <p className="text-sm text-ink/85 mb-2">Votre retour a bien été transmis au restaurant.</p>
       {lienCarte}
       {lienGoogleDiscret("Vous pouvez aussi laisser un avis public sur Google")}
+    </div>
+  )
+}
+
+/** Avancement du client vers le lot "offert a coup sur tous les N passages" */
+function ProgressionGaranti({ p, lotGagne }: { p: { label: string; tous: number; passage: number }; lotGagne: string | null }) {
+  const dansLeCycle = p.passage % p.tous === 0 ? p.tous : p.passage % p.tous
+  const atteint = p.passage % p.tous === 0 && lotGagne === p.label
+  const reste = p.tous - dansLeCycle
+  const nom = p.label.replace(/ (\S+)$/, "\u00a0$1")
+  if (atteint) {
+    return (
+      <div className="mb-5 rounded-2xl border-2 border-gold bg-gold/15 p-5">
+        <p className="font-display text-xl font-semibold text-wine-dark">🏆 C&apos;est votre {p.passage}e passage&nbsp;!</p>
+        <p className="mt-1 text-base text-ink/90">Comme promis, le {nom} vous était garanti. Merci de votre fidélité&nbsp;!</p>
+      </div>
+    )
+  }
+  return (
+    <div className="mb-5 rounded-2xl border-2 border-gold/50 bg-gold/10 p-5 text-left">
+      <p className="text-sm font-semibold uppercase tracking-wide text-wine">Votre fidélité est récompensée</p>
+      <p className="mt-1 text-base text-ink">
+        Encore <strong className="text-wine-dark">{reste} passage{reste > 1 ? "s" : ""}</strong> et le <strong>{nom}</strong> est pour vous, à coup sûr.
+      </p>
+      <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-wine/10" role="progressbar" aria-valuemin={0} aria-valuemax={p.tous} aria-valuenow={dansLeCycle}>
+        <div className="h-full rounded-full bg-gold" style={{ width: `${Math.max(4, (dansLeCycle / p.tous) * 100)}%` }} />
+      </div>
+      <p className="mt-2 text-sm text-ink/80">
+        Passage {dansLeCycle} sur {p.tous}. Chaque partie compte, avec la même adresse email.
+      </p>
     </div>
   )
 }

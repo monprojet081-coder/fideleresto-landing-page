@@ -320,7 +320,7 @@ export function LegendeLots({ rewards }: { rewards: Lot[] }) {
                 <span className="whitespace-nowrap text-sm text-ink/80">{chanceSur(lot.probabilite)}</span>
               </span>
               {lot.garanti_apres_visites ? (
-                <span className="block text-xs font-medium text-wine">Offert à coup sûr à votre {lot.garanti_apres_visites}e passage</span>
+                <span className="mt-0.5 block text-sm font-semibold text-wine">🎁 Garanti à coup sûr à votre {lot.garanti_apres_visites}e passage</span>
               ) : null}
             </span>
           </li>

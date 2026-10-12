@@ -109,10 +109,17 @@ export async function POST(req: NextRequest) {
     )
     if (garanti) reward = garanti
 
+    // Progression vers le lot garanti, affichee au client apres sa partie
+    const lotGaranti = rewardsList.find((l) => l.garanti_apres_visites && l.garanti_apres_visites > 0)
+    const progression = lotGaranti
+      ? { label: lotGaranti.label, tous: lotGaranti.garanti_apres_visites as number, passage: numeroPassage }
+      : null
+
     // Lot plafonne et deja sorti assez de fois aujourd'hui : on retire parmi les lots encore
     // disponibles (ou "Perdu"), pour que la roue ne coute jamais plus que prevu au restaurateur.
     const plafonnes = new Set<string>()
-    for (let essai = 0; essai < rewardsList.length && reward.max_par_jour && reward.label !== LABEL_PERDU; essai++) {
+    // (un lot garanti est toujours donne, meme si son plafond du jour est atteint)
+    for (let essai = 0; !garanti && essai < rewardsList.length && reward.max_par_jour && reward.label !== LABEL_PERDU; essai++) {
       // minuit heure de Paris (le serveur tourne en UTC)
       const maintenant = new Date()
       const paris = new Date(maintenant.toLocaleString('en-US', { timeZone: 'Europe/Paris' }))
@@ -159,7 +166,7 @@ export async function POST(req: NextRequest) {
     // Cas rare (tous les lots plafonnes et pas de case "Perdu") : on ajoute la case pour que la roue puisse s'y arreter
     if (!rewardsList.some((l) => l.label === reward.label)) rewardsList.push(reward)
 
-    return NextResponse.json({ dejaJoue: false, dejaVenu, dejaAvis, reward, rewardsList, clientRowId: nouveauClient?.id, frequenceJours })
+    return NextResponse.json({ dejaJoue: false, dejaVenu, dejaAvis, reward, rewardsList, clientRowId: nouveauClient?.id, frequenceJours, progression })
   } catch (err: any) {
     console.error('Erreur roue/jouer:', err)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
