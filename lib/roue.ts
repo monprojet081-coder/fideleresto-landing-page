@@ -62,6 +62,28 @@ export const MODELES_ROUE: { id: string; nom: string; lots: Lot[] }[] = [
     ],
   },
   {
+    id: "sushi",
+    nom: "Sushi / asiatique",
+    lots: [
+      { label: "Boisson offerte 🥤", probabilite: 15, couleur: "#6b1e2e", cout: 0.5 },
+      { label: "Soupe miso offerte 🍜", probabilite: 10, couleur: "#c9962c", cout: 0.4 },
+      { label: "-10 % sur l'addition 🏷️", probabilite: 7, couleur: "#3f6b4f", cout: 1.8 },
+      { label: "Plateau offert 🍣", probabilite: 0.1, couleur: "#1f4e5f", cout: 8, garanti_apres_visites: 30 },
+      { label: LABEL_PERDU, probabilite: 67.9, couleur: "#a8536a", cout: 0 },
+    ],
+  },
+  {
+    id: "italien",
+    nom: "Italien",
+    lots: [
+      { label: "Café offert ☕", probabilite: 18, couleur: "#6b1e2e", cout: 0.3 },
+      { label: "Boisson offerte 🥤", probabilite: 10, couleur: "#c9962c", cout: 0.6 },
+      { label: "Tiramisu offert 🍰", probabilite: 7, couleur: "#3f6b4f", cout: 1 },
+      { label: "Repas offert 🍝", probabilite: 0.1, couleur: "#1f4e5f", cout: 8, garanti_apres_visites: 30 },
+      { label: LABEL_PERDU, probabilite: 64.9, couleur: "#a8536a", cout: 0 },
+    ],
+  },
+  {
     id: "restaurant",
     nom: "Restaurant traditionnel",
     lots: [
@@ -118,4 +140,24 @@ export function couleurTexteSur(fondHex: string): { texte: string; clair: boolea
   const contrasteClair = (0.902 + 0.05) / (luminance + 0.05)
   const contrasteFonce = (luminance + 0.05) / (0.011 + 0.05)
   return contrasteFonce > contrasteClair ? { texte: "#241914", clair: false } : { texte: "#faf3e8", clair: true }
+}
+
+// Type de cuisine choisi a l'inscription -> modele de roue correspondant
+const MODELE_PAR_TYPE: Record<string, string> = {
+  pizzeria: "pizzeria",
+  kebab: "kebab",
+  burger: "burger",
+  sushi: "sushi",
+  italien: "italien",
+  francais: "restaurant",
+}
+
+export function modelePourTypeCuisine(typeCuisine?: string | null) {
+  const id = typeCuisine ? MODELE_PAR_TYPE[typeCuisine] : undefined
+  return MODELES_ROUE.find((m) => m.id === id) || null
+}
+
+/** Lots de depart selon le type de cuisine (reglages generiques si "autre" ou inconnu) */
+export function lotsPourTypeCuisine(typeCuisine?: string | null): Lot[] {
+  return (modelePourTypeCuisine(typeCuisine)?.lots || REWARDS_PAR_DEFAUT).map((l) => ({ ...l }))
 }

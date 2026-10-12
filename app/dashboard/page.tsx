@@ -12,7 +12,8 @@ import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
 import { plans, OPTION_SITE, libelleMaintenanceSite } from "@/lib/pricing"
-import { REWARDS_PAR_DEFAUT, MODELES_ROUE } from "@/lib/roue"
+import { REWARDS_PAR_DEFAUT, MODELES_ROUE, lotsPourTypeCuisine, modelePourTypeCuisine } from "@/lib/roue"
+import { insererLotsRoue } from "@/lib/roue-config"
 import { type LotEco, estPerdu, tauxGain, unClientSur, coutParPartie, coutMaxParJour, verdict, ajusterPourRentabilite, SEUIL_RENTABLE, SEUIL_RISQUE, CIBLE_AJUSTEMENT } from "@/lib/rentabilite"
 import { statutRecompense, regrouperParClient, normaliserRecherche, DUREE_VALIDITE_JOURS } from "@/lib/recompenses"
 
@@ -142,6 +143,14 @@ function DashboardContent() {
             max_par_jour: r.max_par_jour ?? null,
             garanti_apres_visites: r.garanti_apres_visites ?? null,
           })))
+        } else if (data) {
+          // Aucune roue reglee : on l'initialise avec le modele de son type de cuisine
+          // (choisi a l'inscription), pour que ses clients jouent tout de suite a une roue adaptee
+          const depart = lotsPourTypeCuisine(user.user_metadata?.type_cuisine)
+          setRewards(depart.map((l) => ({ ...l, max_par_jour: l.max_par_jour ?? null, garanti_apres_visites: l.garanti_apres_visites ?? null })))
+          insererLotsRoue(supabase, slug, depart).then(({ error }) => {
+            if (error) console.warn("Roue de depart non creee :", error.message)
+          })
         }
 
         const { data: clientsData } = await supabase
@@ -426,32 +435,9 @@ function DashboardContent() {
       setSaving(false)
       return
     }
-    // On enregistre aussi le cout et le plafond par jour de chaque lot ; si ces colonnes
-    // n'existent pas encore en base, on reessaie sans (pour ne jamais perdre la roue).
-    const lignes = rewards.map(r => ({
-      label: r.label,
-      probabilite: r.probabilite,
-      couleur: r.couleur,
-      cout: r.cout === null || r.cout === undefined || (r.cout as any) === "" ? null : Number(r.cout),
-      max_par_jour: r.max_par_jour ? Number(r.max_par_jour) : null,
-      garanti_apres_visites: r.garanti_apres_visites ? Number(r.garanti_apres_visites) : null,
-      restaurant_id: slug,
-    }))
-    let { error: insertError } = await supabase.from("roue_config").insert(lignes)
-    if (insertError && /cout|max_par_jour|garanti|column/i.test(insertError.message)) {
-      ;({ error: insertError } = await supabase
-        .from("roue_config")
-        .insert(lignes.map(({ cout, max_par_jour, garanti_apres_visites, ...reste }) => reste)))
-    }
-    if (insertError && /integer/i.test(insertError.message)) {
-      // Base pas encore migree (probabilites entieres) : on arrondit et la case "Perdu" absorbe la difference
-      const arrondies = lignes.map(({ cout, max_par_jour, garanti_apres_visites, ...l }) => ({ ...l, probabilite: Math.round(l.probabilite) }))
-      const somme = arrondies.filter(l => l.label !== "Perdu 😢").reduce((a, l) => a + l.probabilite, 0)
-      const perdu = arrondies.find(l => l.label === "Perdu 😢")
-      if (perdu) perdu.probabilite = Math.max(0, 100 - somme)
-      ;({ error: insertError } = await supabase.from("roue_config").insert(arrondies))
-      if (!insertError) afficherToast("Pourcentages arrondis : demandez la mise à jour de la base pour les décimales.", "erreur")
-    }
+    // Insertion tolerante : marche meme si la base n'a pas encore les nouvelles colonnes
+    const { error: insertError, arrondi } = await insererLotsRoue(supabase, slug, rewards)
+    if (arrondi) afficherToast("Pourcentages arrondis : demandez la mise à jour de la base pour les décimales.", "erreur")
     if (insertError) {
       console.error("Erreur insert:", insertError)
       afficherToast("Erreur lors de la sauvegarde : " + insertError.message, "erreur")
@@ -1528,14 +1514,18 @@ function DashboardContent() {
                   {MODELES_ROUE.map((m) => (
                     <button
                       key={m.id}
+                      title={modelePourTypeCuisine(user?.user_metadata?.type_cuisine)?.id === m.id ? "Recommandé pour votre type de cuisine" : undefined}
                       type="button"
                       onClick={() => {
                         setRewards(m.lots.map((l) => ({ ...l, max_par_jour: l.max_par_jour ?? null, garanti_apres_visites: l.garanti_apres_visites ?? null })))
                         afficherToast(`Modèle « ${m.nom} » appliqué. Ajustez si besoin puis sauvegardez.`)
                       }}
-                      className="rounded-full border border-wine/20 bg-card px-3.5 py-1.5 text-sm font-medium text-ink hover:border-wine hover:text-wine"
+                      className={`rounded-full border px-3.5 py-1.5 text-sm font-medium hover:border-wine hover:text-wine ${
+                        modelePourTypeCuisine(user?.user_metadata?.type_cuisine)?.id === m.id ? "border-gold bg-gold/20 text-wine-dark" : "border-wine/20 bg-card text-ink"
+                      }`}
                     >
                       {m.nom}
+                      {modelePourTypeCuisine(user?.user_metadata?.type_cuisine)?.id === m.id && <span className="ml-1.5 text-xs">★ pour vous</span>}
                     </button>
                   ))}
                 </div>

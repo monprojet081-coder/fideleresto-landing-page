@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
+import { lotsPourTypeCuisine } from '@/lib/roue'
+import { insererLotsRoue } from '@/lib/roue-config'
 import {
   getStripe,
   STRIPE_PRICES,
@@ -57,6 +59,14 @@ export async function POST(req: NextRequest) {
         console.error('Erreur création restaurant (create-checkout-session):', erreurInsert.message)
       }
       restaurant = newResto
+      if (newResto) {
+        // Roue de depart adaptee au type de cuisine choisi a l'inscription (non bloquant)
+        const { count } = await supabase.from('roue_config').select('id', { count: 'exact', head: true }).eq('restaurant_id', slug)
+        if (!count) {
+          const { error: erreurRoue } = await insererLotsRoue(supabase, slug, lotsPourTypeCuisine(userData?.user?.user_metadata?.type_cuisine))
+          if (erreurRoue) console.error('Roue de depart non creee :', erreurRoue.message)
+        }
+      }
     }
 
     if (!restaurant) {
