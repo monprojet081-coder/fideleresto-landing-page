@@ -15,6 +15,7 @@ import { plans, OPTION_SITE, libelleMaintenanceSite } from "@/lib/pricing"
 import { REWARDS_PAR_DEFAUT, MODELES_ROUE, lotsPourTypeCuisine, modelePourTypeCuisine } from "@/lib/roue"
 import { insererLotsRoue } from "@/lib/roue-config"
 import { RoueChance, LegendeLots } from "@/components/roue-chance"
+import { CarteFideliteVisuelle } from "@/components/carte-fidelite-visuelle"
 import { type LotEco, estPerdu, tauxGain, unClientSur, coutParPartie, coutMaxParJour, verdict, ajusterPourRentabilite, SEUIL_RENTABLE, SEUIL_RISQUE, CIBLE_AJUSTEMENT } from "@/lib/rentabilite"
 import { statutRecompense, regrouperParClient, normaliserRecherche, DUREE_VALIDITE_JOURS } from "@/lib/recompenses"
 
@@ -2063,27 +2064,38 @@ function DashboardContent() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-display font-semibold text-ink">Menu digital</h1>
-              <p className="text-ink/70 mt-1">Importez votre menu existant, visible par vos clients sur leur carte de fidélité</p>
+              <p className="mt-1 max-w-2xl text-ink/80">
+                Envoyez votre menu une seule fois : vos clients le consultent depuis leur téléphone, juste sous leur carte
+                de fidélité. Pas besoin de le refaire, une photo de votre menu papier suffit.
+              </p>
             </div>
 
-            <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-2xl">
-              {restaurant?.menu_type && (
-                <div className="flex items-center justify-between rounded-lg bg-secondary/40 px-4 py-3 mb-5">
-                  <p className="text-sm text-ink/80">
-                    Menu actuel : <span className="font-medium text-ink capitalize">{restaurant.menu_type}</span>
+            <div className="max-w-2xl space-y-5">
+              <div className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 p-5 ${restaurant?.menu_type ? "border-sage/50 bg-sage/10" : "border-wine/10 bg-card"}`}>
+                <div>
+                  <p className="font-display text-lg font-semibold text-ink">
+                    {restaurant?.menu_type ? <>Votre menu est en ligne <span className="text-sage">✓</span></> : "Aucun menu pour l'instant"}
                   </p>
-                  <a href={restaurant.menu_url} target="_blank" rel="noreferrer" className="text-sm text-wine font-medium hover:underline">
-                    Voir le fichier →
-                  </a>
+                  <p className="text-sm text-ink/80">
+                    {restaurant?.menu_type ? <>Fichier actuel : <span className="uppercase">{restaurant.menu_type}</span>. Pour le changer, envoyez-en un nouveau ci-dessous.</> : "Vos clients verront un bouton « Voir le menu » dès que vous l'aurez ajouté."}
+                  </p>
                 </div>
-              )}
+                {restaurant?.menu_url && (
+                  <a href={restaurant.menu_url} target="_blank" rel="noreferrer" className="rounded-xl border-2 border-wine px-4 py-2 text-sm font-semibold text-wine hover:bg-wine hover:text-gold-light">
+                    Voir mon menu
+                  </a>
+                )}
+              </div>
 
-              <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-wine/20 rounded-xl py-10 cursor-pointer hover:border-gold/50 transition-colors">
-                <BookOpen className="size-8 text-wine/40" />
-                <p className="text-sm text-ink/80">
-                  {uploadingMenu ? "Envoi en cours..." : "Cliquez pour choisir votre fichier"}
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-wine/25 bg-card px-4 py-12 text-center transition-colors hover:border-gold hover:bg-gold/5">
+                <span className="flex size-14 items-center justify-center rounded-full bg-wine/10">
+                  <BookOpen className="size-7 text-wine" />
+                </span>
+                <p className="mt-1 font-display text-lg font-semibold text-ink">
+                  {uploadingMenu ? "Envoi en cours..." : restaurant?.menu_type ? "Remplacer mon menu" : "Ajouter mon menu"}
                 </p>
-                <p className="text-xs text-ink/65">PDF, JPG, PNG, Word (.docx) ou Excel (.xlsx)</p>
+                <p className="text-sm text-ink/75">Cliquez ici et choisissez le fichier, ou prenez votre menu en photo</p>
+                <p className="text-xs text-ink/70">PDF, JPG, PNG, Word (.docx) ou Excel (.xlsx)</p>
                 <input
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png,.webp,.docx,.xlsx,.xls"
@@ -2093,8 +2105,12 @@ function DashboardContent() {
                 />
               </label>
 
-              {menuUploadError && <p className="text-sm text-wine mt-4">{menuUploadError}</p>}
-              {menuUploadSuccess && <p className="text-sm text-sage mt-4">Menu importé avec succès !</p>}
+              {menuUploadError && <p className="rounded-xl bg-wine/10 px-4 py-3 text-sm text-wine">{menuUploadError}</p>}
+              {menuUploadSuccess && <p className="rounded-xl bg-sage/15 px-4 py-3 text-sm font-medium text-sage">✓ Menu importé ! Vos clients le voient déjà.</p>}
+
+              <p className="rounded-xl bg-gold/10 px-4 py-3 text-sm text-ink/85">
+                💡 Une photo nette, prise à la lumière du jour et bien droite, suffit. Si votre menu fait plusieurs pages, un PDF est plus pratique.
+              </p>
             </div>
           </div>
         )}
@@ -2320,108 +2336,145 @@ function DashboardContent() {
           </div>
         )}
 
-        {activeSection === "fidelite" && estComplet && (
+        {activeSection === "fidelite" && estComplet && (() => {
+          const tries = [...clientsFidelite].sort((a, b) => (b.tampons || 0) - (a.tampons || 0))
+          return (
           <div>
             <div className="mb-8">
-              <h1 className="text-2xl font-display font-semibold text-ink">Carte fidélité</h1>
-              <p className="text-ink/70 mt-1">Réglez votre carte et validez les passages de vos clients</p>
+              <h1 className="text-2xl font-display font-semibold text-ink">Carte de fidélité</h1>
+              <p className="mt-1 max-w-2xl text-ink/80">
+                Chaque visite = un tampon sur la carte du client, dans son téléphone. Quand la carte est pleine, il reçoit
+                la récompense que vous choisissez ici. Pour ajouter un tampon, utilisez le bouton « Scanner un client ».
+              </p>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-2 max-w-4xl">
-              {/* Réglages */}
-              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
-                <p className="text-sm font-medium text-ink mb-4">Réglages de la carte</p>
+            <div className="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
+              <div className="space-y-5">
+                <EtapeNumerotee n={1} titre="Combien de visites pour la récompense ?">
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="range"
+                      min={6}
+                      max={15}
+                      value={tamponsRequis}
+                      onChange={e => setTamponsRequis(parseInt(e.target.value))}
+                      className="h-2 flex-1 accent-wine"
+                      aria-label="Nombre de tampons requis"
+                    />
+                    <span className="w-24 shrink-0 rounded-xl bg-wine px-3 py-2 text-center font-display text-lg font-semibold text-gold-light">{tamponsRequis} visites</span>
+                  </div>
+                  <p className="mt-3 rounded-lg bg-ivory px-3 py-2 text-sm text-ink/80">
+                    💡 <strong>8 à 10 visites</strong> marche bien : assez proche pour motiver, assez loin pour rester rentable.
+                  </p>
+                </EtapeNumerotee>
 
-                <label className="block text-sm text-ink/80 mb-1">
-                  Nombre de tampons requis : <span className="font-semibold text-wine">{tamponsRequis}</span>
-                </label>
-                <input
-                  type="range"
-                  min={6}
-                  max={15}
-                  value={tamponsRequis}
-                  onChange={e => setTamponsRequis(parseInt(e.target.value))}
-                  className="w-full accent-wine mb-4"
-                />
+                <EtapeNumerotee n={2} titre="Quelle récompense quand la carte est pleine ?">
+                  <input
+                    type="text"
+                    value={recompenseFidelite}
+                    onChange={e => setRecompenseFidelite(e.target.value)}
+                    placeholder="Ex : Un menu offert"
+                    className="w-full rounded-xl border border-wine/20 px-4 py-3 text-base text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                  />
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {["Un menu offert", "Un plat offert", "Une pizza offerte", "-50 % sur l'addition"].map((idee) => (
+                      <button key={idee} onClick={() => setRecompenseFidelite(idee)}
+                        className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${recompenseFidelite === idee ? "border-wine bg-wine text-gold-light" : "border-wine/20 text-ink/85 hover:border-wine/50"}`}>
+                        {idee}
+                      </button>
+                    ))}
+                  </div>
+                </EtapeNumerotee>
 
-                <label className="block text-sm text-ink/80 mb-1">Montant minimum pour valider un tampon (€)</label>
-                <input
-                  type="number"
-                  step="0.5"
-                  min={0}
-                  value={montantMin}
-                  onChange={e => setMontantMin(parseFloat(e.target.value))}
-                  className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-
-                <label className="block text-sm text-ink/80 mb-1">Récompense offerte</label>
-                <input
-                  type="text"
-                  value={recompenseFidelite}
-                  onChange={e => setRecompenseFidelite(e.target.value)}
-                  className="w-full border border-wine/15 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-gold"
-                />
+                <EtapeNumerotee n={3} titre="À partir de combien d'euros on donne un tampon ?">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      step="0.5"
+                      min={0}
+                      value={montantMin}
+                      onChange={e => setMontantMin(parseFloat(e.target.value))}
+                      className="w-28 rounded-xl border border-wine/20 px-4 py-3 text-base text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                      aria-label="Montant minimum en euros"
+                    />
+                    <span className="text-base text-ink/85">€ dépensés minimum</span>
+                  </div>
+                  <p className="mt-3 rounded-lg bg-ivory px-3 py-2 text-sm text-ink/80">
+                    💡 Évite qu&apos;un client prenne un tampon pour une simple canette. Mettez à peu près le prix d&apos;un menu.
+                  </p>
+                </EtapeNumerotee>
 
                 <button
                   onClick={saveFideliteConfig}
                   disabled={savingFidelite}
-                  className="w-full bg-wine hover:bg-wine-dark disabled:opacity-60 text-gold-light font-medium py-2.5 rounded-lg text-sm"
+                  className="w-full rounded-xl bg-wine px-8 py-3.5 text-base font-semibold text-gold-light shadow-lg shadow-wine/20 transition-colors hover:bg-wine-dark disabled:opacity-60 sm:w-auto"
                 >
-                  {savingFidelite ? "Sauvegarde..." : "Sauvegarder les réglages"}
+                  {savingFidelite ? "Enregistrement..." : "Enregistrer ma carte"}
                 </button>
               </div>
 
-              {/* La validation des passages se fait dans l'onglet Scanner (commun aux deux plans) */}
-              <div className="bg-card rounded-xl p-6 border border-wine/10 shadow-sm">
-                <p className="text-sm font-medium text-ink mb-2">Valider un passage client</p>
-                <p className="text-sm text-ink/75 mb-4">Scannez la carte du client ou retrouvez-le par email depuis l&apos;onglet Scanner.</p>
+              <div className="space-y-4 lg:sticky lg:top-6">
+                <p className="text-sm font-semibold uppercase tracking-wide text-ink/75">Ce que voit votre client</p>
+                <div className="mx-auto max-w-[340px]">
+                  <CarteFideliteVisuelle
+                    nomRestaurant={restaurant?.nom_restaurant || "Votre restaurant"}
+                    tampons={Math.min(3, tamponsRequis)}
+                    requis={tamponsRequis}
+                    recompense={recompenseFidelite || "Votre récompense"}
+                  />
+                </div>
                 <button
-                  onClick={() => setActiveSection("scanner")}
-                  className="w-full flex items-center justify-center gap-2 bg-wine hover:bg-wine-dark text-gold-light font-medium py-3 rounded-lg text-sm"
+                  onClick={() => allerA("scanner")}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gold py-3 text-base font-semibold text-wine-dark shadow transition-colors hover:bg-gold-light"
                 >
-                  <ScanLine className="size-4" />
-                  Ouvrir le scanner
+                  <ScanLine className="size-5" />
+                  Ajouter un tampon à un client
                 </button>
               </div>
             </div>
 
-            {/* Liste des clients avec leur progression */}
-            <div className="mt-6 bg-card rounded-xl p-6 border border-wine/10 shadow-sm max-w-4xl">
-              <p className="text-sm font-medium text-ink mb-4">
-                Clients ({clientsFidelite.length})
-              </p>
-
+            {/* Clients et progression */}
+            <div className="mt-8 rounded-2xl border border-wine/10 bg-card p-5 shadow-sm sm:p-6">
+              <h2 className="font-display text-lg font-semibold text-ink">
+                Cartes de vos clients <span className="text-ink/70">({clientsFidelite.length})</span>
+              </h2>
               {chargementClientsFidelite ? (
-                <p className="text-sm text-ink/70">Chargement...</p>
+                <p className="mt-3 text-sm text-ink/75">Chargement...</p>
               ) : clientsFidelite.length === 0 ? (
-                <p className="text-sm text-ink/70">Aucun client n&apos;a encore créé de carte de fidélité.</p>
+                <p className="mt-3 text-sm text-ink/75">
+                  Aucun client n&apos;a encore de carte. Elle se crée toute seule quand un client joue à la roue puis ouvre sa carte.
+                </p>
               ) : (
-                <div className="space-y-3">
-                  {clientsFidelite.map((c) => (
-                    <div key={c.client_id} className="flex items-center justify-between gap-4 flex-wrap py-2 border-b border-wine/5 last:border-0">
-                      <p className="text-sm font-medium text-ink min-w-[120px]">
-                        {c.prenom || "Client anonyme"}
-                      </p>
-                      <div className="flex gap-1 flex-wrap">
-                        {Array.from({ length: tamponsRequis }).map((_, i) => (
-                          <span
-                            key={i}
-                            className={`flex size-6 items-center justify-center rounded-full text-xs ${
-                              i < c.tampons ? "bg-wine text-gold-light" : "bg-secondary/50 border border-wine/15 text-ink/20"
-                            }`}
-                          >
-                            {i < c.tampons ? "★" : ""}
-                          </span>
-                        ))}
-                      </div>
-                      <p className="text-xs text-ink/70 whitespace-nowrap">{c.tampons} / {tamponsRequis}</p>
-                    </div>
-                  ))}
-                </div>
+                <ul className="mt-4 divide-y divide-wine/10">
+                  {tries.map((c) => {
+                    const pct = Math.min(100, Math.round(((c.tampons || 0) / tamponsRequis) * 100))
+                    const reste = Math.max(0, tamponsRequis - (c.tampons || 0))
+                    return (
+                      <li key={c.client_id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-wine/10 font-display font-semibold text-wine">
+                          {(c.prenom || "?").trim().charAt(0).toUpperCase()}
+                        </span>
+                        <div className="min-w-[120px] flex-1">
+                          <p className="font-medium text-ink">{c.prenom || "Client anonyme"}</p>
+                          <div className="mt-1.5 h-2 w-full max-w-xs overflow-hidden rounded-full bg-wine/10">
+                            <div className={`h-full rounded-full ${reste === 0 ? "bg-gold" : "bg-wine"}`} style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                        <p className="font-display text-lg font-semibold text-ink">{c.tampons || 0}<span className="text-sm text-ink/70"> / {tamponsRequis}</span></p>
+                        {reste === 0 ? (
+                          <span className="rounded-full bg-gold/25 px-3 py-1 text-xs font-semibold text-wine">🎁 Récompense à donner</span>
+                        ) : reste <= 2 ? (
+                          <span className="rounded-full bg-sage/15 px-3 py-1 text-xs font-semibold text-sage">Plus que {reste}</span>
+                        ) : null}
+                      </li>
+                    )
+                  })}
+                </ul>
               )}
             </div>
           </div>
-        )}
+          )
+        })()}
 
         {activeSection === "retours" && (
           <div>
