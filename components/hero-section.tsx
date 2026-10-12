@@ -40,9 +40,9 @@ export function HeroSection() {
                 size="lg"
                 className="-ml-3 h-12 px-3 text-base text-ink underline sm:ml-0 decoration-wine/30 decoration-2 underline-offset-4 hover:bg-transparent hover:text-wine"
                 nativeButton={false}
-                render={<a href="#comment-ca-marche" />}
+                render={<a href="#video" />}
               >
-                Voir comment ça marche
+                Voir la vidéo (38 s)
               </Button>
             </div>
 

@@ -4,7 +4,7 @@ export const metadata = { title: "Cookies" }
 
 export default function CookiesPage() {
   return (
-    <LegalLayout title="Politique de cookies" majDate="13 juillet 2026">
+    <LegalLayout title="Politique de cookies" majDate="12 octobre 2026">
       <section>
         <p>
           Un cookie est un petit fichier stocké sur votre appareil lors de votre navigation. Cette page explique
@@ -23,6 +23,12 @@ export default function CookiesPage() {
           service, notamment pour maintenir votre session connectée lorsque vous utilisez votre espace restaurateur.
           Conformément aux recommandations de la CNIL, ces cookies techniques, indispensables au fonctionnement du
           site, sont exemptés de consentement préalable.
+        </p>
+        <p className="mt-2">
+          <strong>Vidéo de présentation :</strong> la vidéo de la page d'accueil est hébergée sur YouTube. Elle
+          n'est chargée que si vous cliquez sur le bouton de lecture, via le mode « confidentialité renforcée »
+          de YouTube (youtube-nocookie.com). Aucun contenu YouTube n'est chargé tant que vous ne lancez pas la
+          vidéo ; en la lançant, YouTube peut déposer ses propres cookies, régis par la politique de Google.
         </p>
       </section>
 
