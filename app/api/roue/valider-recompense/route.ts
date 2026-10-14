@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifierRestaurateur } from '@/lib/verifierRestaurateur'
 import { DUREE_VALIDITE_JOURS } from '@/lib/recompenses'
+import { DEBUT_QR_SIGNES, verifierSignatureRecompense } from '@/lib/securite'
 
 export async function POST(req: NextRequest) {
   try {
-    const { slug, clientRowId } = await req.json()
+    const { slug, clientRowId, signature, depuisQr } = await req.json()
     if (!slug || !clientRowId) {
       return NextResponse.json({ error: 'Champs manquants' }, { status: 400 })
     }
@@ -23,6 +24,12 @@ export async function POST(req: NextRequest) {
 
     if (error || !client) {
       return NextResponse.json({ error: 'Récompense introuvable' }, { status: 404 })
+    }
+
+    // QR code scanne : il doit porter la signature du serveur (sinon il a ete fabrique a la main).
+    // Les QR envoyes avant la mise en place des signatures restent acceptes jusqu'a expiration.
+    if (depuisQr && new Date(client.created_at) >= DEBUT_QR_SIGNES && !verifierSignatureRecompense(String(client.id), signature)) {
+      return NextResponse.json({ error: "QR code non reconnu : il ne vient pas d'un email FidèleResto. Cherchez le client par son email." }, { status: 400 })
     }
 
     if (!client.a_gagne) {

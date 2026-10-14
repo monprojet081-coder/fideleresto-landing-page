@@ -1,8 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
+import { randomUUID } from 'crypto'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import { REWARDS_PAR_DEFAUT, LABEL_PERDU, type Lot as Reward } from '@/lib/roue'
+import { EMAIL_VALIDE, emailCanonique, estEmailJetable, hashIp } from '@/lib/securite'
+import { envoyerEmailRecompense } from '@/lib/email-recompense'
 
+// Garde-fous contre ceux qui voudraient tourner la roue en boucle jusqu'a gagner
+const MAX_PARTIES_APPAREIL = 2 // par appareil (telephone), par periode de jeu (1 jour par defaut)
+const MAX_PARTIES_IP_10MIN = 8 // depuis la meme connexion, en 10 minutes
+const MAX_PARTIES_IP_JOUR = 40 // depuis la meme connexion, en 24 h (wifi du restaurant partage)
+const COOKIE_APPAREIL = 'fr_app'
 
+/** Minuit (heure de Paris) il y a `joursAvant` jours, en date UTC */
+function minuitParis(joursAvant = 0): Date {
+  const maintenant = new Date()
+  const paris = new Date(maintenant.toLocaleString('en-US', { timeZone: 'Europe/Paris' }))
+  const decalage = paris.getTime() - maintenant.getTime()
+  paris.setHours(0, 0, 0, 0)
+  paris.setDate(paris.getDate() - joursAvant)
+  return new Date(paris.getTime() - decalage)
+}
 
 // Emails de test internes, jamais soumis a la limite d'un tirage par jour
 const EMAILS_TEST = ["cokillage67@gmail.com", "monprojet081@gmail.com"]
@@ -25,41 +42,82 @@ export async function POST(req: NextRequest) {
     if (!slug || !prenom || !email) {
       return NextResponse.json({ error: 'Champs manquants' }, { status: 400 })
     }
-    const emailNormalise = String(email).trim().toLowerCase()
+    const prenomPropre = String(prenom).trim().slice(0, 40)
+    const emailBrut = String(email).trim().toLowerCase()
+    if (!prenomPropre || !EMAIL_VALIDE.test(emailBrut) || emailBrut.length > 120) {
+      return NextResponse.json({ error: 'Adresse email invalide' }, { status: 400 })
+    }
+    if (estEmailJetable(emailBrut)) {
+      return NextResponse.json({ error: 'Merci d\'utiliser votre adresse email habituelle (les adresses temporaires ne sont pas acceptées).' }, { status: 400 })
+    }
+    // Forme canonique : jean.dupont+2@gmail.com et jeandupont@gmail.com = la meme personne
+    const emailNormalise = emailCanonique(emailBrut)
+    const variantesEmail = [...new Set([emailNormalise, emailBrut])]
+    const estTest = EMAILS_TEST.includes(emailNormalise)
 
-    // Anti-triche : reinitialisation au jour calendaire (minuit), pas une fenetre
-    // glissante en heures -- sinon quelqu'un venu lundi 13h ne pourrait pas retenter
-    // sa chance mardi a 12h. La frequence (tous les combien de jours) est reglable
-    // par le restaurateur, utile pour les petits etablissements qui veulent limiter
-    // le nombre de recompenses offertes.
+    const appareil = req.cookies.get(COOKIE_APPAREIL)?.value || randomUUID()
+    const ipHash = hashIp(req.headers)
+    // On renvoie toujours le cookie d'appareil (cree s'il n'existait pas)
+    const repondre = (body: any, init?: { status?: number }) => {
+      const res = NextResponse.json(body, init)
+      res.cookies.set(COOKIE_APPAREIL, appareil, { httpOnly: true, sameSite: 'lax', secure: true, path: '/', maxAge: 60 * 60 * 24 * 400 })
+      return res
+    }
+
     const { data: restoConfig } = await supabase
       .from('restaurants')
-      .select('roue_frequence_jours')
+      .select('roue_frequence_jours, nom_restaurant')
       .eq('slug', slug)
       .maybeSingle()
+    if (!restoConfig) {
+      return NextResponse.json({ error: 'Restaurant introuvable' }, { status: 404 })
+    }
     const frequenceJours = restoConfig?.roue_frequence_jours || 1
 
-    const debutFenetre = new Date()
-    debutFenetre.setHours(0, 0, 0, 0)
-    debutFenetre.setDate(debutFenetre.getDate() - (frequenceJours - 1))
+    // Une partie par periode de jeu, remise a zero a minuit (heure de Paris)
+    const debutFenetre = minuitParis(frequenceJours - 1)
 
-    if (!EMAILS_TEST.includes(emailNormalise)) {
+    if (!estTest) {
       const { data: existing } = await supabase
         .from('clients')
         .select('id')
-        .eq('email', emailNormalise)
+        .in('email', variantesEmail)
         .eq('restaurant_slug', slug)
         .gte('created_at', debutFenetre.toISOString())
+        .limit(1)
 
       if (existing && existing.length > 0) {
-        return NextResponse.json({ dejaJoue: true, frequenceJours })
+        return repondre({ dejaJoue: true, frequenceJours })
+      }
+
+      // Meme telephone avec d'autres adresses email
+      const parAppareil = await supabase
+        .from('clients')
+        .select('id', { count: 'exact', head: true })
+        .eq('restaurant_slug', slug)
+        .eq('appareil', appareil)
+        .gte('created_at', debutFenetre.toISOString())
+      if (!parAppareil.error && (parAppareil.count || 0) >= MAX_PARTIES_APPAREIL) {
+        return repondre({ dejaJoue: true, frequenceJours })
+      }
+
+      // Meme connexion internet : rafale ou volume anormal
+      if (ipHash) {
+        const depuis = (minutes: number) => new Date(Date.now() - minutes * 60000).toISOString()
+        const [rafale, jour] = await Promise.all([
+          supabase.from('clients').select('id', { count: 'exact', head: true }).eq('restaurant_slug', slug).eq('ip_hash', ipHash).gte('created_at', depuis(10)),
+          supabase.from('clients').select('id', { count: 'exact', head: true }).eq('restaurant_slug', slug).eq('ip_hash', ipHash).gte('created_at', depuis(24 * 60)),
+        ])
+        if ((!rafale.error && (rafale.count || 0) >= MAX_PARTIES_IP_10MIN) || (!jour.error && (jour.count || 0) >= MAX_PARTIES_IP_JOUR)) {
+          return repondre({ error: 'Trop de parties depuis cette connexion. Réessayez un peu plus tard.' }, { status: 429 })
+        }
       }
     }
 
     const { count: visitesPrecedentes } = await supabase
       .from('clients')
       .select('id', { count: 'exact', head: true })
-      .eq('email', emailNormalise)
+      .in('email', variantesEmail)
       .eq('restaurant_slug', slug)
     const dejaVenu = (visitesPrecedentes || 0) > 0
 
@@ -70,7 +128,7 @@ export async function POST(req: NextRequest) {
       const { count: nbAvis, error: avisError } = await supabase
         .from('clients')
         .select('id', { count: 'exact', head: true })
-        .eq('email', emailNormalise)
+        .in('email', variantesEmail)
         .eq('restaurant_slug', slug)
         .eq('avis_google_clique', true)
       dejaAvis = !avisError && (nbAvis || 0) > 0
@@ -120,12 +178,7 @@ export async function POST(req: NextRequest) {
     const plafonnes = new Set<string>()
     // (un lot garanti est toujours donne, meme si son plafond du jour est atteint)
     for (let essai = 0; !garanti && essai < rewardsList.length && reward.max_par_jour && reward.label !== LABEL_PERDU; essai++) {
-      // minuit heure de Paris (le serveur tourne en UTC)
-      const maintenant = new Date()
-      const paris = new Date(maintenant.toLocaleString('en-US', { timeZone: 'Europe/Paris' }))
-      const decalage = paris.getTime() - maintenant.getTime()
-      paris.setHours(0, 0, 0, 0)
-      const debutJour = new Date(paris.getTime() - decalage)
+      const debutJour = minuitParis(0)
       const { count } = await supabase
         .from('clients')
         .select('id', { count: 'exact', head: true })
@@ -145,18 +198,23 @@ export async function POST(req: NextRequest) {
       reward = tirerRecompense(restants.map((l) => ({ ...l, probabilite: (l.probabilite / total) * 100 })))
     }
 
-    const { data: nouveauClient, error: insertError } = await supabase
+    const ligne = {
+      prenom: prenomPropre,
+      email: emailNormalise,
+      restaurant_slug: slug,
+      a_gagne: reward.label !== LABEL_PERDU,
+      recompense: reward.label,
+      consentement_marketing: !!consentementMarketing,
+    }
+    let { data: nouveauClient, error: insertError } = await supabase
       .from('clients')
-      .insert([{
-        prenom,
-        email: emailNormalise,
-        restaurant_slug: slug,
-        a_gagne: reward.label !== LABEL_PERDU,
-        recompense: reward.label,
-        consentement_marketing: !!consentementMarketing,
-      }])
+      .insert([{ ...ligne, appareil, ip_hash: ipHash }])
       .select('id')
       .single()
+    if (insertError && /appareil|ip_hash/.test(insertError.message)) {
+      // colonnes anti-triche pas encore creees : on enregistre quand meme la partie
+      ;({ data: nouveauClient, error: insertError } = await supabase.from('clients').insert([ligne]).select('id').single())
+    }
 
     if (insertError) {
       console.error('Erreur insertion client:', insertError.message)
@@ -166,7 +224,14 @@ export async function POST(req: NextRequest) {
     // Cas rare (tous les lots plafonnes et pas de case "Perdu") : on ajoute la case pour que la roue puisse s'y arreter
     if (!rewardsList.some((l) => l.label === reward.label)) rewardsList.push(reward)
 
-    return NextResponse.json({ dejaJoue: false, dejaVenu, dejaAvis, reward, rewardsList, clientRowId: nouveauClient?.id, frequenceJours, progression })
+    // L'email de la recompense part du serveur, juste apres la reponse : personne ne peut
+    // declencher un envoi a sa place, et le QR code (signe) n'est visible que dans l'email.
+    if (reward.label !== LABEL_PERDU && nouveauClient?.id) {
+      const id = String(nouveauClient.id)
+      after(() => envoyerEmailRecompense({ id, prenom: prenomPropre, email: emailNormalise, recompense: reward.label, restaurantNom: restoConfig?.nom_restaurant, slug }))
+    }
+
+    return repondre({ dejaJoue: false, dejaVenu, dejaAvis, reward, rewardsList, clientRowId: nouveauClient?.id, frequenceJours, progression })
   } catch (err: any) {
     console.error('Erreur roue/jouer:', err)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })

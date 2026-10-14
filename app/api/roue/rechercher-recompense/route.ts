@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifierRestaurateur } from '@/lib/verifierRestaurateur'
+import { emailCanonique } from '@/lib/securite'
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
       .from('clients')
       .select('id, prenom, email, recompense, recompense_utilisee, recompense_utilisee_le, created_at')
       .eq('restaurant_slug', slug)
-      .eq('email', email.trim().toLowerCase())
+      .in('email', [...new Set([email.trim().toLowerCase(), emailCanonique(email)])])
       .eq('a_gagne', true)
       .order('created_at', { ascending: false })
       .limit(5)

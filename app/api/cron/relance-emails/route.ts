@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { echapperHtml } from '@/lib/securite'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import { getResend } from '@/lib/resend'
 
@@ -10,7 +11,7 @@ export async function GET(req: NextRequest) {
   const supabaseAdmin = getSupabaseAdmin()
   // Vérifie que l'appel vient bien de Vercel Cron (et pas de n'importe qui sur internet)
   const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   }
 
@@ -65,8 +66,8 @@ export async function GET(req: NextRequest) {
             subject: `${passage.prenom}, on ne vous a pas vu depuis un moment 👋`,
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #241914;">
-                <h1 style="color: #6b1e2e; text-align: center;">On vous attend chez ${resto.nom_restaurant} !</h1>
-                <p style="font-size: 16px;">Bonjour ${passage.prenom},</p>
+                <h1 style="color: #6b1e2e; text-align: center;">On vous attend chez ${echapperHtml(resto.nom_restaurant)} !</h1>
+                <p style="font-size: 16px;">Bonjour ${echapperHtml(passage.prenom)},</p>
                 <p>Ça fait un moment qu'on ne vous a pas vu. Pour vous donner envie de revenir, voici <strong>${resto.relance_pourcentage}% de réduction</strong> sur votre prochaine visite :</p>
                 <div style="background: #faf3e8; border: 2px dashed #6b1e2e; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0;">
                   <p style="font-size: 28px; font-weight: bold; color: #6b1e2e; margin: 0;">-${resto.relance_pourcentage}%</p>

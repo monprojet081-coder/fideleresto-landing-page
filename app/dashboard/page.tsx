@@ -756,10 +756,10 @@ function DashboardContent() {
             return
           }
           if (code && code.data.startsWith("fideleresto:recompense:")) {
-            const clientRowId = code.data.replace("fideleresto:recompense:", "")
+            const [clientRowId, signature] = code.data.replace("fideleresto:recompense:", "").split(":")
             arreterScan()
             setClientTrouve(null)
-            validerRecompenseParId(clientRowId)
+            validerRecompenseParId(clientRowId, signature || "")
             return
           }
         }
@@ -794,13 +794,15 @@ function DashboardContent() {
     setRechercheLoading(false)
   }
 
-  const validerRecompenseParId = async (clientRowId: string) => {
+  // signature : presente quand on scanne le QR de l'email ; null quand le restaurateur
+  // choisit lui-meme la recompense apres une recherche par email
+  const validerRecompenseParId = async (clientRowId: string, signature: string | null = null) => {
     const slug = user.id.slice(0, 8)
     const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch("/api/roue/valider-recompense", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token}` },
-      body: JSON.stringify({ slug, clientRowId }),
+      body: JSON.stringify({ slug, clientRowId, signature, depuisQr: signature !== null }),
     })
     const result = await res.json()
     setRecompenseScanResult(result)

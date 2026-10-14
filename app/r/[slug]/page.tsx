@@ -35,8 +35,6 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [progression, setProgression] = useState<{ label: string; tous: number; passage: number } | null>(null)
   const [clientRowId, setClientRowId] = useState<string | null>(null)
   const [frequenceJours, setFrequenceJours] = useState(1)
-  const [emailStatut, setEmailStatut] = useState<"ok" | "echec" | null>(null)
-  const [recompenseRowId, setRecompenseRowId] = useState<string | null>(null)
   // Alerte insatisfaction (Premium) : on capte une note avant d'envoyer vers Google
   const [noteAvis, setNoteAvis] = useState(0)
   const [commentaireAvis, setCommentaireAvis] = useState("")
@@ -95,21 +93,6 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
       })
   }, [slug])
 
-  // Si l'email n'a pas pu partir, on affiche le QR de la recompense directement a l'ecran
-  // pour que le client reparte quand meme avec son gain (capture d'ecran).
-  React.useEffect(() => {
-    if (step === "win" && emailStatut === "echec" && recompenseRowId) {
-      import("qrcode").then((QRCode) => {
-        const canvas = document.getElementById("qr-recompense-canvas") as HTMLCanvasElement | null
-        if (canvas) {
-          QRCode.toCanvas(canvas, `fideleresto:recompense:${recompenseRowId}`, {
-            width: 180, margin: 1, color: { dark: "#241914", light: "#ffffff" },
-          }, () => {})
-        }
-      })
-    }
-  }, [step, emailStatut, recompenseRowId])
-
   // Le tirage au sort de la recompense se fait desormais cote serveur (/api/roue/jouer),
   // impossible a manipuler depuis la console du navigateur.
 
@@ -163,29 +146,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
     const listeAffichee: Lot[] = rewards.some(r => r.label === reward.label) ? rewards : data.rewardsList
     if (listeAffichee !== rewards) setRewards(listeAffichee)
 
-    if (reward.label !== LABEL_PERDU) {
-      setRecompenseRowId(data.clientRowId || null)
-      // Envoi de l'email en parallele : on n'attend plus sa reponse pour lancer la roue.
-      // Le resultat est connu bien avant la fin du tour (8 s).
-      fetch("/api/send-reward-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prenom, email, recompense: reward.label, restaurantNom: nomRestaurant, slug, clientRowId: data.clientRowId }),
-      })
-        .then(async (resEmail) => {
-          if (resEmail.ok) {
-            setEmailStatut("ok")
-          } else {
-            const detail = await resEmail.json().catch(() => null)
-            console.error("Envoi de l'email de recompense impossible :", detail)
-            setEmailStatut("echec")
-          }
-        })
-        .catch((err) => {
-          console.error("Envoi de l'email de recompense impossible :", err)
-          setEmailStatut("echec")
-        })
-    }
+    // L'email de la recompense (avec son QR code) est envoye par le serveur.
 
     setResult(reward)
     setLoading(false)
@@ -322,19 +283,6 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
               <p className="text-3xl font-display font-semibold text-wine-dark leading-tight">{result.label}</p>
             </div>
 
-            {emailStatut === "echec" ? (
-              <div className="mb-5 rounded-2xl border-2 border-gold/50 bg-gold/10 p-5 text-left">
-                <p className="text-lg font-semibold text-wine-dark mb-2">L&apos;email n&apos;a pas pu partir</p>
-                <p className="text-base text-ink/90 mb-4">
-                  Pas d&apos;inquiétude, votre gain est bien enregistré. <strong>Faites une capture d&apos;écran de ce code</strong>{" "}
-                  et présentez-la au comptoir au moment de payer.
-                </p>
-                <canvas id="qr-recompense-canvas" width={180} height={180} className="mx-auto max-w-full rounded-lg bg-white p-2 shadow-sm" />
-                <p className="mt-3 text-center text-sm text-ink/80">
-                  Valable {DUREE_VALIDITE_JOURS} jours, utilisable une seule fois.
-                </p>
-              </div>
-            ) : (
               <div className="mb-5 rounded-2xl bg-wine p-5 text-left text-ivory">
                 <p className="font-display text-xl font-semibold text-gold-light mb-2">Pour récupérer votre cadeau</p>
                 <p className="text-base leading-relaxed">
@@ -344,10 +292,9 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
                   📬 Pas d&apos;email ? Regardez dans vos spams (courriers indésirables).
                 </p>
                 <p className="mt-3 text-sm text-ivory/85">
-                  Valable {DUREE_VALIDITE_JOURS} jours, utilisable une seule fois.
+                  Valable {DUREE_VALIDITE_JOURS} jours, utilisable une seule fois. Rien reçu ? Donnez simplement votre adresse email au comptoir.
                 </p>
               </div>
-            )}
 
             {progression && <ProgressionGaranti p={progression} lotGagne={result.label} />}
             <div className="mb-6 rounded-2xl border-2 border-wine/25 bg-ivory p-4">
@@ -618,7 +565,7 @@ function AvisSection({
             await fetch("/api/feedback-insatisfaction", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ slug, note: noteAvis, commentaire: commentaireAvis, prenom, email }),
+              body: JSON.stringify({ slug, note: noteAvis, commentaire: commentaireAvis, clientRowId }),
             }).catch(() => {})
             setEnvoiEnCours(false)
             setAvisEtape("envoye")
