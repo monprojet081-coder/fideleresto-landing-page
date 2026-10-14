@@ -4,7 +4,7 @@ export const metadata = { title: "Cookies" }
 
 export default function CookiesPage() {
   return (
-    <LegalLayout title="Politique de cookies" majDate="12 octobre 2026">
+    <LegalLayout title="Politique de cookies" majDate="14 octobre 2026">
       <section>
         <p>
           Un cookie est un petit fichier stocké sur votre appareil lors de votre navigation. Cette page explique
@@ -20,7 +20,10 @@ export default function CookiesPage() {
         </p>
         <p className="mt-2">
           Nous utilisons uniquement des cookies <strong>strictement nécessaires</strong> au fonctionnement du
-          service, notamment pour maintenir votre session connectée lorsque vous utilisez votre espace restaurateur.
+          service, notamment pour maintenir votre session connectée lorsque vous utilisez votre espace restaurateur,
+          et le cookie « fr_app » déposé quand vous jouez à la roue : un identifiant aléatoire qui garantit l'équité du
+          jeu (une participation par période et par appareil). Il ne contient aucune donnée personnelle et n'est
+          utilisé à aucune autre fin.
           Conformément aux recommandations de la CNIL, ces cookies techniques, indispensables au fonctionnement du
           site, sont exemptés de consentement préalable.
         </p>

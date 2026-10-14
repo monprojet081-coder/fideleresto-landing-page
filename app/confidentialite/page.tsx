@@ -4,7 +4,7 @@ export const metadata = { title: "Politique de confidentialité" }
 
 export default function ConfidentialitePage() {
   return (
-    <LegalLayout title="Politique de confidentialité" majDate="13 juillet 2026">
+    <LegalLayout title="Politique de confidentialité" majDate="14 octobre 2026">
       <section>
         <p>
           FidèleResto (Victor Ehrenbogen, micro-entrepreneur, SIRET 442 585 980 00026) attache une grande importance
@@ -35,7 +35,8 @@ export default function ConfidentialitePage() {
         <h2 className="font-display text-xl font-semibold text-wine">2. Données des clients des restaurants</h2>
         <p className="mt-2"><strong>Données collectées :</strong> prénom, adresse email, historique de vos passages (dates), récompenses obtenues, statut de votre carte de fidélité (nombre de tampons).</p>
         <p className="mt-2"><strong>Finalité :</strong> faire fonctionner la roue de la fidélité et la carte de fidélité digitale, vous envoyer votre récompense par email, et — uniquement si vous avez explicitement coché la case prévue à cet effet lors de votre participation — vous envoyer des offres promotionnelles du restaurant concerné en cas d'inactivité prolongée.</p>
-        <p className="mt-2"><strong>Base légale :</strong> exécution du service demandé (jeu-concours) pour les données de base ; consentement explicite pour les emails promotionnels.</p>
+        <p className="mt-2"><strong>Équité du jeu (anti-fraude) :</strong> pour que chacun ne puisse jouer qu'une fois par période, nous enregistrons aussi un identifiant d'appareil aléatoire (cookie technique) et une empreinte irréversible de votre adresse IP (l'adresse IP elle-même n'est jamais conservée). Ces informations servent uniquement à limiter les parties répétées.</p>
+        <p className="mt-2"><strong>Base légale :</strong> exécution du service demandé (jeu-concours) pour les données de base ; intérêt légitime pour la prévention de la fraude au jeu ; consentement explicite pour les emails promotionnels.</p>
         <p className="mt-2"><strong>Durée de conservation :</strong> 3 ans à compter de votre dernier passage, ou jusqu'à votre demande de suppression.</p>
         <p className="mt-2">
           Vous pouvez à tout moment retirer votre consentement aux emails promotionnels en cliquant sur le lien de
