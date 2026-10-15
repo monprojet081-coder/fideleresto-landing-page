@@ -23,13 +23,22 @@ export function libelleMaintenanceSite(periode: "mensuel" | "semestriel" | "annu
 }
 
 export type PlanKeyPublic = "essentiel" | "standard"
+export type Periode = "mensuel" | "semestriel" | "annuel"
+
+// Remises de base, identiques pour les deux plans
+export const REMISE = { semestriel: 0.1, annuel: 0.2 }
+const COMPLET_PLEIN_TARIF = 180
+const COMPLET_LANCEMENT = 120
+const arrondi = (n: number) => Math.round(n)
+const prixComplet = OFFRE_LANCEMENT_ACTIVE ? COMPLET_LANCEMENT : COMPLET_PLEIN_TARIF
 
 export const plans: {
   key: PlanKeyPublic
   nom: string
   description: string
   prixMensuel: number
-  prixBarre: number | null
+  /** prix "barre" (avant offre de lancement) par periode, ou null */
+  prixBarre: { mensuel: number; semestriel: number; annuel: number } | null
   prixSemestriel: number
   prixAnnuel: number
   totalSemestriel: number
@@ -72,12 +81,17 @@ export const plans: {
     key: "standard",
     nom: "Complet",
     description: "Tout FidèleResto, sans rien laisser de côté",
-    prixMensuel: OFFRE_LANCEMENT_ACTIVE ? 120 : 180,
-    prixBarre: OFFRE_LANCEMENT_ACTIVE ? 180 : null,
-    prixSemestriel: 162,
-    prixAnnuel: 144,
-    totalSemestriel: 972,
-    totalAnnuel: 1728,
+    // L'offre de lancement s'applique a toutes les periodes, puis -10 % / -20 % comme l'Essentiel :
+    // 120 €/mois, 108 €/mois en semestriel (648 €), 96 €/mois en annuel (1 152 €).
+    // ATTENTION : les montants factures viennent des Prices Stripe (STRIPE_PRICE_STANDARD_*).
+    prixMensuel: prixComplet,
+    prixBarre: OFFRE_LANCEMENT_ACTIVE
+      ? { mensuel: COMPLET_PLEIN_TARIF, semestriel: arrondi(COMPLET_PLEIN_TARIF * (1 - REMISE.semestriel)), annuel: arrondi(COMPLET_PLEIN_TARIF * (1 - REMISE.annuel)) }
+      : null,
+    prixSemestriel: arrondi(prixComplet * (1 - REMISE.semestriel)),
+    prixAnnuel: arrondi(prixComplet * (1 - REMISE.annuel)),
+    totalSemestriel: arrondi(prixComplet * (1 - REMISE.semestriel)) * 6,
+    totalAnnuel: arrondi(prixComplet * (1 - REMISE.annuel)) * 12,
     essaiGratuit: true,
     highlight: true,
     periodesDisponibles: true,
@@ -96,3 +110,14 @@ export const plans: {
     nonInclus: [],
   },
 ]
+
+/** Prix affiche pour une periode : prix mensuel, prix barre eventuel, total facture */
+export function prixPour(plan: (typeof plans)[number], periode: Periode) {
+  const p = plan.periodesDisponibles ? periode : "mensuel"
+  return {
+    periode: p,
+    prix: p === "mensuel" ? plan.prixMensuel : p === "semestriel" ? plan.prixSemestriel : plan.prixAnnuel,
+    barre: plan.prixBarre ? plan.prixBarre[p] : null,
+    total: p === "semestriel" ? plan.totalSemestriel : p === "annuel" ? plan.totalAnnuel : null,
+  }
+}

@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabase"
 import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck, Menu, X, Inbox, ArrowLeft, Lock, ScanLine } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
-import { plans, OPTION_SITE, libelleMaintenanceSite } from "@/lib/pricing"
+import { plans, prixPour, OPTION_SITE, libelleMaintenanceSite } from "@/lib/pricing"
 import { REWARDS_PAR_DEFAUT, MODELES_ROUE, lotsPourTypeCuisine, modelePourTypeCuisine } from "@/lib/roue"
 import { insererLotsRoue } from "@/lib/roue-config"
 import { RoueChance, LegendeLots } from "@/components/roue-chance"
@@ -2658,16 +2658,8 @@ function DashboardContent() {
 
             <div className="grid gap-6 sm:grid-cols-2 max-w-3xl">
               {plans.map((offre) => {
-                const periodeEffective = offre.periodesDisponibles ? billingPeriod : "mensuel"
+                const { periode: periodeEffective, prix: prixAffiche, barre: prixBarre, total: totalPeriode } = prixPour(offre, billingPeriod)
                 const planKey = `${offre.key}_${periodeEffective}`
-                const prixAffiche =
-                  periodeEffective === "mensuel" ? offre.prixMensuel :
-                  periodeEffective === "semestriel" ? offre.prixSemestriel :
-                  offre.prixAnnuel
-                const totalPeriode =
-                  periodeEffective === "semestriel" ? offre.totalSemestriel :
-                  periodeEffective === "annuel" ? offre.totalAnnuel :
-                  null
                 const estPlanActuel = restaurant?.plan === offre.key && ["actif", "essai"].includes(restaurant?.statut_abonnement)
                 return (
                   <div
@@ -2683,15 +2675,15 @@ function DashboardContent() {
                     )}
                     <h3 className="font-display text-xl font-semibold text-ink">{offre.nom}</h3>
                     <div className="mt-2 flex items-end gap-1.5">
-                      {offre.prixBarre && (
-                        <span className="mb-1 text-lg text-ink/65 line-through">{offre.prixBarre}€</span>
+                      {prixBarre && (
+                        <span className="mb-1 text-lg text-ink/65 line-through">{prixBarre}€</span>
                       )}
                       <span className="font-display text-3xl font-semibold text-wine">
                         {prixAffiche}€
                       </span>
                       <span className="text-sm text-ink/70 mb-1">/mois</span>
                     </div>
-                    {offre.prixBarre && (
+                    {prixBarre && (
                       <p className="mt-1 text-xs font-semibold text-gold-light bg-wine inline-block px-2 py-0.5 rounded-full">
                         Offre de lancement
                       </p>

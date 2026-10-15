@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Check, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { plans } from "@/lib/pricing"
+import { plans, prixPour } from "@/lib/pricing"
 
 type Periode = "mensuel" | "semestriel" | "annuel"
 
@@ -44,15 +44,7 @@ export function PricingSection() {
         {/* Deux cartes façon ticket de tombola gagnant, avec bord perforé et encoches */}
         <div className="mx-auto mt-10 grid max-w-4xl gap-8 sm:grid-cols-2">
           {plans.map((plan) => {
-            const periodeEffective: Periode = plan.periodesDisponibles ? periode : "mensuel"
-            const prixAffiche =
-              periodeEffective === "mensuel" ? plan.prixMensuel :
-              periodeEffective === "semestriel" ? plan.prixSemestriel :
-              plan.prixAnnuel
-            const totalPeriode =
-              periodeEffective === "semestriel" ? plan.totalSemestriel :
-              periodeEffective === "annuel" ? plan.totalAnnuel :
-              null
+            const { periode: periodeEffective, prix: prixAffiche, barre: prixBarre, total: totalPeriode } = prixPour(plan, periode)
             const planParam = `${plan.key}_${periodeEffective}`
 
             return (
@@ -75,16 +67,16 @@ export function PricingSection() {
                     {plan.nom}
                   </p>
 
-                  {plan.prixBarre && (
-                    <p className="mt-3 font-display text-xl text-ivory/75 line-through">{plan.prixBarre}€/mois</p>
+                  {prixBarre && (
+                    <p className="mt-3 font-display text-xl text-ivory/75 line-through">{prixBarre}€/mois</p>
                   )}
 
-                  <div className={`flex items-end justify-center gap-1 font-display ${plan.prixBarre ? "mt-0.5" : "mt-3"}`}>
+                  <div className={`flex items-end justify-center gap-1 font-display ${prixBarre ? "mt-0.5" : "mt-3"}`}>
                     <span className="text-5xl font-semibold">{prixAffiche}€</span>
                     <span className="mb-1 text-lg opacity-80">/mois</span>
                   </div>
 
-                  {plan.prixBarre && (
+                  {prixBarre && (
                     <p className="mt-2 inline-flex items-center rounded-full bg-gold px-3 py-1 text-xs font-semibold text-wine-dark">
                       Offre de lancement
                     </p>

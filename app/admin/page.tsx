@@ -158,6 +158,19 @@ export default function AdminPage() {
     }
   }
 
+  // Compte demo / partenaire : activer un plan sans passer par Stripe
+  const activerSansPaiement = async (r: RestaurantAdmin, plan: "essentiel" | "standard" | null) => {
+    const token = await getToken()
+    const res = await fetch("/api/admin/restaurants", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ id: r.id, plan, actif: plan !== null }),
+    })
+    const result = await res.json()
+    if (!res.ok) { setErreur(result.error || "Erreur"); return }
+    setRestaurants((prev) => prev.map((x) => x.id === r.id ? { ...x, plan: result.plan, statut_abonnement: result.statut_abonnement } : x))
+  }
+
   const accederAuCompte = async (restaurant: RestaurantAdmin) => {
     setErreur("")
     setEntreeEnCours(restaurant.id)
@@ -308,6 +321,21 @@ export default function AdminPage() {
                     </div>
                   )}
                 </div>
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  {["actif", "essai"].includes(r.statut_abonnement || "") ? (
+                    <button onClick={() => activerSansPaiement(r, null)} className="text-xs text-ink/70 underline underline-offset-2 hover:text-wine">
+                      Désactiver
+                    </button>
+                  ) : (
+                    <>
+                      <button onClick={() => activerSansPaiement(r, "standard")} className="rounded-lg border border-wine/30 px-3 py-2 text-xs font-semibold text-wine hover:bg-wine/5">
+                        Activer Complet (sans paiement)
+                      </button>
+                      <button onClick={() => activerSansPaiement(r, "essentiel")} className="rounded-lg border border-wine/20 px-3 py-2 text-xs text-ink/80 hover:bg-wine/5">
+                        Essentiel
+                      </button>
+                    </>
+                  )}
                 <button
                   onClick={() => accederAuCompte(r)}
                   disabled={entreeEnCours === r.id}
@@ -316,6 +344,7 @@ export default function AdminPage() {
                   {entreeEnCours === r.id ? "Connexion..." : "Accéder"}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
+                </div>
               </div>
             ))}
           </div>
