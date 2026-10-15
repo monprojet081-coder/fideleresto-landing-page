@@ -14,8 +14,8 @@ export const faq: { question: string; reponse: string }[] = [
   {
     question: "Combien coûte FidèleResto ?",
     reponse: `Le plan Essentiel coûte ${essentiel.prixMensuel} € par mois (${essentiel.prixSemestriel} €/mois en semestriel, ${essentiel.prixAnnuel} €/mois en annuel). Le plan Complet coûte ${complet.prixMensuel} € par mois${
-      OFFRE_LANCEMENT_ACTIVE && complet.prixBarre ? ` pendant l'offre de lancement, au lieu de ${complet.prixBarre.mensuel} €` : ""
-    } (${complet.prixSemestriel} €/mois en semestriel, ${complet.prixAnnuel} €/mois en annuel), avec 14 jours d'essai gratuit. Sans engagement et sans frais cachés.`,
+      OFFRE_LANCEMENT_ACTIVE && complet.prixBarre ? ` pendant l'offre de lancement (en mensuel), au lieu de ${complet.prixBarre} €` : ` (${complet.prixSemestriel} €/mois en semestriel, ${complet.prixAnnuel} €/mois en annuel)`
+    }, avec 14 jours d'essai gratuit. Sans engagement et sans frais cachés.`,
   },
   {
     question: "Quelle est la différence entre le plan Essentiel et le plan Complet ?",

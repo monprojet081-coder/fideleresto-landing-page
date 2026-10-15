@@ -2658,7 +2658,7 @@ function DashboardContent() {
 
             <div className="grid gap-6 sm:grid-cols-2 max-w-3xl">
               {plans.map((offre) => {
-                const { periode: periodeEffective, prix: prixAffiche, barre: prixBarre, total: totalPeriode } = prixPour(offre, billingPeriod)
+                const { periode: periodeEffective, prix: prixAffiche, barre: prixBarre, total: totalPeriode, seulementMensuel } = prixPour(offre, billingPeriod)
                 const planKey = `${offre.key}_${periodeEffective}`
                 const estPlanActuel = restaurant?.plan === offre.key && ["actif", "essai"].includes(restaurant?.statut_abonnement)
                 return (
@@ -2687,6 +2687,9 @@ function DashboardContent() {
                       <p className="mt-1 text-xs font-semibold text-gold-light bg-wine inline-block px-2 py-0.5 rounded-full">
                         Offre de lancement
                       </p>
+                    )}
+                    {seulementMensuel && (
+                      <p className="mt-1 text-xs font-medium text-wine">Offre de lancement disponible en mensuel uniquement</p>
                     )}
                     {totalPeriode && (
                       <p className="mt-1 text-sm text-ink/75">

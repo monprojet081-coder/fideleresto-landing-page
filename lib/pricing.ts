@@ -37,8 +37,8 @@ export const plans: {
   nom: string
   description: string
   prixMensuel: number
-  /** prix "barre" (avant offre de lancement) par periode, ou null */
-  prixBarre: { mensuel: number; semestriel: number; annuel: number } | null
+  /** prix "barre" (avant offre de lancement, mensuel uniquement), ou null */
+  prixBarre: number | null
   prixSemestriel: number
   prixAnnuel: number
   totalSemestriel: number
@@ -81,20 +81,19 @@ export const plans: {
     key: "standard",
     nom: "Complet",
     description: "Tout FidèleResto, sans rien laisser de côté",
-    // L'offre de lancement s'applique a toutes les periodes, puis -10 % / -20 % comme l'Essentiel :
-    // 120 €/mois, 108 €/mois en semestriel (648 €), 96 €/mois en annuel (1 152 €).
-    // ATTENTION : les montants factures viennent des Prices Stripe (STRIPE_PRICE_STANDARD_*).
+    // Offre de lancement (2-3 mois) : uniquement en MENSUEL, 120 € au lieu de 180 €.
+    // Pendant l'offre, le semestriel et l'annuel ne sont pas proposes (ils seraient plus chers
+    // que le mensuel en promo). Ils reviennent automatiquement quand OFFRE_LANCEMENT_ACTIVE = false :
+    // 162 €/mois en semestriel (972 €), 144 €/mois en annuel (1 728 €), sur la base de 180 €.
     prixMensuel: prixComplet,
-    prixBarre: OFFRE_LANCEMENT_ACTIVE
-      ? { mensuel: COMPLET_PLEIN_TARIF, semestriel: arrondi(COMPLET_PLEIN_TARIF * (1 - REMISE.semestriel)), annuel: arrondi(COMPLET_PLEIN_TARIF * (1 - REMISE.annuel)) }
-      : null,
-    prixSemestriel: arrondi(prixComplet * (1 - REMISE.semestriel)),
-    prixAnnuel: arrondi(prixComplet * (1 - REMISE.annuel)),
-    totalSemestriel: arrondi(prixComplet * (1 - REMISE.semestriel)) * 6,
-    totalAnnuel: arrondi(prixComplet * (1 - REMISE.annuel)) * 12,
+    prixBarre: OFFRE_LANCEMENT_ACTIVE ? COMPLET_PLEIN_TARIF : null,
+    prixSemestriel: arrondi(COMPLET_PLEIN_TARIF * (1 - REMISE.semestriel)),
+    prixAnnuel: arrondi(COMPLET_PLEIN_TARIF * (1 - REMISE.annuel)),
+    totalSemestriel: arrondi(COMPLET_PLEIN_TARIF * (1 - REMISE.semestriel)) * 6,
+    totalAnnuel: arrondi(COMPLET_PLEIN_TARIF * (1 - REMISE.annuel)) * 12,
     essaiGratuit: true,
     highlight: true,
-    periodesDisponibles: true,
+    periodesDisponibles: !OFFRE_LANCEMENT_ACTIVE,
     features: [
       "Roue de la fidélité + plus d'avis Google",
       "Tri des avis négatifs (retours privés envoyés au restaurant)",
@@ -117,7 +116,9 @@ export function prixPour(plan: (typeof plans)[number], periode: Periode) {
   return {
     periode: p,
     prix: p === "mensuel" ? plan.prixMensuel : p === "semestriel" ? plan.prixSemestriel : plan.prixAnnuel,
-    barre: plan.prixBarre ? plan.prixBarre[p] : null,
+    barre: p === "mensuel" ? plan.prixBarre : null,
+    /** vrai si la periode demandee n'est pas proposee pour ce plan (affichage en mensuel) */
+    seulementMensuel: p !== periode,
     total: p === "semestriel" ? plan.totalSemestriel : p === "annuel" ? plan.totalAnnuel : null,
   }
 }

@@ -44,7 +44,7 @@ export function PricingSection() {
         {/* Deux cartes façon ticket de tombola gagnant, avec bord perforé et encoches */}
         <div className="mx-auto mt-10 grid max-w-4xl gap-8 sm:grid-cols-2">
           {plans.map((plan) => {
-            const { periode: periodeEffective, prix: prixAffiche, barre: prixBarre, total: totalPeriode } = prixPour(plan, periode)
+            const { periode: periodeEffective, prix: prixAffiche, barre: prixBarre, total: totalPeriode, seulementMensuel } = prixPour(plan, periode)
             const planParam = `${plan.key}_${periodeEffective}`
 
             return (
@@ -82,6 +82,9 @@ export function PricingSection() {
                     </p>
                   )}
 
+                  {seulementMensuel && (
+                    <p className="mt-2 text-xs font-medium text-gold-light">Offre de lancement disponible en mensuel uniquement</p>
+                  )}
                   {totalPeriode && (
                     <p className="mt-1 text-xs opacity-75">
                       soit {totalPeriode}€ facturés {

@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { OPTION_SITE, libelleMaintenanceSite } from "@/lib/pricing"
+import { OPTION_SITE, libelleMaintenanceSite, OFFRE_LANCEMENT_ACTIVE } from "@/lib/pricing"
 
 export function SignupForm() {
   return (
@@ -16,7 +16,9 @@ export function SignupForm() {
 function SignupFormContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const plan = searchParams.get("plan") || "standard_mensuel"
+  const planDemande = searchParams.get("plan") || "standard_mensuel"
+  // Pendant l'offre de lancement, le plan Complet n'existe qu'en mensuel
+  const plan = OFFRE_LANCEMENT_ACTIVE && planDemande.startsWith("standard_") ? "standard_mensuel" : planDemande
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [avecCreationSite, setAvecCreationSite] = useState(false)
