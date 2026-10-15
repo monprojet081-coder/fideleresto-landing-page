@@ -82,7 +82,9 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
               const { data } = await supabase.from("roue_config").select("label, probabilite, couleur").filter("restaurant_id", "like", `${slug}%`)
               liste = data as any
             }
-            setRewards(liste && liste.length > 0 ? (liste as Lot[]) : REWARDS_PAR_DEFAUT)
+            // Les lots a 0 % n'apparaissent pas sur la roue
+            const visibles = ((liste || []) as Lot[]).filter((l: any) => Number(l.probabilite) > 0 || Number(l.garanti_apres_visites) > 0)
+            setRewards(visibles.length > 0 ? visibles : REWARDS_PAR_DEFAUT)
           })
         // Le scan ne compte que si le restaurant existe réellement
         fetch("/api/send-reward-email/track-scan", {

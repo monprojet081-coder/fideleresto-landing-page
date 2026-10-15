@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     const { data: restoConfig } = await supabase
       .from('restaurants')
-      .select('roue_frequence_jours, nom_restaurant')
+      .select('*')
       .eq('slug', slug)
       .maybeSingle()
     if (!restoConfig) {
@@ -153,8 +153,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Les lots a 0 % ne sont pas sur la roue (meme filtre que la page client)
+    const lotsVisibles = (roueData || []).filter((l: any) => Number(l.probabilite) > 0 || Number(l.garanti_apres_visites) > 0)
     const rewardsList: (Reward & { max_par_jour?: number | null })[] =
-      roueData && roueData.length > 0 ? [...roueData] : [...REWARDS_PAR_DEFAUT]
+      lotsVisibles.length > 0 ? [...lotsVisibles] : [...REWARDS_PAR_DEFAUT]
 
     // Tirage au sort reellement cote serveur : impossible a manipuler depuis le navigateur
     let reward: Reward & { max_par_jour?: number | null } = tirerRecompense(rewardsList)
