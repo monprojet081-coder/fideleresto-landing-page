@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Check, Globe, Mail, Phone, QrCode, RotateCcw, Share2, UserPlus } from "lucide-react"
-import { CARTE, NOM_COMPLET } from "@/lib/carte-contact"
+import { ENTREPRISE, fichierVcf, nomComplet, urlCarte, type Carte } from "@/lib/carte-contact"
 
 function Filet() {
   return (
@@ -32,15 +32,17 @@ function Ligne({ href, icone, libelle, valeur, externe }: { href: string; icone:
   )
 }
 
-export function CarteVisite({ qrSvg }: { qrSvg: string }) {
+export function CarteVisite({ carte, qrSvg }: { carte: Carte; qrSvg: string }) {
+  const NOM_COMPLET = nomComplet(carte)
+  const url = urlCarte(carte)
   const [verso, setVerso] = useState(false)
   const [copie, setCopie] = useState(false)
 
   async function partager() {
     const donnees = {
       title: `${NOM_COMPLET} · FidèleResto`,
-      text: `${NOM_COMPLET}, ${CARTE.titre.toLowerCase()} de FidèleResto. Ma carte de visite :`,
-      url: CARTE.url,
+      text: `${NOM_COMPLET}, ${carte.titre.toLowerCase()} de FidèleResto. Ma carte de visite :`,
+      url,
     }
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
@@ -51,10 +53,10 @@ export function CarteVisite({ qrSvg }: { qrSvg: string }) {
       }
     }
     try {
-      await navigator.clipboard.writeText(CARTE.url)
+      await navigator.clipboard.writeText(url)
     } catch {
       const zone = document.createElement("textarea")
-      zone.value = CARTE.url
+      zone.value = url
       zone.setAttribute("readonly", "")
       zone.style.position = "fixed"
       zone.style.opacity = "0"
@@ -97,23 +99,23 @@ export function CarteVisite({ qrSvg }: { qrSvg: string }) {
                 {NOM_COMPLET}
               </h1>
               <p className="mt-2 text-[11.5px] font-semibold uppercase tracking-[0.24em] text-gold">
-                {CARTE.titre} · {CARTE.entreprise}
+                {carte.titre} · {ENTREPRISE.nom}
               </p>
 
               <div className="mt-5">
                 <Filet />
               </div>
 
-              <p className="mt-5 max-w-[30ch] text-pretty text-[14.5px] leading-relaxed text-ink/75">{CARTE.accroche}</p>
+              <p className="mt-5 max-w-[30ch] text-pretty text-[14.5px] leading-relaxed text-ink/75">{ENTREPRISE.accroche}</p>
             </div>
 
             <div className="relative mt-6 flex flex-col gap-1 border-t border-wine/10 pt-4">
-              <Ligne href={`tel:${CARTE.telephone}`} icone={<Phone className="size-[18px]" aria-hidden="true" />} libelle="Téléphone" valeur={CARTE.telephoneAffiche} />
-              <Ligne href={`mailto:${CARTE.email}`} icone={<Mail className="size-[18px]" aria-hidden="true" />} libelle="Email" valeur={CARTE.email} />
-              <Ligne href={CARTE.site} externe icone={<Globe className="size-[18px]" aria-hidden="true" />} libelle="Site" valeur={CARTE.siteAffiche} />
+              <Ligne href={`tel:${carte.telephone}`} icone={<Phone className="size-[18px]" aria-hidden="true" />} libelle="Téléphone" valeur={carte.telephoneAffiche} />
+              <Ligne href={`mailto:${ENTREPRISE.email}`} icone={<Mail className="size-[18px]" aria-hidden="true" />} libelle="Email" valeur={ENTREPRISE.email} />
+              <Ligne href={ENTREPRISE.site} externe icone={<Globe className="size-[18px]" aria-hidden="true" />} libelle="Site" valeur={ENTREPRISE.siteAffiche} />
             </div>
 
-            <p className="relative mt-4 text-center text-[11px] font-medium uppercase tracking-[0.2em] text-ink/45">{CARTE.region}</p>
+            <p className="relative mt-4 text-center text-[11px] font-medium uppercase tracking-[0.2em] text-ink/45">{ENTREPRISE.region}</p>
           </section>
 
           {/* Verso */}
@@ -127,7 +129,7 @@ export function CarteVisite({ qrSvg }: { qrSvg: string }) {
             <div className="relative mt-6 w-full max-w-[250px] rounded-3xl bg-ivory p-5 shadow-xl shadow-black/30">
               <div className="aspect-square w-full [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: qrSvg }} />
             </div>
-            <p className="relative mt-5 text-sm text-ivory/75">fideleresto.fr/contact</p>
+            <p className="relative mt-5 text-sm text-ivory/75">fideleresto.fr/contact/{carte.slug}</p>
             <div className="relative mt-5">
               <Filet />
             </div>
@@ -138,8 +140,8 @@ export function CarteVisite({ qrSvg }: { qrSvg: string }) {
       {/* Actions */}
       <div className="mt-6 flex flex-col gap-3">
         <a
-          href="/contact/vcard"
-          download="Victor-Ehrenbogen-FideleResto.vcf"
+          href={`/contact/${carte.slug}/vcard`}
+          download={fichierVcf(carte)}
           className="flex h-14 items-center justify-center gap-2.5 rounded-2xl bg-gold text-[16px] font-semibold text-wine-dark shadow-lg shadow-black/30 transition-colors hover:bg-gold-light active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-light"
         >
           <UserPlus className="size-5" aria-hidden="true" />

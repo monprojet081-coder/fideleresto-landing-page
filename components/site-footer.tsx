@@ -6,7 +6,7 @@ const legalLinks = [
   { label: "Conditions générales", href: "/cgv" },
   { label: "Politique de confidentialité", href: "/confidentialite" },
   { label: "Cookies", href: "/cookies" },
-  { label: "Contact", href: "mailto:contact@fideleresto.fr" },
+  { label: "Contact", href: "/contact" },
 ]
 
 export function SiteFooter() {
