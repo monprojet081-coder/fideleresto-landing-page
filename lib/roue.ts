@@ -161,3 +161,40 @@ export function modelePourTypeCuisine(typeCuisine?: string | null) {
 export function lotsPourTypeCuisine(typeCuisine?: string | null): Lot[] {
   return (modelePourTypeCuisine(typeCuisine)?.lots || REWARDS_PAR_DEFAUT).map((l) => ({ ...l }))
 }
+
+// ── Boost de la 1re visite ─────────────────────────────────────────────────────
+// Au tout premier passage d'un client dans un restaurant, ses chances de gagner un lot
+// sont multipliees (x2 ou x3). C'est AFFICHE au client (bandeau + chances "1re visite"
+// dans la legende) : les pourcentages montres sont toujours les vrais.
+export const BOOST_PAR_DEFAUT = 2
+// Meme booste, au moins 1 chance sur 10 de ne rien gagner (garde le jeu credible et le cout maitrise)
+export const PLAFOND_GAIN_BOOST = 90
+
+/** Reglage du restaurateur -> 1 (desactive), 2 ou 3. Colonne absente ou vide : valeur par defaut. */
+export function facteurBoost(valeur: unknown): number {
+  const n = Number(valeur)
+  if (valeur === null || valeur === undefined || !Number.isFinite(n)) return BOOST_PAR_DEFAUT
+  return n >= 3 ? 3 : n >= 2 ? 2 : 1
+}
+
+/**
+ * Probabilites de la roue pour une 1re visite. Les lots "classiques" sont multiplies par le
+ * facteur ; le gros lot garanti tous les N passages garde sa probabilite ; la case "Perdu"
+ * absorbe la difference. Si le total des gains depasse le plafond, on reduit les lots boostes
+ * proportionnellement. Fonction partagee serveur / affichage : ce qui est montre = ce qui est tire.
+ */
+export function boosterLots(lots: Lot[], facteur: number): Lot[] {
+  if (facteur <= 1) return lots
+  const estBoostable = (l: Lot) => l.label !== LABEL_PERDU && l.probabilite > 0 && !(l.garanti_apres_visites && l.garanti_apres_visites > 0)
+  const fixe = lots.filter((l) => l.label !== LABEL_PERDU && !estBoostable(l)).reduce((s, l) => s + (l.probabilite || 0), 0)
+  const boostable = lots.filter(estBoostable).reduce((s, l) => s + l.probabilite, 0)
+  if (boostable === 0) return lots
+  const cible = Math.min(boostable * facteur, Math.max(boostable, PLAFOND_GAIN_BOOST - fixe))
+  const k = cible / boostable
+  const arrondi = (n: number) => Math.round(n * 10) / 10
+  const resultat = lots.map((l) => (estBoostable(l) ? { ...l, probabilite: arrondi(l.probabilite * k) } : { ...l }))
+  const gagne = resultat.filter((l) => l.label !== LABEL_PERDU).reduce((s, l) => s + l.probabilite, 0)
+  const perdu = resultat.find((l) => l.label === LABEL_PERDU)
+  if (perdu) perdu.probabilite = arrondi(Math.max(0, 100 - gagne))
+  return resultat
+}

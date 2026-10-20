@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse, after } from 'next/server'
 import { randomUUID } from 'crypto'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
-import { REWARDS_PAR_DEFAUT, LABEL_PERDU, type Lot as Reward } from '@/lib/roue'
+import { REWARDS_PAR_DEFAUT, LABEL_PERDU, boosterLots, facteurBoost, type Lot as Reward } from '@/lib/roue'
 import { EMAIL_VALIDE, emailCanonique, estEmailJetable, hashIp } from '@/lib/securite'
 import { envoyerEmailRecompense } from '@/lib/email-recompense'
 
@@ -158,12 +158,29 @@ export async function POST(req: NextRequest) {
     const rewardsList: (Reward & { max_par_jour?: number | null })[] =
       lotsVisibles.length > 0 ? [...lotsVisibles] : [...REWARDS_PAR_DEFAUT]
 
+    const numeroPassage = (visitesPrecedentes || 0) + 1
+
+    // 1re visite : chances boostees (x2 par defaut), annoncees au client sur la page.
+    // Compte comme 1re visite seulement si ni cet email ni ce telephone n'ont deja joue ici.
+    let boost = 1
+    if (numeroPassage === 1) {
+      const facteur = facteurBoost(restoConfig?.boost_premiere_visite)
+      if (facteur > 1) {
+        const dejaCetAppareil = await supabase
+          .from('clients')
+          .select('id', { count: 'exact', head: true })
+          .eq('restaurant_slug', slug)
+          .eq('appareil', appareil)
+        if (dejaCetAppareil.error || (dejaCetAppareil.count || 0) === 0) boost = facteur
+      }
+    }
+    const lotsTirage: (Reward & { max_par_jour?: number | null })[] = boost > 1 ? boosterLots(rewardsList, boost) : rewardsList
+
     // Tirage au sort reellement cote serveur : impossible a manipuler depuis le navigateur
-    let reward: Reward & { max_par_jour?: number | null } = tirerRecompense(rewardsList)
+    let reward: Reward & { max_par_jour?: number | null } = tirerRecompense(lotsTirage)
 
     // Lot "offert a coup sur tous les N passages" : a la Ne (2Ne, 3Ne...) partie de ce client
     // dans ce restaurant, il gagne ce lot quoi qu'il arrive.
-    const numeroPassage = (visitesPrecedentes || 0) + 1
     const garanti = rewardsList.find(
       (l) => l.garanti_apres_visites && l.garanti_apres_visites > 0 && numeroPassage % l.garanti_apres_visites === 0,
     )
@@ -189,7 +206,7 @@ export async function POST(req: NextRequest) {
         .gte('created_at', debutJour.toISOString())
       if ((count || 0) < reward.max_par_jour) break
       plafonnes.add(reward.label)
-      const restants = rewardsList.filter((l) => !plafonnes.has(l.label) && l.probabilite > 0)
+      const restants = lotsTirage.filter((l) => !plafonnes.has(l.label) && l.probabilite > 0)
       const perdu = rewardsList.find((l) => l.label === LABEL_PERDU)
       if (restants.length === 0) {
         reward = perdu || { label: LABEL_PERDU, probabilite: 0, couleur: '#a8536a' }
@@ -233,7 +250,7 @@ export async function POST(req: NextRequest) {
       after(() => envoyerEmailRecompense({ id, prenom: prenomPropre, email: emailNormalise, recompense: reward.label, restaurantNom: restoConfig?.nom_restaurant, slug }))
     }
 
-    return repondre({ dejaJoue: false, dejaVenu, dejaAvis, reward, rewardsList, clientRowId: nouveauClient?.id, frequenceJours, progression })
+    return repondre({ dejaJoue: false, dejaVenu, dejaAvis, reward, rewardsList, clientRowId: nouveauClient?.id, frequenceJours, progression, boost })
   } catch (err: any) {
     console.error('Erreur roue/jouer:', err)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })

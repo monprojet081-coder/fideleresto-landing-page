@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { Lot, DUREE_ROTATION_MS, lotsGagnables, chanceSur, couleurTexteSur } from "@/lib/roue"
+import { Lot, DUREE_ROTATION_MS, lotsGagnables, chanceSur, couleurTexteSur, boosterLots } from "@/lib/roue"
 
 const TAILLE = 320
 const CENTRE = TAILLE / 2
@@ -302,9 +302,11 @@ export function RoueChance({
 }
 
 // Liste "Ce que vous pouvez gagner" avec la chance de chaque lot, calculee depuis le reglage de la roue
-export function LegendeLots({ rewards }: { rewards: Lot[] }) {
+// boost > 1 : affiche aussi la chance reelle a la 1re visite (memes calculs que le tirage serveur)
+export function LegendeLots({ rewards, boost = 1 }: { rewards: Lot[]; boost?: number }) {
   const gagnables = lotsGagnables(rewards)
   if (gagnables.length === 0) return null
+  const boostes = boost > 1 ? new Map(boosterLots(rewards, boost).map((l) => [l.label, l.probabilite])) : null
 
   return (
     <div className="mt-7 rounded-2xl border border-wine/15 bg-ivory p-4 text-left">
@@ -319,6 +321,9 @@ export function LegendeLots({ rewards }: { rewards: Lot[] }) {
                 <span className="text-base font-medium text-ink">{lot.label.replace(/ (\S+)$/, "\u00a0$1")}</span>
                 <span className="whitespace-nowrap text-sm text-ink/80">{chanceSur(lot.probabilite)}</span>
               </span>
+              {boostes && !lot.garanti_apres_visites && (boostes.get(lot.label) || 0) > lot.probabilite ? (
+                <span className="mt-0.5 block text-sm font-semibold text-[#8a6213]">✨ 1re visite :{" "}<span className="whitespace-nowrap">{chanceSur(boostes.get(lot.label) || 0)}</span></span>
+              ) : null}
               {lot.garanti_apres_visites ? (
                 <span className="mt-0.5 block text-sm font-semibold text-wine">🎁 Garanti à coup sûr à votre {lot.garanti_apres_visites}e passage</span>
               ) : null}

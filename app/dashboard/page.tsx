@@ -12,7 +12,7 @@ import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
 import { plans, prixPour, OPTION_SITE, libelleMaintenanceSite } from "@/lib/pricing"
-import { REWARDS_PAR_DEFAUT, MODELES_ROUE, lotsPourTypeCuisine, modelePourTypeCuisine } from "@/lib/roue"
+import { REWARDS_PAR_DEFAUT, MODELES_ROUE, lotsPourTypeCuisine, modelePourTypeCuisine, BOOST_PAR_DEFAUT, facteurBoost } from "@/lib/roue"
 import { insererLotsRoue } from "@/lib/roue-config"
 import { RoueChance, LegendeLots } from "@/components/roue-chance"
 import { CarteFideliteVisuelle } from "@/components/carte-fidelite-visuelle"
@@ -121,6 +121,7 @@ function DashboardContent() {
   const [clientTrouve, setClientTrouve] = useState<any>(null)
   const [filtreClients, setFiltreClients] = useState<"tous" | "a_utiliser" | "semaine" | "habitues">("tous")
   const [roueFrequenceJours, setRoueFrequenceJours] = useState(1)
+  const [boostPremiereVisite, setBoostPremiereVisite] = useState(BOOST_PAR_DEFAUT)
   const [clientsFidelite, setClientsFidelite] = useState<{ client_id: string; prenom: string | null; tampons: number; updated_at: string }[]>([])
   const [chargementClientsFidelite, setChargementClientsFidelite] = useState(false)
   const [rechercheLoading, setRechercheLoading] = useState(false)
@@ -203,6 +204,7 @@ function DashboardContent() {
           setGoogleAvisUrl(restoData.google_avis_url || "")
           setNomRestaurantInput(restoData.nom_restaurant || "")
           setRoueFrequenceJours(restoData.roue_frequence_jours || 1)
+          setBoostPremiereVisite(facteurBoost(restoData.boost_premiere_visite))
           if (restoData.panier_moyen) setPanierMoyen(Number(restoData.panier_moyen))
           if (restoData.parties_estimees_jour) setPartiesJour(Number(restoData.parties_estimees_jour))
           setRelanceActive(restoData.relance_active || false)
@@ -482,6 +484,12 @@ function DashboardContent() {
     } else {
       setRestaurant({ ...restaurant, roue_frequence_jours: roueFrequenceJours })
     }
+    // Boost 1re visite (non bloquant si la colonne n'existe pas encore)
+    await supabase
+      .from("restaurants")
+      .update({ boost_premiere_visite: boostPremiereVisite })
+      .eq("slug", slug)
+      .then(({ error }) => { if (error) console.warn("Boost 1re visite non sauvegarde :", error.message) })
     // Panier moyen et parties/jour du calculateur (non bloquant si les colonnes n'existent pas)
     await supabase
       .from("restaurants")
@@ -1769,7 +1777,7 @@ function DashboardContent() {
                   <RoueChance rewards={rewards.filter((r) => r.probabilite > 0 && r.label.trim())} rotation={0} spinning={false} />
                 </div>
                 <div className="hidden xl:block">
-                  <LegendeLots rewards={rewards.filter((r) => r.label.trim())} />
+                  <LegendeLots rewards={rewards.filter((r) => r.label.trim())} boost={boostPremiereVisite} />
                 </div>
               </div>
             </aside>
@@ -1964,6 +1972,28 @@ function DashboardContent() {
                 </select>
                 <p className="text-xs text-ink/65 mt-2">
                   Utile si vous préférez limiter le nombre de récompenses offertes chaque jour.
+                </p>
+              </div>
+
+              <div className="p-4 bg-secondary/40 rounded-lg mb-6">
+                <label htmlFor="boost-1re-visite" className="block text-sm font-medium text-ink/90 mb-2">
+                  Chances boostées à la 1re visite
+                </label>
+                <select
+                  id="boost-1re-visite"
+                  value={boostPremiereVisite}
+                  onChange={e => setBoostPremiereVisite(parseInt(e.target.value))}
+                  className="w-full border border-wine/15 bg-card rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                >
+                  <option value={1}>Désactivé</option>
+                  <option value={2}>Chances x2 (recommandé)</option>
+                  <option value={3}>Chances x3</option>
+                </select>
+                <p className="mt-3 rounded-lg border border-gold/40 bg-gold/10 px-3 py-2 text-xs leading-relaxed text-ink/85">
+                  <strong className="text-wine">💡 Astuce&nbsp;:</strong>{" "}un client qui gagne dès sa première visite a une vraie raison de revenir
+                  (il doit repasser pour profiter de son lot). Le boost est annoncé sur la roue («&nbsp;Première visite&nbsp;? Vos chances
+                  sont multipliées par 2&nbsp;!&nbsp;») et les vraies chances de la 1re visite sont affichées : tout est transparent pour vos clients.
+                  Il ne s&apos;applique qu&apos;une fois par client, jamais au gros lot garanti, et au moins 1 partie sur 10 reste perdante.
                 </p>
               </div>
 

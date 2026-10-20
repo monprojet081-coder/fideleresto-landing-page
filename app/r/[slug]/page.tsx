@@ -10,7 +10,7 @@ import { supabase } from "@/lib/supabase"
 import { UtensilsCrossed } from "lucide-react"
 import { quandRejouer, DUREE_VALIDITE_JOURS } from "@/lib/recompenses"
 import { RoueChance, LegendeLots } from "@/components/roue-chance"
-import { REWARDS_PAR_DEFAUT, LABEL_PERDU, DUREE_ROTATION_MS, PAUSE_FIN_MS, PAUSE_AVANT_ROTATION_MS, type Lot } from "@/lib/roue"
+import { REWARDS_PAR_DEFAUT, LABEL_PERDU, DUREE_ROTATION_MS, PAUSE_FIN_MS, PAUSE_AVANT_ROTATION_MS, BOOST_PAR_DEFAUT, facteurBoost, type Lot } from "@/lib/roue"
 
 type Step = "checking" | "not_found" | "inactive" | "form" | "wheel" | "win" | "lose" | "already_played"
 
@@ -42,6 +42,9 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   const [nomRestaurant, setNomRestaurant] = useState("")
   // Carte de fidélité + menu digital : réservés au plan Complet (standard)
   const [aCarte, setACarte] = useState(false)
+  // Chances multipliees a la 1re visite (reglage du restaurateur, affiche au client)
+  const [boostResto, setBoostResto] = useState(BOOST_PAR_DEFAUT)
+  const [boostActif, setBoostActif] = useState(1)
 
   // Vérifie que le restaurant existe vraiment avant d'afficher quoi que ce soit.
   // Empêche de contourner l'anti-fraude en modifiant le slug dans l'URL.
@@ -69,6 +72,15 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         setEstPremium(data.plan === "essentiel" || data.plan === "standard")
         setNomRestaurant(data.nom_restaurant || "")
         setACarte(data.plan === "standard")
+        // Requete separee et tolerante : si la colonne n'existe pas encore, valeur par defaut
+        supabase
+          .from("restaurants")
+          .select("boost_premiere_visite")
+          .eq("slug", slug)
+          .maybeSingle()
+          .then(({ data: b, error: errBoost }) => {
+            if (!errBoost) setBoostResto(facteurBoost((b as any)?.boost_premiere_visite))
+          })
         // Charge les lots tout de suite : le client voit la roue et ce qu'il peut gagner
         // AVANT de remplir le formulaire, au lieu de la decouvrir lancee a pleine vitesse
         supabase
@@ -141,6 +153,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
     setProgression(data.progression || null)
     setClientRowId(data.clientRowId || null)
     setFrequenceJours(data.frequenceJours || 1)
+    setBoostActif(Number(data.boost) || 1)
     const reward = data.reward
 
     // On garde la roue deja affichee (meme ordre des cases) tant qu'elle contient le lot gagne ;
@@ -211,8 +224,9 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
 
         {step === "form" && rewards.length > 0 && (
           <div className="mb-8">
+            {boostResto > 1 && <BandeauBoost facteur={boostResto} />}
             <RoueChance rewards={rewards} rotation={0} spinning={false} />
-            <LegendeLots rewards={rewards} />
+            <LegendeLots rewards={rewards} boost={boostResto} />
           </div>
         )}
 
@@ -273,6 +287,9 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
             <p className="mt-7 text-ink/90 text-lg font-medium">
               {spinning ? "La roue tourne... 🎡" : rotation === 0 ? "C'est parti !" : "Et le résultat est..."}
             </p>
+            {boostActif > 1 && (
+              <p className="mt-2 text-sm font-semibold text-[#8a6213]">✨ 1re visite : vos chances sont multipliées par {boostActif}</p>
+            )}
           </div>
         )}
 
@@ -620,6 +637,19 @@ function ProgressionGaranti({ p, lotGagne }: { p: { label: string; tous: number;
       <p className="mt-2 text-sm text-ink/80">
         Passage {dansLeCycle} sur {p.tous}. Chaque partie compte, avec la même adresse email.
       </p>
+    </div>
+  )
+}
+
+// Bandeau affiche avant la partie quand le restaurant a active le boost de 1re visite
+function BandeauBoost({ facteur }: { facteur: number }) {
+  return (
+    <div className="mb-6 flex items-center gap-3 rounded-2xl border border-gold/50 bg-gradient-to-r from-gold/20 to-gold-light/25 px-4 py-3 text-left">
+      <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-wine font-display text-lg font-bold text-gold-light">x{facteur}</span>
+      <span>
+        <span className="block font-display text-base font-semibold leading-tight text-wine-dark">Première visite ici&nbsp;?</span>
+        <span className="block text-sm text-ink/80">Vos chances de gagner sont multipliées par {facteur}&nbsp;!</span>
+      </span>
     </div>
   )
 }
