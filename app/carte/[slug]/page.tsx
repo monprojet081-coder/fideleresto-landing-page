@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic'
 import React, { useState } from "react"
 import { UtensilsCrossed } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { lireRestaurantPublic } from "@/lib/restaurant-public"
 import { CarteFideliteVisuelle } from "@/components/carte-fidelite-visuelle"
 
 type Step = "checking" | "not_found" | "no_access" | "auth" | "compte"
@@ -37,11 +38,7 @@ export default function CartePage({ params }: { params: Promise<{ slug: string }
 
   React.useEffect(() => {
     const init = async () => {
-      const { data: resto } = await supabase
-        .from("restaurants")
-        .select("nom_restaurant, slug, fidelite_tampons_requis, fidelite_recompense, plan, statut_abonnement, menu_type, menu_url, menu_html")
-        .eq("slug", slug)
-        .maybeSingle()
+      const { data: resto } = await lireRestaurantPublic(slug, "nom_restaurant, slug, fidelite_tampons_requis, fidelite_recompense, plan, statut_abonnement, menu_type, menu_url, menu_html")
 
       if (!resto) {
         setStep("not_found")

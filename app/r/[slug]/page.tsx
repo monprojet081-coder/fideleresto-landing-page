@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic'
 
 import React, { useState } from "react"
 import { supabase } from "@/lib/supabase"
+import { lireRestaurantPublic } from "@/lib/restaurant-public"
 import { UtensilsCrossed } from "lucide-react"
 import { quandRejouer, DUREE_VALIDITE_JOURS } from "@/lib/recompenses"
 import { RoueChance, LegendeLots } from "@/components/roue-chance"
@@ -49,11 +50,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
   // Vérifie que le restaurant existe vraiment avant d'afficher quoi que ce soit.
   // Empêche de contourner l'anti-fraude en modifiant le slug dans l'URL.
   React.useEffect(() => {
-    supabase
-      .from("restaurants")
-      .select("id, plan, statut_abonnement, nom_restaurant")
-      .eq("slug", slug)
-      .maybeSingle()
+    lireRestaurantPublic(slug, "id, plan, statut_abonnement, nom_restaurant")
       .then(({ data }) => {
         if (!data) {
           setStep("not_found")
@@ -73,11 +70,7 @@ export default function WheelPage({ params }: { params: Promise<{ slug: string }
         setNomRestaurant(data.nom_restaurant || "")
         setACarte(data.plan === "standard")
         // Requete separee et tolerante : si la colonne n'existe pas encore, valeur par defaut
-        supabase
-          .from("restaurants")
-          .select("boost_premiere_visite")
-          .eq("slug", slug)
-          .maybeSingle()
+        lireRestaurantPublic(slug, "boost_premiere_visite")
           .then(({ data: b, error: errBoost }) => {
             if (!errBoost) setBoostResto(facteurBoost((b as any)?.boost_premiere_visite))
           })
@@ -443,11 +436,7 @@ function AvisSection({
   const [envoiEnCours, setEnvoiEnCours] = useState(false)
 
   React.useEffect(() => {
-    supabase
-      .from("restaurants")
-      .select("google_avis_url")
-      .eq("slug", slug)
-      .maybeSingle()
+    lireRestaurantPublic(slug, "google_avis_url")
       .then(({ data }) => {
         if (data?.google_avis_url) setGoogleUrl(data.google_avis_url)
         setAvisExiste(!!data?.google_avis_url)
