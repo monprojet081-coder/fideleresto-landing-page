@@ -22,6 +22,7 @@ export type ModeleFlyer = {
   banniere: ZoneFlyer // zone réservée au nom du restaurant + logo
   qr: ZoneFlyer        // zone réservée au QR code
   qrFond?: string      // couleur du fond du QR (pour se fondre dans le cadre), blanc par défaut
+  pourPlan?: "essentiel" | "standard" // réservé à un plan (ex : n'annonce pas la carte de fidélité en Essentiel)
 }
 
 export const MODELES_FLYER: ModeleFlyer[] = [
@@ -37,6 +38,21 @@ export const MODELES_FLYER: ModeleFlyer[] = [
     banniere: { xPct: 12, yPct: 14.2, wPct: 76, hPct: 5.6 },
     qr: { xPct: 26.3, yPct: 44.5, wPct: 47.4, hPct: 31.6 },
     qrFond: "#fbf5ea",
+    pourPlan: "standard",
+  },
+  {
+    // Même flyer pour le plan Essentiel : n'annonce que les cadeaux et les avis Google
+    id: "classique-essentiel",
+    nom: "Classique",
+    fichierPng: "/flyers/classique-essentiel.png",
+    fichierThumb: "/flyers/classique-essentiel-thumb.jpg",
+    largeurPx: 1536,
+    hauteurPx: 2304,
+    interieurClair: false,
+    banniere: { xPct: 12, yPct: 14.2, wPct: 76, hPct: 5.6 },
+    qr: { xPct: 26.3, yPct: 44.5, wPct: 47.4, hPct: 31.6 },
+    qrFond: "#fbf5ea",
+    pourPlan: "essentiel",
   },
   {
     id: "noir-or",
@@ -72,3 +88,9 @@ export const MODELES_FLYER: ModeleFlyer[] = [
     qr: { xPct: 12.3, yPct: 54.9, wPct: 21.8, hPct: 21.0 },
   },
 ]
+
+/** Modèles proposés à un restaurant selon son plan */
+export function modelesPourPlan(plan?: string | null): ModeleFlyer[] {
+  const cible = plan === "essentiel" ? "essentiel" : "standard"
+  return MODELES_FLYER.filter((m) => !m.pourPlan || m.pourPlan === cible)
+}

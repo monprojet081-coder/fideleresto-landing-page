@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { QrCode, Users, Star, Gift, LogOut, LayoutDashboard, Settings, Sliders, UtensilsCrossed, Download, ArrowRight, CreditCard, Check, BookOpen, Award, Trash2, Search, Image as ImageIcon, FileText, Mail, ShieldCheck, Menu, X, Inbox, ArrowLeft, Lock, ScanLine } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
-import { MODELES_FLYER, ModeleFlyer } from "@/lib/flyerTemplates"
+import { MODELES_FLYER, ModeleFlyer, modelesPourPlan } from "@/lib/flyerTemplates"
 import { plans, prixPour, OPTION_SITE, libelleMaintenanceSite } from "@/lib/pricing"
 import { REWARDS_PAR_DEFAUT, MODELES_ROUE, lotsPourTypeCuisine, modelePourTypeCuisine, BOOST_PAR_DEFAUT, facteurBoost } from "@/lib/roue"
 import { insererLotsRoue } from "@/lib/roue-config"
@@ -109,6 +109,11 @@ function DashboardContent() {
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [logoUploadError, setLogoUploadError] = useState("")
   const [selectedModele, setSelectedModele] = useState<ModeleFlyer | null>(MODELES_FLYER[0] ?? null)
+  // Flyer adapté au plan : en Essentiel, pas de modèle qui annonce la carte de fidélité ou le menu
+  useEffect(() => {
+    const dispo = modelesPourPlan(restaurant?.plan)
+    setSelectedModele((actuel) => (actuel && dispo.some((m) => m.id === actuel.id) ? actuel : dispo[0] ?? null))
+  }, [restaurant?.plan])
   const [flyerAffichage, setFlyerAffichage] = useState<"nom" | "logo">("nom")
   const [generatingFlyer, setGeneratingFlyer] = useState(false)
 
@@ -1409,7 +1414,7 @@ function DashboardContent() {
               <div className="space-y-5">
                 <EtapeNumerotee n={1} titre="Choisissez un modèle de flyer">
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {MODELES_FLYER.map((m) => (
+                    {modelesPourPlan(restaurant?.plan).map((m) => (
                       <button
                         key={m.id}
                         onClick={() => setSelectedModele(m)}
