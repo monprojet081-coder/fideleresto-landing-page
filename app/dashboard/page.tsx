@@ -649,7 +649,7 @@ function DashboardContent() {
       const qrDataUrl: string = await QRCode.toDataURL(urlRoue, {
         width: 400,
         margin: 1,
-        color: { dark: "#000000", light: "#ffffff" },
+        color: { dark: "#000000", light: selectedModele.qrFond || "#ffffff" },
       })
       doc.addImage(
         qrDataUrl, "PNG",
@@ -1408,7 +1408,7 @@ function DashboardContent() {
               {/* Flyer : le parcours recommande */}
               <div className="space-y-5">
                 <EtapeNumerotee n={1} titre="Choisissez un modèle de flyer">
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     {MODELES_FLYER.map((m) => (
                       <button
                         key={m.id}

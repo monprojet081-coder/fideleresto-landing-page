@@ -21,9 +21,23 @@ export type ModeleFlyer = {
   interieurClair: boolean // true = fond clair dans la bannière -> texte foncé, false = fond sombre -> texte clair
   banniere: ZoneFlyer // zone réservée au nom du restaurant + logo
   qr: ZoneFlyer        // zone réservée au QR code
+  qrFond?: string      // couleur du fond du QR (pour se fondre dans le cadre), blanc par défaut
 }
 
 export const MODELES_FLYER: ModeleFlyer[] = [
+  {
+    // Modèle sobre, adapté à tout type de restaurant : le nom remplace la marque en haut
+    id: "classique-bordeaux",
+    nom: "Classique",
+    fichierPng: "/flyers/classique-bordeaux.png",
+    fichierThumb: "/flyers/classique-bordeaux-thumb.jpg",
+    largeurPx: 1536,
+    hauteurPx: 2304,
+    interieurClair: false,
+    banniere: { xPct: 12, yPct: 14.2, wPct: 76, hPct: 5.6 },
+    qr: { xPct: 26.3, yPct: 44.5, wPct: 47.4, hPct: 31.6 },
+    qrFond: "#fbf5ea",
+  },
   {
     id: "noir-or",
     nom: "Noir & Or",
