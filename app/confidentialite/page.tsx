@@ -4,7 +4,7 @@ export const metadata = { title: "Politique de confidentialité" }
 
 export default function ConfidentialitePage() {
   return (
-    <LegalLayout title="Politique de confidentialité" majDate="14 octobre 2026">
+    <LegalLayout title="Politique de confidentialité" majDate="25 octobre 2026">
       <section>
         <p>
           FidèleResto (Victor Ehrenbogen, micro-entrepreneur, SIRET 442 585 980 00026) attache une grande importance
@@ -46,6 +46,15 @@ export default function ConfidentialitePage() {
       </section>
 
       <section>
+        <h2 className="font-display text-xl font-semibold text-wine">3. Restaurateurs qui demandent à être recontactés</h2>
+        <p className="mt-2"><strong>Données collectées :</strong> nom, numéro de téléphone, adresse email, nom et ville de l'établissement, renseignés par vous via un formulaire de contact, notamment depuis une publicité Facebook ou Instagram (formulaire Meta).</p>
+        <p className="mt-2"><strong>Finalité :</strong> vous rappeler pour vous présenter FidèleResto et, si vous le souhaitez, vous aider à démarrer votre essai gratuit.</p>
+        <p className="mt-2"><strong>Base légale :</strong> votre demande (mesures précontractuelles prises à votre demande).</p>
+        <p className="mt-2"><strong>Durée de conservation :</strong> 12 mois maximum après le dernier échange si vous ne devenez pas client, ou jusqu'à votre demande de suppression.</p>
+        <p className="mt-2">Ces données ne servent qu'à vous recontacter au sujet de FidèleResto : elles ne sont jamais revendues ni utilisées pour d'autres offres.</p>
+      </section>
+
+      <section>
         <h2 className="font-display text-xl font-semibold text-wine">Sous-traitants et destinataires des données</h2>
         <p className="mt-2">Certaines de vos données sont transmises aux prestataires suivants, strictement nécessaires au fonctionnement du service :</p>
         <ul className="mt-2 list-disc space-y-1.5 pl-5">
@@ -53,6 +62,7 @@ export default function ConfidentialitePage() {
           <li><strong>Vercel</strong> (hébergement de l'application)</li>
           <li><strong>Stripe</strong> (traitement des paiements des restaurateurs — FidèleResto n'a jamais accès à vos coordonnées bancaires complètes)</li>
           <li><strong>Resend</strong> (envoi des emails transactionnels et de relance)</li>
+          <li><strong>Meta</strong> (Facebook / Instagram : formulaires de contact de nos publicités, pour les restaurateurs qui demandent à être recontactés)</li>
         </ul>
         <p className="mt-2">
           Ces prestataires peuvent être situés hors de l'Union Européenne. Ils s'engagent contractuellement à
